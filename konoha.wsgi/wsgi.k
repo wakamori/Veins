@@ -28,4 +28,4 @@ include "lib:gluelink";
 
 @Native @Singleton class Wsgi;
 
-@Native void Wsgi.test(void);
+//@Native String Wsgi.main(Func<String,Tuple<String,String>[]> f);

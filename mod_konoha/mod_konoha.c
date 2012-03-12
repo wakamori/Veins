@@ -36,15 +36,24 @@
 **  
 **    The sample page from mod_konoha.c
 */ 
-
 #include "httpd.h"
 #include "http_config.h"
 #include "http_protocol.h"
 #include "ap_config.h"
 
+#include "http_log.h"
 #include <konoha1.h>
+#include <konoha1/inlinelibs.h>
 
 #define PATHSIZE 1024
+
+typedef struct _konoha_config {
+    char *handler;
+    char *package_path;
+} konoha_config_t;
+
+static int konoha_initialized = 0;
+static konoha_t konoha;
 
 module AP_MODULE_DECLARE_DATA konoha_module;
 
@@ -126,17 +135,84 @@ static int read_post(request_rec *r, apr_table_t **tab)
 }
 #endif
 
+/* call Wsgi.main() */
+void start_application(request_rec *r, CTX ctx)
+{
+    extern char **environ;
+    char **env_p;
+    kmethodn_t mn = knh_getmn(ctx, STEXT("application"), MN_NONAME);
+    kclass_t cid = knh_getcid(ctx, STEXT("konoha.wsgi.Wsgi"));
+    //ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, "mn=%d,cid=%d,cid2=%d\n", mn, cid, cid2);
+    kMethod *mtd = knh_NameSpace_getMethodNULL(ctx, NULL, cid, mn);
+    BEGIN_LOCAL(ctx, lsfp, K_CALLDELTA+3);
+
+    /* set args */
+    kMap *env_map = new_DataMap(ctx);
+    char key[128] = {0};
+    for (env_p = environ; *env_p != NULL; env_p++) {
+        ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, "env: %s", *env_p);
+        char *val = strchr(*env_p, '=');
+        if (val != NULL) {
+            val += 1;
+            size_t keylen = val - *env_p - 1;
+            strncpy(key, *env_p, keylen);
+            key[keylen] = '\0';
+            ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, "key=%s", key);
+            ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, "val=%s", val);
+            knh_DataMap_setString(ctx, env_map, key, val);
+        }
+    }
+
+    KNH_SETv(ctx, lsfp[K_CALLDELTA+1].o, env_map);
+    KNH_SCALL(ctx, lsfp, 0, mtd, 2);
+    END_LOCAL(ctx, lsfp);
+    ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, "lsfp[0]=%s", S_totext(lsfp[0].s));
+    if (mtd == NULL) {
+        ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, "mtd is NULL");
+    }
+    //assert(mtd != NULL);
+}
+
 /* konoha handler */
 static int konoha_handler(request_rec *r)
 {
     if (strcmp(r->handler, "konoha")) {
         return DECLINED;
     }
-    r->content_type = "application/json";
+    r->content_type = "text/plain";
     r->content_encoding = "utf-8";
 
-    char *handler = (char *)ap_get_module_config(r->per_dir_config, &konoha_module);
+    /* get config */
+    konoha_config_t *conf = (konoha_config_t *)ap_get_module_config(r->per_dir_config, &konoha_module);
+    char *handler = conf->handler;
+    char *package_path = conf->package_path;
 
+    /* call konoha main */
+    int ret;
+    int argc = 3;
+    setenv("KONOHA_PACKAGE", package_path, 0);
+    const char *argv[] = {
+        "/usr/local/bin/konoha",
+        "-a2",
+        handler
+    };
+    if (!konoha_initialized) {
+        konoha_initialized = 1;
+        konoha_ginit(argc, argv);
+        konoha = konoha_open();
+        //knh_loadPackage(konoha, STEXT("konoha.wsgi"));
+    }
+    ap_rprintf(r, "argc=%d\n", argc);
+    int i;
+    for (i = 0; i < argc; i++) {
+        ap_rprintf(r, "argv[%d]=%s\n", i, argv[i]);
+    }
+    ret = konoha_main(konoha, argc, argv);
+    start_application(r, konoha);
+    //konoha_close(konoha);
+    if (ret != 0) {
+        ap_rputs("Konoha closed with error.", r);
+    }
     ap_rprintf(r, "KonohaHandler=\"%s\"\n", handler);
     return OK;
 }
@@ -145,8 +221,17 @@ static int konoha_handler(request_rec *r)
 static const char *set_handler(cmd_parms *cmd, void *vp, const char *arg)
 {
     (void)cmd;
-    char *hdr = (char *)vp;
-    strncpy(hdr, arg, sizeof(hdr));
+    konoha_config_t *conf = (konoha_config_t *)vp;
+    strncpy(conf->handler, arg, PATHSIZE - 1);
+    return NULL;
+}
+
+/* copy KonohaHandler to set KONOHA_PACKAGE environment variable */
+static const char *set_package_path(cmd_parms *cmd, void *vp, const char *arg)
+{
+    (void)cmd;
+    konoha_config_t *conf = (konoha_config_t *)vp;
+    strncpy(conf->package_path, arg, PATHSIZE - 1);
     return NULL;
 }
 
@@ -154,9 +239,11 @@ static const char *set_handler(cmd_parms *cmd, void *vp, const char *arg)
 static void *konoha_cdir_cfg(apr_pool_t *pool, char *arg)
 {
     (void)arg;
-    char *hdr;
-    hdr = (char *)apr_palloc(pool, sizeof(char) * PATHSIZE);
-    return (void *)hdr;
+    konoha_config_t *conf;
+    conf = (konoha_config_t *)apr_palloc(pool, sizeof(konoha_config_t));
+    conf->handler = (char *)apr_palloc(pool, sizeof(char) * PATHSIZE);
+    conf->package_path = (char *)apr_palloc(pool, sizeof(char) * PATHSIZE);
+    return (void *)conf;
 }
 
 /* konoha commands */
@@ -166,6 +253,11 @@ static const command_rec konoha_cmds[] = {
         NULL,
         OR_ALL,
         "set konoha handler"),
+    AP_INIT_TAKE1("PackagePath",
+        set_package_path,
+        NULL,
+        OR_ALL,
+        "set konoha package path"),
     { NULL, {NULL}, NULL, 0, RAW_ARGS, NULL }
 };
 

@@ -25,10 +25,19 @@
  ****************************************************************************/
 
 #include <konoha1.h>
+#include <konoha1/inlinelibs.h>
+//#include "konoha_wsgi.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+//wsgi_t g_wsgi[128];
+
+//wsgi_t getAllSettings(void)
+//{
+//    return (wsgi_t){"a", "b"};
+//}
 
 DEFAPI(void) defWsgi(CTX ctx, kclass_t cid, kclassdef_t *cdef)
 {
@@ -37,11 +46,14 @@ DEFAPI(void) defWsgi(CTX ctx, kclass_t cid, kclassdef_t *cdef)
 
 /* ------------------------------------------------------------------------ */
 
-//## @Native void Wsgi.test(void);
-KMETHOD Wsgi_test(CTX ctx, ksfp_t *sfp _RIX)
-{
-    RETURNvoid_();
-}
+//## @Native String Wsgi.main(Func<String,Tuple<String,String>[]> f);
+//KMETHOD Wsgi_main(CTX ctx, ksfp_t *sfp _RIX)
+//{
+//    kmethodn_t mn = knh_getmn(ctx, STEXT("application"), MN_NONAME);
+//    kclass_t cid = knh_getcid(ctx, STEXT("konoha.wsgi.Wsgi"));
+//    fprintf(stderr, "mn=%d,cid=%d\n", mn, cid);
+//    RETURN_(new_String(ctx, "hello, world"));
+//}
 
 /* ------------------------------------------------------------------------ */
 

@@ -16,11 +16,11 @@ APACHECTL=apachectl
 
 #   additional defines, includes and libraries
 #DEFS=-Dmy_define=my_value
-#DEFS=-Dmy_define=my_value
+DEFS=-DK_INTERNAL=1
 #INCLUDES=-Imy/include/dir
 #LIBS=-Lmy/lib/dir -lmylib
-CFLAGS=-g0 -O2 -W -Wall -std=c99
-LDFLAGS=-lapreq2 -ljson
+CFLAGS=-g0 -O2 -W -Wall #-std=c99
+LDFLAGS=-lapreq2 -ljson -lkonoha
 
 #   the default target
 all: local-shared-build
