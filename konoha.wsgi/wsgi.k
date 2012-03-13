@@ -24,8 +24,26 @@
  *
  ****************************************************************************/
 
-include "lib:gluelink";
+//include "lib:gluelink";
 
-@Native @Singleton class Wsgi;
+//@Native class Wsgi;
+@Singleton class Wsgi {
+    void startResponse(String status, Tuple<String,String>[] headers) {
+        $wsgi.status = status;
+        foreach (Tuple<String,String> t in headers) {
+            switch (t[0]) {
+            case "Content-Type":
+                $wsgi.content_type = t[1];
+                break;
+            default:
+                ERR << "unknown header: " + t[0] << EOL;
+            }
+        }
+    }
+}
 
-//@Native String Wsgi.main(Func<String,Tuple<String,String>[]> f);
+//@Native Wsgi Wsgi.new();
+//@Native void Wsgi.startResponse(String status, Tuple<String,String>[] headers);
+//@Native @Hidden Wsgi Wsgi.config();
+
+//$wsgi = new Wsgi();

@@ -44,13 +44,20 @@
 #include "http_log.h"
 #include <konoha1.h>
 #include <konoha1/inlinelibs.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #define PATHSIZE 1024
 
 typedef struct _konoha_config {
-    char *handler;
-    char *package_path;
+    const char *handler;
+    const char *package_path;
 } konoha_config_t;
+
+typedef struct _wsgi_config {
+    const char *status;
+    const char *content_type;
+} wsgi_config_t;
 
 static int konoha_initialized = 0;
 static konoha_t konoha;
@@ -135,15 +142,19 @@ static int read_post(request_rec *r, apr_table_t **tab)
 }
 #endif
 
-/* call Wsgi.main() */
-void start_application(request_rec *r, CTX ctx)
+/* call Script.application() */
+static int start_application(request_rec *r, CTX ctx)
 {
     extern char **environ;
     char **env_p;
     kmethodn_t mn = knh_getmn(ctx, STEXT("application"), MN_NONAME);
     kclass_t cid = knh_getcid(ctx, STEXT("konoha.wsgi.Wsgi"));
-    //ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, "mn=%d,cid=%d,cid2=%d\n", mn, cid, cid2);
+    //ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, "mn=%d,cid=%d", mn, cid);
     kMethod *mtd = knh_NameSpace_getMethodNULL(ctx, NULL, cid, mn);
+    if (mtd == NULL) {
+        ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, "function 'application' is not defined.");
+        return -1;
+    }
     BEGIN_LOCAL(ctx, lsfp, K_CALLDELTA+3);
 
     /* set args */
@@ -156,21 +167,44 @@ void start_application(request_rec *r, CTX ctx)
             val += 1;
             size_t keylen = val - *env_p - 1;
             strncpy(key, *env_p, keylen);
-            key[keylen] = '\0';
-            ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, "key=%s", key);
-            ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, "val=%s", val);
             knh_DataMap_setString(ctx, env_map, key, val);
         }
     }
+    mn = knh_getmn(ctx, STEXT("startResponse"), MN_NONAME);
+    cid = knh_getcid(ctx, STEXT("konoha.wsgi.Wsgi"));
+    //ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, "mn=%d,cid=%d", mn, cid);
+    kMethod *callback = knh_NameSpace_getMethodNULL(ctx, NULL, cid, mn);
+    if (callback == NULL) {
+        ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, "callback is null");
+        return -1;
+    }
+    kFunc *fo = new_H(Func);
+    KNH_INITv(fo->mtd, callback);
+    fo->baseNULL = NULL;
 
-    KNH_SETv(ctx, lsfp[K_CALLDELTA+1].o, env_map);
+    KNH_SETv(ctx, lsfp[K_CALLDELTA+1].m, env_map);
+    KNH_SETv(ctx, lsfp[K_CALLDELTA+2].fo, fo);
     KNH_SCALL(ctx, lsfp, 0, mtd, 2);
     END_LOCAL(ctx, lsfp);
     ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, "lsfp[0]=%s", S_totext(lsfp[0].s));
-    if (mtd == NULL) {
-        ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, "mtd is NULL");
+    return 0;
+}
+
+/* get config */
+static int get_config(request_rec *r, CTX ctx, wsgi_config_t *conf)
+{
+    kString *status = (kString*)knh_getPropertyNULL(ctx, STEXT("wsgi.status"));
+    kString *content_type = (kString*)knh_getPropertyNULL(ctx, STEXT("wsgi.content_type"));
+    if (status == NULL || content_type == NULL) {
+        ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r,
+                "status=%p, content_type=%p", status, content_type);
+        return -1;
     }
-    //assert(mtd != NULL);
+    conf->status = S_totext(status);
+    conf->content_type = S_totext(content_type);
+    //ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, "status=%s", S_totext(status));
+    //ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, "content_type=%s", S_totext(content_type));
+    return 0;
 }
 
 /* konoha handler */
@@ -179,18 +213,32 @@ static int konoha_handler(request_rec *r)
     if (strcmp(r->handler, "konoha")) {
         return DECLINED;
     }
-    r->content_type = "text/plain";
     r->content_encoding = "utf-8";
 
     /* get config */
-    konoha_config_t *conf = (konoha_config_t *)ap_get_module_config(r->per_dir_config, &konoha_module);
-    char *handler = conf->handler;
-    char *package_path = conf->package_path;
+    konoha_config_t *kconf = (konoha_config_t *)ap_get_module_config(r->per_dir_config, &konoha_module);
+    const char *handler = kconf->handler;
+    const char *package_path = kconf->package_path;
+    int ret;
+
+    /* check file existence */
+    if (handler == NULL) {
+        ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, "handler is null");
+        return OK;
+    }
+    struct stat st;
+    ret = stat(handler, &st);
+    if (ret != 0) {
+        ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, "KonohaHandler does not exists.");
+        return OK;
+    }
+
+    if (package_path != NULL) {
+        setenv("KONOHA_PACKAGE", package_path, 0);
+    }
 
     /* call konoha main */
-    int ret;
     int argc = 3;
-    setenv("KONOHA_PACKAGE", package_path, 0);
     const char *argv[] = {
         "/usr/local/bin/konoha",
         "-a2",
@@ -208,12 +256,19 @@ static int konoha_handler(request_rec *r)
         ap_rprintf(r, "argv[%d]=%s\n", i, argv[i]);
     }
     ret = konoha_main(konoha, argc, argv);
-    start_application(r, konoha);
+    if (ret != 0) goto TAIL;
+    ret = start_application(r, konoha);
+    if (ret != 0) goto TAIL;
+    wsgi_config_t wconf;
+    ret = get_config(r, konoha, &wconf);
+    if (ret != 0) goto TAIL;
+    r->content_type = wconf.content_type;
     //konoha_close(konoha);
-    if (ret != 0) {
-        ap_rputs("Konoha closed with error.", r);
-    }
     ap_rprintf(r, "KonohaHandler=\"%s\"\n", handler);
+    return OK;
+
+TAIL:
+    ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, "Konoha closed with error: %d", ret);
     return OK;
 }
 
@@ -222,7 +277,7 @@ static const char *set_handler(cmd_parms *cmd, void *vp, const char *arg)
 {
     (void)cmd;
     konoha_config_t *conf = (konoha_config_t *)vp;
-    strncpy(conf->handler, arg, PATHSIZE - 1);
+    strncpy((char *)conf->handler, arg, PATHSIZE - 1);
     return NULL;
 }
 
@@ -231,7 +286,7 @@ static const char *set_package_path(cmd_parms *cmd, void *vp, const char *arg)
 {
     (void)cmd;
     konoha_config_t *conf = (konoha_config_t *)vp;
-    strncpy(conf->package_path, arg, PATHSIZE - 1);
+    strncpy((char *)conf->package_path, arg, PATHSIZE - 1);
     return NULL;
 }
 
@@ -241,8 +296,8 @@ static void *konoha_cdir_cfg(apr_pool_t *pool, char *arg)
     (void)arg;
     konoha_config_t *conf;
     conf = (konoha_config_t *)apr_palloc(pool, sizeof(konoha_config_t));
-    conf->handler = (char *)apr_palloc(pool, sizeof(char) * PATHSIZE);
-    conf->package_path = (char *)apr_palloc(pool, sizeof(char) * PATHSIZE);
+    conf->handler = (const char *)apr_palloc(pool, sizeof(char) * PATHSIZE);
+    conf->package_path = (const char *)apr_palloc(pool, sizeof(char) * PATHSIZE);
     return (void *)conf;
 }
 
