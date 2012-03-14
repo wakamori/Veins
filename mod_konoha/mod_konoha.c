@@ -230,6 +230,7 @@ static int konoha_handler(request_rec *r)
 
     /* get config */
     konoha_config_t *kconf = (konoha_config_t *)ap_get_module_config(r->per_dir_config, &konoha_module);
+    int debug = kconf->debug;
     const char *handler = kconf->handler;
     const char *package_dir = kconf->package_dir;
     int ret;
@@ -251,11 +252,14 @@ static int konoha_handler(request_rec *r)
     }
 
     /* call konoha main */
-    int argc = 3;
+    int argc = 2;
+    if (debug) {
+        argc = 3;
+    }
     const char *argv[] = {
         "/usr/local/bin/konoha",
-        "-a2",
-        handler
+        handler,
+        "-a2"
     };
     if (!konoha_initialized) {
         konoha_initialized = 1;

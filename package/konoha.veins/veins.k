@@ -24,6 +24,12 @@
  *
  ****************************************************************************/
 
+if (defined(USING_VEINS)) {
+    return;
+}
+
+USING_VEINS="on";
+
 using konoha.conv.*;
 using konoha.wsgi.*;
 using konoha.clearsilver.*;
@@ -102,13 +108,13 @@ class Loader
         Func<String,Tuple<String,String>[]> start_response)
 {
     String path = environ["PATH_INFO"];
-    ERR << "path: " + path << EOL;
+    //ERR << "path: " + path << EOL;
     HttpResponse res = null;
-    ERR << "defurlpatterns: " + $veins.defurlpatterns << EOL;
-    ERR << "urlpatterns: " + $veins.urlpatterns << EOL;
+    //ERR << "defurlpatterns: " + $veins.defurlpatterns << EOL;
+    //ERR << "urlpatterns: " + $veins.urlpatterns << EOL;
     if ($veins.defurlpatterns != null) {
         foreach (Tuple<Regex,Func<HttpRequest=>HttpResponse>> t in $veins.urlpatterns) {
-            ERR << "regex: " + t[0] << EOL;
+            //ERR << "regex: " + t[0] << EOL;
             if (|path.match(t[0])| > 0) {
                 String method = environ["REQUEST_METHOD"];
                 String query = environ["QUERY_STRING"];
@@ -116,7 +122,7 @@ class Loader
                 res = t[1](req);
                 break;
             }
-            ERR << t << EOL;
+            //ERR << t << EOL;
         }
     }
     if (res != null) {
