@@ -7,7 +7,7 @@ int render_cb(String s)
 }
 
 Hdf hdf = new Hdf();
-hdf.value("message", "hello, world");
+hdf.setValue("message", "hello, world");
 Cs cs = new Cs(hdf);
 cs.parseFile("./hello.cs");
 cs.render(render_cb);
