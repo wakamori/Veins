@@ -24,27 +24,33 @@
  *
  ****************************************************************************/
 
-//include "lib:gluelink";
+using konoha.wsgi.*;
 
-//@Native class Wsgi;
-@Singleton class Wsgi
+class Template;
+
+class Loader
 {
-    void startResponse(String status, Tuple<String,String>[] headers) {
-        $wsgi.status = status;
-        foreach (Tuple<String,String> t in headers) {
-            switch (t[0]) {
-            case "Content-Type":
-                $wsgi.content_type = t[1];
-                break;
-            default:
-                ERR << "unknown header: " + t[0] << EOL;
-            }
-        }
+    Template template(String template_name);
+}
+
+@Singleton class Url
+{
+    Tuple<Regex,Func<HttpRequest,HttpResponse>[]> patterns = [];
+
+    int addPattern(Regex pattern,
+            Func<HttpRequest,HttpResponse> callback) {
+        _patterns.add((pattern, callback));
+        $veins.urlpatterns = _patterns;
     }
 }
 
-//@Native Wsgi Wsgi.new();
-//@Native void Wsgi.startResponse(String status, Tuple<String,String>[] headers);
-//@Native @Hidden Wsgi Wsgi.config();
-
-//$wsgi = new Wsgi();
+@Public String Wsgi.application(Map<String> environ,
+        Func<String,Tuple<String,String>[]> start_response)
+{
+    ERR << environ << EOL;
+    start_response("200 OK", [("Content-Type", "text/plain")]);
+    foreach (Tuple<Regex,Func<HttpRequest,HttpResponse>[]> t in patterns) {
+        if (|t[0]
+    }
+    return "Hello, world";
+}

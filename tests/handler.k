@@ -1,8 +1,8 @@
-using konoha.wsgi.*;
+using konoha.veins.*;
 
-@Public String Wsgi.application(Map<String> environ,
-        Func<String,Tuple<String,String>[]> start_response) {
-    ERR << environ << EOL;
-    start_response("200 OK", [("Content-Type", "text/plain")]);
-    return "Hello, world";
+HttpResponse document(HttpRequest req)
+{
+    return new HttpResponse("<h1>doc</h1>");
 }
+
+Url.addPattern(new Regex("

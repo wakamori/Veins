@@ -51,7 +51,7 @@
 
 typedef struct _konoha_config {
     const char *handler;
-    const char *package_path;
+    const char *package_dir;
 } konoha_config_t;
 
 typedef struct _wsgi_config {
@@ -170,6 +170,17 @@ static int start_application(request_rec *r, CTX ctx)
             knh_DataMap_setString(ctx, env_map, key, val);
         }
     }
+    /* other variables */
+    if (r->method != NULL) {
+        knh_DataMap_setString(ctx, env_map, "REQUEST_METHOD", r->method);
+    }
+    if (r->args != NULL) {
+        knh_DataMap_setString(ctx, env_map, "QUERY_STRING", r->args);
+    }
+    if (r->uri != NULL) {
+        knh_DataMap_setString(ctx, env_map, "PATH_INFO", r->uri);
+    }
+
     mn = knh_getmn(ctx, STEXT("startResponse"), MN_NONAME);
     cid = knh_getcid(ctx, STEXT("konoha.wsgi.Wsgi"));
     //ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, "mn=%d,cid=%d", mn, cid);
@@ -186,7 +197,8 @@ static int start_application(request_rec *r, CTX ctx)
     KNH_SETv(ctx, lsfp[K_CALLDELTA+2].fo, fo);
     KNH_SCALL(ctx, lsfp, 0, mtd, 2);
     END_LOCAL(ctx, lsfp);
-    ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, "lsfp[0]=%s", S_totext(lsfp[0].s));
+    //ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, "lsfp[0]=%s", S_totext(lsfp[0].s));
+    ap_rputs(S_totext(lsfp[0].s), r);
     return 0;
 }
 
@@ -218,7 +230,7 @@ static int konoha_handler(request_rec *r)
     /* get config */
     konoha_config_t *kconf = (konoha_config_t *)ap_get_module_config(r->per_dir_config, &konoha_module);
     const char *handler = kconf->handler;
-    const char *package_path = kconf->package_path;
+    const char *package_dir = kconf->package_dir;
     int ret;
 
     /* check file existence */
@@ -233,8 +245,8 @@ static int konoha_handler(request_rec *r)
         return OK;
     }
 
-    if (package_path != NULL) {
-        setenv("KONOHA_PACKAGE", package_path, 0);
+    if (package_dir != NULL) {
+        setenv("KONOHA_PACKAGE", package_dir, 0);
     }
 
     /* call konoha main */
@@ -250,11 +262,11 @@ static int konoha_handler(request_rec *r)
         konoha = konoha_open();
         //knh_loadPackage(konoha, STEXT("konoha.wsgi"));
     }
-    ap_rprintf(r, "argc=%d\n", argc);
-    int i;
-    for (i = 0; i < argc; i++) {
-        ap_rprintf(r, "argv[%d]=%s\n", i, argv[i]);
-    }
+    //ap_rprintf(r, "argc=%d\n", argc);
+    //int i;
+    //for (i = 0; i < argc; i++) {
+    //    ap_rprintf(r, "argv[%d]=%s\n", i, argv[i]);
+    //}
     ret = konoha_main(konoha, argc, argv);
     if (ret != 0) goto TAIL;
     ret = start_application(r, konoha);
@@ -264,7 +276,7 @@ static int konoha_handler(request_rec *r)
     if (ret != 0) goto TAIL;
     r->content_type = wconf.content_type;
     //konoha_close(konoha);
-    ap_rprintf(r, "KonohaHandler=\"%s\"\n", handler);
+    //ap_rprintf(r, "KonohaHandler=\"%s\"\n", handler);
     return OK;
 
 TAIL:
@@ -282,11 +294,11 @@ static const char *set_handler(cmd_parms *cmd, void *vp, const char *arg)
 }
 
 /* copy KonohaHandler to set KONOHA_PACKAGE environment variable */
-static const char *set_package_path(cmd_parms *cmd, void *vp, const char *arg)
+static const char *set_package_dir(cmd_parms *cmd, void *vp, const char *arg)
 {
     (void)cmd;
     konoha_config_t *conf = (konoha_config_t *)vp;
-    strncpy((char *)conf->package_path, arg, PATHSIZE - 1);
+    strncpy((char *)conf->package_dir, arg, PATHSIZE - 1);
     return NULL;
 }
 
@@ -297,7 +309,7 @@ static void *konoha_cdir_cfg(apr_pool_t *pool, char *arg)
     konoha_config_t *conf;
     conf = (konoha_config_t *)apr_palloc(pool, sizeof(konoha_config_t));
     conf->handler = (const char *)apr_palloc(pool, sizeof(char) * PATHSIZE);
-    conf->package_path = (const char *)apr_palloc(pool, sizeof(char) * PATHSIZE);
+    conf->package_dir = (const char *)apr_palloc(pool, sizeof(char) * PATHSIZE);
     return (void *)conf;
 }
 
@@ -308,8 +320,8 @@ static const command_rec konoha_cmds[] = {
         NULL,
         OR_ALL,
         "set konoha handler"),
-    AP_INIT_TAKE1("PackagePath",
-        set_package_path,
+    AP_INIT_TAKE1("PackageDir",
+        set_package_dir,
         NULL,
         OR_ALL,
         "set konoha package path"),
