@@ -24,9 +24,43 @@
  *
  ****************************************************************************/
 
+using konoha.conv.*;
 using konoha.wsgi.*;
 
 class Template;
+
+class HttpRequest
+{
+    String path;
+    String method;
+    Map<String> get_params;
+    Map<String> post_params;
+
+    HttpRequest(String path, String method, String query) {
+        _path = path;
+        _method = method;
+        Map<String> m = {};
+        foreach (String param in query.split("&")) {
+            String[] k_v = param.split("=");
+            m[k_v[0]] = k_v[1].convert(to:durl);
+        }
+        if (method == "GET") {
+            _get_params = m;
+        }
+        else if (method == "POST") {
+            _post_params = m;
+        }
+    }
+}
+
+class HttpResponse
+{
+    String content;
+
+    HttpResponse(String content) {
+        _content = content;
+    }
+}
 
 class Loader
 {
@@ -35,22 +69,44 @@ class Loader
 
 @Singleton class Url
 {
-    Tuple<Regex,Func<HttpRequest,HttpResponse>[]> patterns = [];
+    Tuple<Regex,Func<HttpRequest=>HttpResponse>>[] getPatterns() {
+        if ($veins.defurlpatterns == null) {
+            $veins.defurlpatterns = "Urlpatterns";
+            $veins.urlpatterns = new Tuple<Regex,Func<HttpRequest=>HttpResponse>>[0];
+        }
+        return $veins.urlpatterns;
+    }
 
-    int addPattern(Regex pattern,
-            Func<HttpRequest,HttpResponse> callback) {
-        _patterns.add((pattern, callback));
-        $veins.urlpatterns = _patterns;
+    void setPatterns(Tuple<Regex,Func<HttpRequest=>HttpResponse>>[] patterns) {
+        $veins.defurlpatterns = "Urlpatterns";
+        $veins.urlpatterns = patterns;
     }
 }
 
 @Public String Wsgi.application(Map<String> environ,
         Func<String,Tuple<String,String>[]> start_response)
 {
-    ERR << environ << EOL;
     start_response("200 OK", [("Content-Type", "text/plain")]);
-    foreach (Tuple<Regex,Func<HttpRequest,HttpResponse>[]> t in patterns) {
-        if (|t[0]
+    String path = environ["PATH_INFO"];
+    ERR << "path: " + path << EOL;
+    HttpResponse res = null;
+    ERR << "defurlpatterns: " + $veins.defurlpatterns << EOL;
+    ERR << "urlpatterns: " + $veins.urlpatterns << EOL;
+    if ($veins.defurlpatterns != null) {
+        foreach (Tuple<Regex,Func<HttpRequest=>HttpResponse>> t in $veins.urlpatterns) {
+            ERR << "regex: " + t[0] << EOL;
+            if (|path.match(t[0])| > 0) {
+                String method = environ["REQUEST_METHOD"];
+                String query = environ["QUERY_STRING"];
+                HttpRequest req = new HttpRequest(path, method, query);
+                res = t[1](req);
+                break;
+            }
+            ERR << t << EOL;
+        }
+    }
+    if (res != null) {
+        return res.content;
     }
     return "Hello, world";
 }
