@@ -50,6 +50,7 @@
 #define PATHSIZE 1024
 
 typedef struct _konoha_config {
+    int debug;
     const char *handler;
     const char *package_dir;
 } konoha_config_t;
@@ -302,12 +303,24 @@ static const char *set_package_dir(cmd_parms *cmd, void *vp, const char *arg)
     return NULL;
 }
 
+/* copy .conf arguments */
+static const char *set_debug(cmd_parms *cmd, void *vp, const char *arg)
+{
+    (void)cmd;
+    konoha_config_t *conf = (konoha_config_t *)vp;
+    if (strcmp(arg, "on")) {
+        conf->debug = 1;
+    }
+    return NULL;
+}
+
 /* configure konoha create dir */
 static void *konoha_cdir_cfg(apr_pool_t *pool, char *arg)
 {
     (void)arg;
     konoha_config_t *conf;
     conf = (konoha_config_t *)apr_palloc(pool, sizeof(konoha_config_t));
+    conf->debug = 0;
     conf->handler = (const char *)apr_palloc(pool, sizeof(char) * PATHSIZE);
     conf->package_dir = (const char *)apr_palloc(pool, sizeof(char) * PATHSIZE);
     return (void *)conf;
@@ -325,6 +338,11 @@ static const command_rec konoha_cmds[] = {
         NULL,
         OR_ALL,
         "set konoha package path"),
+    AP_INIT_TAKE1("Debug",
+        set_debug,
+        NULL,
+        OR_ALL,
+        "set debug mode"),
     { NULL, {NULL}, NULL, 0, RAW_ARGS, NULL }
 };
 
