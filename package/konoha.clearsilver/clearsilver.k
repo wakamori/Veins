@@ -37,8 +37,16 @@ include "lib:gluelink";
 @Native class Cs;
 
 @Native Hdf Hdf.new();
-@Native void Hdf.value(String name, String value);
+@Native void Hdf.setIntValue(String name, int value);
+@Native @Overload void Hdf.setValue(String name, String value);
+@Overload void Hdf.setValue(String name, int value) {
+    this.setIntValue(name, value);
+}
+@Native void Hdf.readFile(Path path);
+@Native void Hdf.writeFile(Path path);
+@Native void Hdf.dump(String prefix);
 
 @Native Cs Cs.new(Hdf hdf);
 @Native void Cs.parseFile(Path path);
 @Native void Cs.render(Func<String=>int> cb);
+@Native void Cs.dump(Func<String=>int> cb);

@@ -70,14 +70,14 @@ DEFAPI(void) defCs(CTX ctx, kclass_t cid, kclassdef_t *cdef)
 }
 
 static knh_IntData_t CsConstInt[] = {
-	{"STATUS_OK", STATUS_OK_INT},
-	{"INTERNAL_ERR", INTERNAL_ERR_INT},
-	{NULL}
+    {"STATUS_OK", STATUS_OK_INT},
+    {"INTERNAL_ERR", INTERNAL_ERR_INT},
+    {NULL}
 };
 
 DEFAPI(void) constCs(CTX ctx, kclass_t cid, const knh_LoaderAPI_t *kapi)
 {
-	kapi->loadClassIntConst(ctx, cid, CsConstInt);
+    kapi->loadClassIntConst(ctx, cid, CsConstInt);
 }
 
 /* ------------------------------------------------------------------------ */
@@ -90,13 +90,50 @@ KMETHOD Hdf_new(CTX ctx, ksfp_t *sfp _RIX)
     RETURN_(new_ReturnRawPtr(ctx, sfp, hdf));
 }
 
-//## @Native void Hdf.value(String name, String value);
-KMETHOD Hdf_value(CTX ctx, ksfp_t *sfp _RIX)
+//## @Native @Overload void Hdf.setValue(String name, String value);
+KMETHOD Hdf_setValue(CTX ctx, ksfp_t *sfp _RIX)
 {
     HDF *hdf = RawPtr_to(HDF *, sfp[0]);
     const char *name = S_totext(sfp[1].s);
     const char *value = S_totext(sfp[2].s);
     hdf_set_value(hdf, name, value);
+    RETURNvoid_();
+}
+
+//## @Native void Hdf.setIntValue(String name, int value);
+KMETHOD Hdf_setIntValue(CTX ctx, ksfp_t *sfp _RIX)
+{
+    HDF *hdf = RawPtr_to(HDF *, sfp[0]);
+    const char *name = S_totext(sfp[1].s);
+    int value = Int_to(int, sfp[2]);
+    hdf_set_int_value(hdf, name, value);
+    RETURNvoid_();
+}
+
+//## @Native void Hdf.readFile(Path path);
+KMETHOD Hdf_readFile(CTX ctx, ksfp_t *sfp _RIX)
+{
+    HDF *hdf = RawPtr_to(HDF *, sfp[0]);
+    const char *path = sfp[1].pth->ospath;
+    hdf_read_file(hdf, path);
+    RETURNvoid_();
+}
+
+//## @Native void Hdf.writeFile(Path path);
+KMETHOD Hdf_writeFile(CTX ctx, ksfp_t *sfp _RIX)
+{
+    HDF *hdf = RawPtr_to(HDF *, sfp[0]);
+    const char *path = sfp[1].pth->ospath;
+    hdf_write_file(hdf, path);
+    RETURNvoid_();
+}
+
+//## @Native void Hdf.dump(String prefix);
+KMETHOD Hdf_dump(CTX ctx, ksfp_t *sfp _RIX)
+{
+    HDF *hdf = RawPtr_to(HDF *, sfp[0]);
+    const char *prefix = S_totext(sfp[1].s);
+    hdf_dump(hdf, prefix);
     RETURNvoid_();
 }
 
@@ -155,6 +192,19 @@ KMETHOD Cs_render(CTX ctx, ksfp_t *sfp _RIX)
         .fo = fo
     };
     cs_render(cs, &arg, render_cb);
+    RETURNvoid_();
+}
+
+//## @Native void Cs.dump(Func<String=>int> cb);
+KMETHOD Cs_dump(CTX ctx, ksfp_t *sfp _RIX)
+{
+    CSPARSE *cs = RawPtr_to(CSPARSE *, sfp[0]);
+    kFunc *fo = sfp[1].fo;
+    render_arg_t arg = {
+        .ctx = ctx,
+        .fo = fo
+    };
+    cs_dump(cs, &arg, render_cb);
     RETURNvoid_();
 }
 
