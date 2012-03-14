@@ -1,0 +1,21 @@
+Page {
+    Title = menu page
+    Menu {
+        0 {
+            Name = Home
+            URL = /
+        }
+        1 {
+            Name = Preferences
+            URL = /prefs
+        }
+        2 {
+            Name = Help
+            URL = /help.html
+        }
+        3 {
+            Name = Support
+            URL = /feedback/
+        }
+    }
+}

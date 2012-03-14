@@ -26,6 +26,7 @@
 
 using konoha.conv.*;
 using konoha.wsgi.*;
+using konoha.clearsilver.*;
 
 class Template;
 
@@ -56,9 +57,23 @@ class HttpRequest
 class HttpResponse
 {
     String content;
+    Map<String> _h;
 
     HttpResponse(String content) {
         _content = content;
+        _h = {};
+    }
+
+    void set(String header, String value) {
+        _h[header] = value;
+    }
+
+    String get(String header) {
+        return _h[header];
+    }
+
+    String[] keys() {
+        return _h.keys();
     }
 }
 
@@ -86,7 +101,6 @@ class Loader
 @Public String Wsgi.application(Map<String> environ,
         Func<String,Tuple<String,String>[]> start_response)
 {
-    start_response("200 OK", [("Content-Type", "text/plain")]);
     String path = environ["PATH_INFO"];
     ERR << "path: " + path << EOL;
     HttpResponse res = null;
@@ -106,6 +120,11 @@ class Loader
         }
     }
     if (res != null) {
+        Tuple<String,String>[] headers = [];
+        foreach (String header in res.keys()) {
+            headers.add((header, res[header]));
+        }
+        start_response("200 OK", headers);
         return res.content;
     }
     return "Hello, world";
