@@ -2,7 +2,9 @@ using konoha.veins.*;
 
 HttpResponse document(HttpRequest req)
 {
-    return new HttpResponse("this is document");
+    HttpResponse res = new HttpResponse("this is document");
+    res["Content-Type"] = "text/plain";
+    return res;
 }
 
 if (!defined(CsRenderer)) {
@@ -41,6 +43,7 @@ HttpResponse menu(HttpRequest req)
 }
 
 Url.patterns = [
-    (new Regex("/konoha/doc/*"), document),
-    (new Regex("/konoha/menu/*"), menu)
+    (new Regex("/doc/*"), document),
+    (new Regex("/menu/*"), menu),
+    //(new Regex("/test/session/*"), test_session),
 ];

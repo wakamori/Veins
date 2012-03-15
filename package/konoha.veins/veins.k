@@ -24,12 +24,6 @@
  *
  ****************************************************************************/
 
-if (defined(USING_VEINS)) {
-    return;
-}
-
-USING_VEINS="on";
-
 using konoha.conv.*;
 using konoha.wsgi.*;
 using konoha.clearsilver.*;
@@ -78,7 +72,7 @@ class HttpResponse
         return _h[header];
     }
 
-    String[] keys() {
+    String[] keys(void) {
         return _h.keys();
     }
 }
@@ -104,10 +98,33 @@ class Loader
     }
 }
 
+@Public void System.includeScript(String name)
+{
+    String path = name;
+    if ($veins.root != null) {
+        path = $veins.root + "/" + name;
+    }
+    eval("include \"" + path + "\";");
+}
+
+void load_settings() {
+    script_name = $script.name;
+    if (script_name.indexOf("/") >= 0) {
+        $veins.root = script_name.substring(0, script_name.lastIndexOf("/"));
+    }
+    System.includeScript("settings.k");
+}
+
 @Public String Wsgi.application(Map<String> environ,
         Func<String,Tuple<String,String>[]> start_response)
 {
+    load_settings();
     String path = environ["PATH_INFO"];
+    //ERR << "env\n" + exec("env") << EOL;
+    //foreach (String e in environ.keys()) {
+    //    ERR << "env[" + e + "]=" + environ[e] << EOL;
+    //}
+    //ERR << "ls" + exec("ls") << EOL;
     //ERR << "path: " + path << EOL;
     HttpResponse res = null;
     //ERR << "defurlpatterns: " + $veins.defurlpatterns << EOL;
@@ -133,5 +150,6 @@ class Loader
         start_response("200 OK", headers);
         return res.content;
     }
+    start_response("200 OK", [("Content-Type", "text/plain")]);
     return "Hello, world";
 }

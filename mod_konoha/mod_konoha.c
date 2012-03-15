@@ -48,6 +48,14 @@
 #include <sys/stat.h>
 
 #define PATHSIZE 1024
+#define AP_LOG_DEBUG(fmt, ...) \
+    do { \
+        if (debug) { \
+            ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r, fmt, ## __VA_ARGS__); \
+        } \
+    } while (0)
+#define AP_LOG_CRIT(fmt, ...) \
+    ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, fmt, ## __VA_ARGS__)
 
 typedef struct _konoha_config {
     int debug;
@@ -144,16 +152,16 @@ static int read_post(request_rec *r, apr_table_t **tab)
 #endif
 
 /* call Script.application() */
-static int start_application(request_rec *r, CTX ctx)
+static int start_application(request_rec *r, CTX ctx, int debug)
 {
     extern char **environ;
     char **env_p;
     kmethodn_t mn = knh_getmn(ctx, STEXT("application"), MN_NONAME);
     kclass_t cid = knh_getcid(ctx, STEXT("konoha.wsgi.Wsgi"));
-    //ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, "mn=%d,cid=%d", mn, cid);
+    //AP_LOG_CRIT("mn=%d,cid=%d", mn, cid);
     kMethod *mtd = knh_NameSpace_getMethodNULL(ctx, NULL, cid, mn);
     if (mtd == NULL) {
-        ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, "function 'application' is not defined.");
+        AP_LOG_CRIT("function 'application' is not defined.");
         return -1;
     }
     BEGIN_LOCAL(ctx, lsfp, K_CALLDELTA+3);
@@ -162,7 +170,7 @@ static int start_application(request_rec *r, CTX ctx)
     kMap *env_map = new_DataMap(ctx);
     char key[128] = {0};
     for (env_p = environ; *env_p != NULL; env_p++) {
-        ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, "env: %s", *env_p);
+        AP_LOG_DEBUG("env: %s", *env_p);
         char *val = strchr(*env_p, '=');
         if (val != NULL) {
             val += 1;
@@ -179,15 +187,18 @@ static int start_application(request_rec *r, CTX ctx)
         knh_DataMap_setString(ctx, env_map, "QUERY_STRING", r->args);
     }
     if (r->uri != NULL) {
-        knh_DataMap_setString(ctx, env_map, "PATH_INFO", r->uri);
+        knh_DataMap_setString(ctx, env_map, "URI", r->uri);
+    }
+    if (r->path_info != NULL) {
+        knh_DataMap_setString(ctx, env_map, "PATH_INFO", r->path_info);
     }
 
     mn = knh_getmn(ctx, STEXT("startResponse"), MN_NONAME);
     cid = knh_getcid(ctx, STEXT("konoha.wsgi.Wsgi"));
-    //ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, "mn=%d,cid=%d", mn, cid);
+    //AP_LOG_CRIT("mn=%d,cid=%d", mn, cid);
     kMethod *callback = knh_NameSpace_getMethodNULL(ctx, NULL, cid, mn);
     if (callback == NULL) {
-        ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, "callback is null");
+        AP_LOG_CRIT("callback is null");
         return -1;
     }
     kFunc *fo = new_H(Func);
@@ -198,7 +209,7 @@ static int start_application(request_rec *r, CTX ctx)
     KNH_SETv(ctx, lsfp[K_CALLDELTA+2].fo, fo);
     KNH_SCALL(ctx, lsfp, 0, mtd, 2);
     END_LOCAL(ctx, lsfp);
-    //ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, "lsfp[0]=%s", S_totext(lsfp[0].s));
+    //AP_LOG_CRIT("lsfp[0]=%s", S_totext(lsfp[0].s));
     ap_rputs(S_totext(lsfp[0].s), r);
     return 0;
 }
@@ -209,8 +220,7 @@ static int get_config(request_rec *r, CTX ctx, wsgi_config_t *conf)
     kString *status = (kString*)knh_getPropertyNULL(ctx, STEXT("wsgi.status"));
     kString *content_type = (kString*)knh_getPropertyNULL(ctx, STEXT("wsgi.content_type"));
     if (status == NULL || content_type == NULL) {
-        ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r,
-                "status=%p, content_type=%p", status, content_type);
+        AP_LOG_CRIT("status=%p, content_type=%p", status, content_type);
         return -1;
     }
     conf->status = S_totext(status);
@@ -237,13 +247,13 @@ static int konoha_handler(request_rec *r)
 
     /* check file existence */
     if (handler == NULL) {
-        ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, "handler is null");
+        AP_LOG_CRIT("handler is null");
         return OK;
     }
     struct stat st;
     ret = stat(handler, &st);
     if (ret != 0) {
-        ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, "KonohaHandler does not exists.");
+        AP_LOG_CRIT("KonohaHandler does not exists.");
         return OK;
     }
 
@@ -274,18 +284,21 @@ static int konoha_handler(request_rec *r)
     //}
     ret = konoha_main(konoha, argc, argv);
     if (ret != 0) goto TAIL;
-    ret = start_application(r, konoha);
+    ret = start_application(r, konoha, debug);
     if (ret != 0) goto TAIL;
     wsgi_config_t wconf;
     ret = get_config(r, konoha, &wconf);
     if (ret != 0) goto TAIL;
     r->content_type = wconf.content_type;
-    //konoha_close(konoha);
+    if (debug) {
+        konoha_close(konoha);
+        konoha_initialized = 0;
+    }
     //ap_rprintf(r, "KonohaHandler=\"%s\"\n", handler);
     return OK;
 
 TAIL:
-    ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, "Konoha closed with error: %d", ret);
+    AP_LOG_CRIT("Konoha closed with error: %d", ret);
     return OK;
 }
 

@@ -24,9 +24,6 @@
  *
  ****************************************************************************/
 
-//include "lib:gluelink";
-
-//@Native class Wsgi;
 @Singleton class Wsgi
 {
     void startResponse(String status, Tuple<String,String>[] headers) {
@@ -42,9 +39,3 @@
         }
     }
 }
-
-//@Native Wsgi Wsgi.new();
-//@Native void Wsgi.startResponse(String status, Tuple<String,String>[] headers);
-//@Native @Hidden Wsgi Wsgi.config();
-
-//$wsgi = new Wsgi();
