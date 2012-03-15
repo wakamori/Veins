@@ -16,12 +16,13 @@ HttpResponse document(HttpRequest req)
 
 HttpResponse menu(HttpRequest req)
 {
-    Hdf hdf = new Hdf();
-    hdf.readFile("/Users/chen_ji/Devel/git/Veins/tests/model/menu.hdf");
-    Cs cs = new Cs(hdf);
-    cs.parseFile("/Users/chen_ji/Devel/git/Veins/tests/view/menu.cs");
-    CsRenderer renderer = new CsRenderer(cs);
-    HttpResponse res = new HttpResponse(renderer.render());
+    Template tpl = new Template();
+    tpl.readFile("/Users/chen_ji/Devel/git/Veins/tests/model/menu.hdf");
+    ERR << tpl << EOL;
+    TemplateContext ctx = new TemplateContext();
+    ctx.parseFile("/Users/chen_ji/Devel/git/Veins/tests/view/menu.cs");
+    ERR << ctx << EOL;
+    HttpResponse res = new HttpResponse(tpl.render(ctx));
     res["Content-Type"] = "text/html";
     return res;
 }

@@ -28,8 +28,56 @@ using konoha.conv.*;
 using konoha.wsgi.*;
 using konoha.clearsilver.*;
 
-class Template {
+class TemplateContext {
     Cs cs;
+    String str;
+    Path file;
+
+    TemplateContext(String context) {
+        _str = context;
+    }
+
+    void parseFile(Path path) {
+        _file = path;
+    }
+
+    void loadHdf(Hdf hdf) {
+        _cs = new Cs(hdf);
+        if (str != null) {
+            cs.parseString(str);
+        }
+        if (file != null) {
+            cs.parseFile(file);
+        }
+    }
+}
+
+class Template {
+    Hdf hdf;
+    String buf;
+
+    Template(String template) {
+        _hdf = new Hdf();
+        if (template != null) {
+            hdf.readString(template);
+        }
+    }
+
+    void readFile(Path path) {
+        hdf.readFile(path);
+    }
+
+    int render_cb(String s) {
+        buf += s;
+        return Cs.STATUS_OK;
+    }
+
+    String render(TemplateContext context) {
+        _buf = "";
+        context.loadHdf(hdf);
+        context.cs.render(delegate(this, render_cb));
+        return buf;
+    }
 }
 
 class HttpRequest
@@ -79,11 +127,6 @@ class HttpResponse
     }
 }
 
-class Loader
-{
-    Template template(String template_name);
-}
-
 @Singleton class Url
 {
     Tuple<Regex,Func<HttpRequest=>HttpResponse>>[] getPatterns() {
@@ -110,27 +153,6 @@ class Loader
     }
     if ($veins.root != null && !name.startsWith("/")) {
         eval("include \"" + $veins.root + "/" + name + "\";");
-    }
-}
-
-class Renderer
-{
-    Cs cs;
-    String buf;
-
-    Renderer(Cs cs) {
-        _cs = cs;
-        buf = "";
-    }
-
-    int render_cb(String s) {
-        buf += s;
-        return Cs.STATUS_OK;
-    }
-
-    String render() {
-        cs.render(delegate(this, render_cb));
-        return buf;
     }
 }
 
