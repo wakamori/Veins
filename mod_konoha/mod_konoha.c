@@ -51,7 +51,7 @@
 #define AP_LOG_DEBUG(fmt, ...) \
     do { \
         if (debug) { \
-            ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r, fmt, ## __VA_ARGS__); \
+            ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, fmt, ## __VA_ARGS__); \
         } \
     } while (0)
 #define AP_LOG_CRIT(fmt, ...) \
@@ -325,7 +325,7 @@ static const char *set_debug(cmd_parms *cmd, void *vp, const char *arg)
 {
     (void)cmd;
     konoha_config_t *conf = (konoha_config_t *)vp;
-    if (strcmp(arg, "on")) {
+    if (!strcmp(arg, "on")) {
         conf->debug = 1;
     }
     return NULL;

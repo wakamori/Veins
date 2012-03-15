@@ -98,40 +98,43 @@ class Loader
     }
 }
 
-@Public void System.includeScript(String name)
-{
-    String path = name;
-    if ($veins.root != null) {
-        path = $veins.root + "/" + name;
-    }
-    eval("include \"" + path + "\";");
-}
+//@Public void System.includeScript(String name)
+//{
+//    String path = name;
+//    if ($veins.root != null && !name.startsWith("/")) {
+//        path = $veins.root + "/" + name;
+//    }
+//    eval("include \"" + path + "\";");
+//}
 
-void load_settings() {
-    script_name = $script.name;
-    if (script_name.indexOf("/") >= 0) {
-        $veins.root = script_name.substring(0, script_name.lastIndexOf("/"));
+//@Public void System.loadSettings(String name) {
+//    script_name = $script.name;
+//    if (script_name.indexOf("/") >= 0) {
+//        $veins.root = script_name.substring(0, script_name.lastIndexOf("/"));
+//    }
+//    System.includeScript(name);
+//}
+
+boolean isDebug() {
+    if ($DEBUG == "true") {
+        return true;
     }
-    System.includeScript("settings.k");
+    return false;
 }
 
 @Public String Wsgi.application(Map<String> environ,
         Func<String,Tuple<String,String>[]> start_response)
 {
-    load_settings();
     String path = environ["PATH_INFO"];
-    //ERR << "env\n" + exec("env") << EOL;
-    //foreach (String e in environ.keys()) {
-    //    ERR << "env[" + e + "]=" + environ[e] << EOL;
-    //}
-    //ERR << "ls" + exec("ls") << EOL;
-    //ERR << "path: " + path << EOL;
+    if (isDebug()) {
+        foreach (String e in environ.keys()) {
+            ERR << "env[" + e + "]=" + environ[e] << EOL;
+        }
+        ERR << "path: " + path << EOL;
+    }
     HttpResponse res = null;
-    //ERR << "defurlpatterns: " + $veins.defurlpatterns << EOL;
-    //ERR << "urlpatterns: " + $veins.urlpatterns << EOL;
     if ($veins.defurlpatterns != null) {
         foreach (Tuple<Regex,Func<HttpRequest=>HttpResponse>> t in $veins.urlpatterns) {
-            //ERR << "regex: " + t[0] << EOL;
             if (|path.match(t[0])| > 0) {
                 String method = environ["REQUEST_METHOD"];
                 String query = environ["QUERY_STRING"];
@@ -139,7 +142,6 @@ void load_settings() {
                 res = t[1](req);
                 break;
             }
-            //ERR << t << EOL;
         }
     }
     if (res != null) {

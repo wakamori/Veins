@@ -1,3 +1,10 @@
+/**
+ * Controller script.
+ */
+
+/* It must be called before veins package is loaded. */
+include "/Users/chen_ji/Devel/git/Veins/tests/settings.k";
+
 using konoha.veins.*;
 
 HttpResponse document(HttpRequest req)
