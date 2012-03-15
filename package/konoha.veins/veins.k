@@ -28,7 +28,9 @@ using konoha.conv.*;
 using konoha.wsgi.*;
 using konoha.clearsilver.*;
 
-class Template;
+class Template {
+    Cs cs;
+}
 
 class HttpRequest
 {
@@ -98,22 +100,39 @@ class Loader
     }
 }
 
-//@Public void System.includeScript(String name)
-//{
-//    String path = name;
-//    if ($veins.root != null && !name.startsWith("/")) {
-//        path = $veins.root + "/" + name;
-//    }
-//    eval("include \"" + path + "\";");
-//}
+@Public void System.includeScript(String name)
+{
+    if ($veins.root == null) {
+        script_name = $script.name;
+        if (script_name.indexOf("/") >= 0) {
+            $veins.root = script_name.substring(0, script_name.lastIndexOf("/"));
+        }
+    }
+    if ($veins.root != null && !name.startsWith("/")) {
+        eval("include \"" + $veins.root + "/" + name + "\";");
+    }
+}
 
-//@Public void System.loadSettings(String name) {
-//    script_name = $script.name;
-//    if (script_name.indexOf("/") >= 0) {
-//        $veins.root = script_name.substring(0, script_name.lastIndexOf("/"));
-//    }
-//    System.includeScript(name);
-//}
+class Renderer
+{
+    Cs cs;
+    String buf;
+
+    Renderer(Cs cs) {
+        _cs = cs;
+        buf = "";
+    }
+
+    int render_cb(String s) {
+        buf += s;
+        return Cs.STATUS_OK;
+    }
+
+    String render() {
+        cs.render(delegate(this, render_cb));
+        return buf;
+    }
+}
 
 boolean isDebug() {
     if ($DEBUG == "true") {

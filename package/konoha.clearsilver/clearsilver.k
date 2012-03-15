@@ -43,10 +43,12 @@ include "lib:gluelink";
     this.setIntValue(name, value);
 }
 @Native void Hdf.readFile(Path path);
+@Native void Hdf.readString(String s);
 @Native void Hdf.writeFile(Path path);
 @Native void Hdf.dump(String prefix);
 
 @Native Cs Cs.new(Hdf hdf);
 @Native void Cs.parseFile(Path path);
+@Native void Cs.parseString(String buf);
 @Native void Cs.render(Func<String=>int> cb);
 @Native void Cs.dump(Func<String=>int> cb);

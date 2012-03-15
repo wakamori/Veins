@@ -14,29 +14,6 @@ HttpResponse document(HttpRequest req)
     return res;
 }
 
-if (!defined(CsRenderer)) {
-    class CsRenderer
-    {
-        Cs cs;
-        String buf;
-
-        CsRenderer(Cs cs) {
-            _cs = cs;
-            buf = "";
-        }
-
-        int render_cb(String s) {
-            buf += s;
-            return Cs.STATUS_OK;
-        }
-
-        String render() {
-            cs.render(delegate(this, render_cb));
-            return buf;
-        }
-    }
-}
-
 HttpResponse menu(HttpRequest req)
 {
     Hdf hdf = new Hdf();

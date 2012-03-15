@@ -119,6 +119,15 @@ KMETHOD Hdf_readFile(CTX ctx, ksfp_t *sfp _RIX)
     RETURNvoid_();
 }
 
+//## @Native void Hdf.readString(String s);
+KMETHOD Hdf_readString(CTX ctx, ksfp_t *sfp _RIX)
+{
+    HDF *hdf = RawPtr_to(HDF *, sfp[0]);
+    const char *s = S_totext(sfp[1].s);
+    hdf_read_string(hdf, s);
+    RETURNvoid_();
+}
+
 //## @Native void Hdf.writeFile(Path path);
 KMETHOD Hdf_writeFile(CTX ctx, ksfp_t *sfp _RIX)
 {
@@ -154,6 +163,16 @@ KMETHOD Cs_parseFile(CTX ctx, ksfp_t *sfp _RIX)
     CSPARSE *cs = RawPtr_to(CSPARSE *, sfp[0]);
     const char *path = sfp[1].pth->ospath;
     cs_parse_file(cs, path);
+    RETURNvoid_();
+}
+
+//## @Native void Cs.parseString(String buf);
+KMETHOD Cs_parseString(CTX ctx, ksfp_t *sfp _RIX)
+{
+    CSPARSE *cs = RawPtr_to(CSPARSE *, sfp[0]);
+    char *buf = strdup(S_totext(sfp[1].s));
+    size_t blen = S_size(sfp[1].s);
+    cs_parse_string(cs, buf, blen);
     RETURNvoid_();
 }
 
