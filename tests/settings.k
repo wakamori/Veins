@@ -2,7 +2,7 @@
  * Veins setting file.
  */
 
-/* Show debug messages when DEBUG is true. */
+/* Show debug messages when DEBUG is "true". */
 $DEBUG = "true";
 
 /* User database. */

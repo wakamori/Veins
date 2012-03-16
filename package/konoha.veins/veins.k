@@ -171,11 +171,6 @@ class HttpResponse
 
     void setPatterns(Tuple<Regex,Func<HttpRequest,String[]=>HttpResponse>>[] patterns) {
         $veins.defurlpatterns = "Urlpatterns";
-        //Tuple<Regex,dynamic>[] pts = [];
-        //foreach (dynamic pattern in patterns) {
-        //    Regex r = pattern[0];
-        //    pts.add((r, pattern[1]));
-        //}
         $veins.urlpatterns = patterns;
         if (isDebug()) {
             ERR << "urlpatterns: " << ($veins.urlpatterns).class << EOL;
@@ -187,33 +182,43 @@ class HttpResponse
 {
     @Virtual HttpResponse hookRequest(HttpRequest req);
     @Virtual HttpResponse hookHandler(HttpRequest req,
-            Func<HttpRequest,String[]=>HttpResponse> callback,
-            HttpRequest req, HttpResponse res);
+            Func<HttpRequest,String[]=>HttpResponse> callback, String[] args);
     @Virtual HttpResponse hookResponse(HttpRequest req, HttpResponse res);
     @Virtual HttpResponse hookException(HttpRequest req, Exception e);
 }
 
 /* ------------------------------------------------------------------------ */
+/* Builtin middlwares. */
 
-///* User database. */
-//$DATABASES = {
-//    "default": {
-//        "engine": "sqlite3",
-//        "name": "mydb",
-//        "user": "",
-//        "password": "",
-//        "host": "",
-//        "port": ""
-//    }
-//};
-//
-///* Absolute path to userdata. */
-//$STORAGE_ROOT = "";
-//
-///* Middleware classes. */
-//$MIDDLEWARES = [
-//    "SessionMiddleware"
-//];
+class SessionMiddleware extends Middleware
+{
+    HttpResponse hookRequest(HttpRequest req) {
+        if (isDebug()) {
+            ERR << "hook request: " << req << EOL;
+        }
+        return null;
+    }
+    HttpResponse hookHandler(HttpRequest req,
+            Func<HttpRequest,String[]=>HttpResponse> callback, String[] args) {
+        if (isDebug()) {
+            ERR << "hook handler: " << req << callback << args << EOL;
+        }
+        return null;
+    }
+    HttpResponse hookResponse(HttpRequest req, HttpResponse res) {
+        if (isDebug()) {
+            ERR << "hook response: " << req << res << EOL;
+        }
+        return res;
+    }
+}
+
+/* ------------------------------------------------------------------------ */
+
+HttpRequest g_req;
+HttpResponse g_res;
+Func<HttpRequest,String[]=>HttpResponse> g_handler;
+String[] g_args;
 
 @Public String Wsgi.application(Map<String> environ,
         Func<String,Tuple<String,String>[]> start_response)
@@ -231,45 +236,48 @@ class HttpResponse
     }
     String method = environ["REQUEST_METHOD"];
     String query = environ["QUERY_STRING"];
-    HttpRequest req = new HttpRequest(path, method, query);
-    HttpResponse res = null;
-    //foreach (String middleware in middlewares) {
-    //    eval("res = " + middleware + ".hookRequest(req);");
-    //    if (res != null) {
-    //        break;
-    //    }
-    //}
-    if (res == null) {
+    g_req = new HttpRequest(path, method, query);
+    g_res = null;
+    foreach (String middleware in middlewares) {
+        eval("g_res = " + middleware + ".hookRequest(g_req);");
+        if (g_res != null) {
+            break;
+        }
+    }
+    if (g_res == null) {
         if ($veins.defurlpatterns != null) {
             foreach (Tuple<Regex,Func<HttpRequest,String[]=>HttpResponse>> t in $veins.urlpatterns) {
                 if (isDebug()) {
                     ERR << "tuple: " << t << EOL;
                 }
                 if (path.search(t[0]) >= 0) {
-                    String[] args = path.split("/");
-                    if (|args| > 0) {
-                        args.remove(0);
+                    g_args = path.split("/");
+                    if (|g_args| > 0) {
+                        g_args.remove(0);
                     }
-                    if (isDebug()) {
-                        ERR << t << EOL;
-                        ERR << "t[1]=" << t[1] << EOL;
+                    g_handler = t[1];
+                    foreach (String middleware in middlewares) {
+                        eval("g_res = " + middleware + ".hookHandler(g_req, g_handler, g_args);");
                     }
-                    //foreach (String middleware in middlewares) {
-                    //    eval(middleware + ".hookResponse(req);");
-                    //}
-                    res = t[1](req, args);
+                    if (g_res != null) {
+                        break;
+                    }
+                    g_res = g_handler(g_req, g_args);
                     break;
                 }
             }
         }
     }
-    if (res != null) {
+    if (g_res != null) {
+        foreach (String middleware in middlewares) {
+            eval("g_res = " + middleware + ".hookResponse(g_req, g_res);");
+        }
         Tuple<String,String>[] headers = [];
-        foreach (String header in res.keys()) {
-            headers.add((header, res[header]));
+        foreach (String header in g_res.keys()) {
+            headers.add((header, g_res[header]));
         }
         start_response("200 OK", headers);
-        return res.content;
+        return g_res.content;
     }
     start_response("200 OK", [("Content-Type", "text/plain")]);
     return "Hello, world";
