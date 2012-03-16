@@ -22,5 +22,5 @@ $STORAGE_ROOT = "";
 
 /* Middleware classes. */
 $MIDDLEWARES = [
-    "abc"
+    "SessionMiddleware"
 ];

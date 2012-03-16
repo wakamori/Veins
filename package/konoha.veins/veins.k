@@ -28,7 +28,38 @@ using konoha.conv.*;
 using konoha.wsgi.*;
 using konoha.clearsilver.*;
 
-class TemplateContext {
+/* ------------------------------------------------------------------------ */
+/* Private methods. */
+
+boolean isDebug()
+{
+    if ($DEBUG == "true") {
+        return true;
+    }
+    return false;
+}
+
+/* ------------------------------------------------------------------------ */
+/* Utilities. */
+
+@Public void System.includeScript(String name)
+{
+    if ($veins.root == null) {
+        script_name = $script.name;
+        if (script_name.indexOf("/") >= 0) {
+            $veins.root = script_name.substring(0, script_name.lastIndexOf("/"));
+        }
+    }
+    if ($veins.root != null && !name.startsWith("/")) {
+        eval("include \"" + $veins.root + "/" + name + "\";");
+    }
+}
+
+/* ------------------------------------------------------------------------ */
+/* Classes. */
+
+class TemplateContext
+{
     Cs cs;
     String str;
     Path file;
@@ -52,7 +83,8 @@ class TemplateContext {
     }
 }
 
-class Template {
+class Template
+{
     Hdf hdf;
     String buf;
 
@@ -129,59 +161,105 @@ class HttpResponse
 
 @Singleton class Url
 {
-    Tuple<Regex,Func<HttpRequest=>HttpResponse>>[] getPatterns() {
+    Tuple<Regex,Func<HttpRequest,String[]=>HttpResponse>>[] getPatterns() {
         if ($veins.defurlpatterns == null) {
             $veins.defurlpatterns = "Urlpatterns";
-            $veins.urlpatterns = new Tuple<Regex,Func<HttpRequest=>HttpResponse>>[0];
+            $veins.urlpatterns = new Tuple<Regex,Func<HttpRequest,String[]=>HttpResponse>>[0];
         }
         return $veins.urlpatterns;
     }
 
-    void setPatterns(Tuple<Regex,Func<HttpRequest=>HttpResponse>>[] patterns) {
+    void setPatterns(Tuple<Regex,Func<HttpRequest,String[]=>HttpResponse>>[] patterns) {
         $veins.defurlpatterns = "Urlpatterns";
+        //Tuple<Regex,dynamic>[] pts = [];
+        //foreach (dynamic pattern in patterns) {
+        //    Regex r = pattern[0];
+        //    pts.add((r, pattern[1]));
+        //}
         $veins.urlpatterns = patterns;
-    }
-}
-
-@Public void System.includeScript(String name)
-{
-    if ($veins.root == null) {
-        script_name = $script.name;
-        if (script_name.indexOf("/") >= 0) {
-            $veins.root = script_name.substring(0, script_name.lastIndexOf("/"));
+        if (isDebug()) {
+            ERR << "urlpatterns: " << ($veins.urlpatterns).class << EOL;
         }
     }
-    if ($veins.root != null && !name.startsWith("/")) {
-        eval("include \"" + $veins.root + "/" + name + "\";");
-    }
 }
 
-boolean isDebug() {
-    if ($DEBUG == "true") {
-        return true;
-    }
-    return false;
+@Singleton class Middleware
+{
+    @Virtual HttpResponse hookRequest(HttpRequest req);
+    @Virtual HttpResponse hookHandler(HttpRequest req,
+            Func<HttpRequest,String[]=>HttpResponse> callback,
+            HttpRequest req, HttpResponse res);
+    @Virtual HttpResponse hookResponse(HttpRequest req, HttpResponse res);
+    @Virtual HttpResponse hookException(HttpRequest req, Exception e);
 }
+
+/* ------------------------------------------------------------------------ */
+
+///* User database. */
+//$DATABASES = {
+//    "default": {
+//        "engine": "sqlite3",
+//        "name": "mydb",
+//        "user": "",
+//        "password": "",
+//        "host": "",
+//        "port": ""
+//    }
+//};
+//
+///* Absolute path to userdata. */
+//$STORAGE_ROOT = "";
+//
+///* Middleware classes. */
+//$MIDDLEWARES = [
+//    "SessionMiddleware"
+//];
 
 @Public String Wsgi.application(Map<String> environ,
         Func<String,Tuple<String,String>[]> start_response)
 {
+    String[] middlewares = $MIDDLEWARES;
     String path = environ["PATH_INFO"];
+    if (|path| >= 1) {
+        path = path.substring(1);
+    }
     if (isDebug()) {
         foreach (String e in environ.keys()) {
             ERR << "env[" + e + "]=" + environ[e] << EOL;
         }
         ERR << "path: " + path << EOL;
     }
+    String method = environ["REQUEST_METHOD"];
+    String query = environ["QUERY_STRING"];
+    HttpRequest req = new HttpRequest(path, method, query);
     HttpResponse res = null;
-    if ($veins.defurlpatterns != null) {
-        foreach (Tuple<Regex,Func<HttpRequest=>HttpResponse>> t in $veins.urlpatterns) {
-            if (|path.match(t[0])| > 0) {
-                String method = environ["REQUEST_METHOD"];
-                String query = environ["QUERY_STRING"];
-                HttpRequest req = new HttpRequest(path, method, query);
-                res = t[1](req);
-                break;
+    //foreach (String middleware in middlewares) {
+    //    eval("res = " + middleware + ".hookRequest(req);");
+    //    if (res != null) {
+    //        break;
+    //    }
+    //}
+    if (res == null) {
+        if ($veins.defurlpatterns != null) {
+            foreach (Tuple<Regex,Func<HttpRequest,String[]=>HttpResponse>> t in $veins.urlpatterns) {
+                if (isDebug()) {
+                    ERR << "tuple: " << t << EOL;
+                }
+                if (path.search(t[0]) >= 0) {
+                    String[] args = path.split("/");
+                    if (|args| > 0) {
+                        args.remove(0);
+                    }
+                    if (isDebug()) {
+                        ERR << t << EOL;
+                        ERR << "t[1]=" << t[1] << EOL;
+                    }
+                    //foreach (String middleware in middlewares) {
+                    //    eval(middleware + ".hookResponse(req);");
+                    //}
+                    res = t[1](req, args);
+                    break;
+                }
             }
         }
     }
