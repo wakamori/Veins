@@ -24,20 +24,8 @@
  *
  ****************************************************************************/
 
-@Singleton class Wsgi
-{
-    void startResponse(String status, Tuple<String,String>[] headers) {
-        $wsgi.status = status;
-        foreach (Tuple<String,String> t in headers) {
-            switch (t[0]) {
-            case "Content-Type":
-                $wsgi.content_type = t[1];
-                break;
-            case "Set-Cookie":
-                $wsgi.cookie = t[1];
-            default:
-                ERR << "unknown header: " + t[0] << EOL;
-            }
-        }
-    }
-}
+include "lib:gluelink";
+
+@Native @Singleton class Uuid;
+
+@Native String Uuid.getUuid4(void);

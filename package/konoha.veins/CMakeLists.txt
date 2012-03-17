@@ -5,10 +5,9 @@ project(veins)
 
 set(PACKAGE_SCRIPT_CODE veins.k)
 
-if(KONOHA_VERSION)
-else(KONOHA_VERSION)
+if(NOT KONOHA_VERSION)
     set(KONOHA_VERSION "1.0")
-endif(KONOHA_VERSION)
+endif(NOT KONOHA_VERSION)
 
 set(KONOHA_PACKAGE_DIR konoha/package/${KONOHA_VERSION}/konoha.${PROJECT_NAME})
 

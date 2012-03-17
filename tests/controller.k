@@ -18,9 +18,9 @@ HttpResponse document(HttpRequest req, String[] args)
 HttpResponse menu(HttpRequest req, String[] args)
 {
     Template tpl = new Template();
-    tpl.readFile("/Users/chen_ji/Devel/git/Veins/tests/model/menu.hdf");
+    tpl.readFile("menu.hdf");
     TemplateContext ctx = new TemplateContext();
-    ctx.parseFile("/Users/chen_ji/Devel/git/Veins/tests/view/menu.cs");
+    ctx.parseFile("menu.cs");
     HttpResponse res = new HttpResponse(tpl.render(ctx));
     res["Content-Type"] = "text/html";
     return res;

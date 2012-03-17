@@ -24,9 +24,11 @@
  *
  ****************************************************************************/
 
-using konoha.conv.*;
-using konoha.wsgi.*;
 using konoha.clearsilver.*;
+using konoha.conv.*;
+using konoha.io.*;
+using konoha.json.*;
+using konoha.wsgi.*;
 
 /* ------------------------------------------------------------------------ */
 /* Private methods. */
@@ -69,6 +71,9 @@ class TemplateContext
     }
 
     void parseFile(Path path) {
+        if (!path.startsWith("/")) {
+            path = $VIEW_DIR + path;
+        }
         _file = path;
     }
 
@@ -96,6 +101,9 @@ class Template
     }
 
     void readFile(Path path) {
+        if (!path.startsWith("/")) {
+            path = $MODEL_DIR + path;
+        }
         hdf.readFile(path);
     }
 
@@ -112,14 +120,15 @@ class Template
     }
 }
 
-class HttpRequest
+@Expando class HttpRequest
 {
     String path;
     String method;
     Map<String> get_params;
     Map<String> post_params;
+    Map<String> cookies;
 
-    HttpRequest(String path, String method, String query) {
+    HttpRequest(String path, String method, String query, String cookie) {
         _path = path;
         _method = method;
         Map<String> m = {};
@@ -133,13 +142,19 @@ class HttpRequest
         else if (method == "POST") {
             _post_params = m;
         }
+        m = {};
+        foreach (String ck in cookie.replace($/ /, "").split(";")) {
+            String[] k_v = ck.split("=");
+            m[k_v[0]] = k_v[1];
+        }
+        _cookies = m;
     }
 }
 
 class HttpResponse
 {
     String content;
-    Map<String> _h;
+    Map<String> h;
 
     HttpResponse(String content) {
         _content = content;
@@ -147,15 +162,15 @@ class HttpResponse
     }
 
     void set(String header, String value) {
-        _h[header] = value;
+        h[header] = value;
     }
 
     String get(String header) {
-        return _h[header];
+        return h[header];
     }
 
     String[] keys(void) {
-        return _h.keys();
+        return h.keys();
     }
 }
 
@@ -184,7 +199,54 @@ class HttpResponse
     @Virtual HttpResponse hookHandler(HttpRequest req,
             Func<HttpRequest,String[]=>HttpResponse> callback, String[] args);
     @Virtual HttpResponse hookResponse(HttpRequest req, HttpResponse res);
-    @Virtual HttpResponse hookException(HttpRequest req, Exception e);
+    //@Virtual HttpResponse hookException(HttpRequest req, Exception e);
+}
+
+class Session
+{
+    Path path;
+    String fname;
+
+    Session(String name) {
+        if (name != null) {
+            _fname = name.convert(to:md5);
+        }
+        else {
+            _fname = Uuid.getUuid4().convert(to:md5);
+        }
+        if ($TMP_DIR != null) {
+            _path = $TMP_DIR + fname;
+        }
+        else {
+            _path = "/tmp/" + fname;
+        }
+    }
+
+    dynamic get(String key) {
+        InputStream ins = new InputStream(path);
+        Map m = ins.readJson();
+        ins.close();
+        return m[key];
+    }
+
+    void set(String key, dynamic val) {
+        switch (val.class) {
+        case String: case Int: case Float:
+            InputStream ins = new InputStream(path);
+            Map m = ins.readJson();
+            ins.close();
+            m[key] = val;
+            OutputStream ous = new OutputStream(path);
+            ous.writeJson(m);
+            ous.close();
+            break;
+        default:
+            if (isDebug()) {
+                ERR << "unsupported type: " << val.class << EOL;
+            }
+            break;
+        }
+    }
 }
 
 /* ------------------------------------------------------------------------ */
@@ -196,8 +258,18 @@ class SessionMiddleware extends Middleware
         if (isDebug()) {
             ERR << "hook request: " << req << EOL;
         }
+        if (req.cookies["SESSION"] != null) {
+            if (isDebug()) {
+                ERR << "SESSION: " << req.cookies["SESSION"] << EOL;
+            }
+            req.session = new Session(req.cookies["SESSION"]);
+        }
+        else {
+            req.session = new Session();
+        }
         return null;
     }
+
     HttpResponse hookHandler(HttpRequest req,
             Func<HttpRequest,String[]=>HttpResponse> callback, String[] args) {
         if (isDebug()) {
@@ -205,9 +277,14 @@ class SessionMiddleware extends Middleware
         }
         return null;
     }
+
     HttpResponse hookResponse(HttpRequest req, HttpResponse res) {
         if (isDebug()) {
             ERR << "hook response: " << req << res << EOL;
+        }
+        if (req.cookies["SESSION"] == null) {
+            String cookie = "SESSION=" + req.session.fname + "; ";
+            cookie += "expires=" + 
         }
         return res;
     }
@@ -236,7 +313,8 @@ String[] g_args;
     }
     String method = environ["REQUEST_METHOD"];
     String query = environ["QUERY_STRING"];
-    g_req = new HttpRequest(path, method, query);
+    String cookie = environ["Cookie"];
+    g_req = new HttpRequest(path, method, query, cookie);
     g_res = null;
     foreach (String middleware in middlewares) {
         eval("g_res = " + middleware + ".hookRequest(g_req);");

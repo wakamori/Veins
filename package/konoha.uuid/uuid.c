@@ -24,20 +24,41 @@
  *
  ****************************************************************************/
 
-@Singleton class Wsgi
+#include <konoha1.h>
+#include <uuid/uuid.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+DEFAPI(void) defUuid(CTX ctx, kclass_t cid, kclassdef_t *cdef)
 {
-    void startResponse(String status, Tuple<String,String>[] headers) {
-        $wsgi.status = status;
-        foreach (Tuple<String,String> t in headers) {
-            switch (t[0]) {
-            case "Content-Type":
-                $wsgi.content_type = t[1];
-                break;
-            case "Set-Cookie":
-                $wsgi.cookie = t[1];
-            default:
-                ERR << "unknown header: " + t[0] << EOL;
-            }
-        }
-    }
+	cdef->name = "Uuid";
 }
+
+/* ------------------------------------------------------------------------ */
+
+//## @Native String Uuid.getUuid4(void);
+KMETHOD Uuid_getUuid4(CTX ctx, ksfp_t *sfp _RIX)
+{
+	uuid_t u;
+	char buf[37];
+	uuid_generate(u);
+	uuid_unparse(u, buf);
+	RETURN_(new_String(ctx, buf));
+}
+
+/* ------------------------------------------------------------------------ */
+
+#ifdef _SETUP
+
+DEFAPI(const knh_PackageDef_t*) init(CTX ctx, knh_LoaderAPI_t *kapi)
+{
+	RETURN_PKGINFO("konoha.uuid");
+}
+
+#endif /* _SETUP */
+
+#ifdef __cplusplus
+}
+#endif

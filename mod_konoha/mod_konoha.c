@@ -192,6 +192,13 @@ static int start_application(request_rec *r, CTX ctx, int debug)
     if (r->path_info != NULL) {
         knh_DataMap_setString(ctx, env_map, "PATH_INFO", r->path_info);
     }
+    const apr_array_header_t *arr = apr_table_elts(r->headers_in);
+    apr_table_entry_t *elts = (apr_table_entry_t *)arr->elts;
+    int i;
+    for (i = 0; i < arr->nelts; i++) {
+        knh_DataMap_setString(ctx, env_map, elts[i].key, elts[i].val);
+        AP_LOG_DEBUG("elts[%s]=%s", elts[i].key, elts[i].val);
+    }
 
     mn = knh_getmn(ctx, STEXT("startResponse"), MN_NONAME);
     cid = knh_getcid(ctx, STEXT("konoha.wsgi.Wsgi"));
