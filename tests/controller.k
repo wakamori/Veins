@@ -32,18 +32,12 @@ HttpResponse session(HttpRequest req, String[] args)
     tpl.readFile("session.hdf");
     tpl["Session.ID"] = req.cookies["SESSION"];
     ERR << "sessionid = " << tpl["Session.ID"] << EOL;
-    Map dummy = {
-        "ival": 1,
-        "sval": "abc",
-        "array": [
-            2,
-            "def"
-        ],
-        "map": {
-            "key": "val"
-        }
-    }
-    tpl["dummy"] = dummy;
+    Array dummy = [
+        {"key": "abc", "value": 123},
+        {"key": "def", "value": 456},
+        {"key": "ghi", "value": "abc"}
+    ];
+    tpl["Session.Items"] = dummy;
     TemplateContext ctx = new TemplateContext();
     ctx.parseFile("session.cs");
     HttpResponse res = new HttpResponse(tpl.render(ctx));

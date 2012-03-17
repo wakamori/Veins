@@ -140,6 +140,7 @@ class Template
         if (template != null) {
             hdf.readString(template);
         }
+        _count = 0;
     }
 
     void set(String key, dynamic value) {
@@ -152,7 +153,8 @@ class Template
             hdf.setValue(key, sval);
         }
         else if (value.class == Array) {
-            for (int i = 0; i < |value|; i++) {
+            int i = 0;
+            for (; i < |value|; i++) {
                 this[key + "." + (to String)i] = value[i];
             }
         }
