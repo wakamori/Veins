@@ -56,6 +56,8 @@
     } while (0)
 #define AP_LOG_CRIT(fmt, ...) \
     ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, fmt, ## __VA_ARGS__)
+#define GET_PROP(name) \
+    (kString*)knh_getPropertyNULL(ctx, STEXT(name))
 
 typedef struct _konoha_config {
     int debug;
@@ -224,8 +226,8 @@ static int start_application(request_rec *r, CTX ctx, int debug)
 /* get config */
 static int get_config(request_rec *r, CTX ctx, wsgi_config_t *conf)
 {
-    kString *status = (kString*)knh_getPropertyNULL(ctx, STEXT("wsgi.status"));
-    kString *content_type = (kString*)knh_getPropertyNULL(ctx, STEXT("wsgi.content_type"));
+    kString *status = GET_PROP("wsgi.status");
+    kString *content_type = GET_PROP("wsgi.content_type");
     if (status == NULL || content_type == NULL) {
         AP_LOG_CRIT("status=%p, content_type=%p", status, content_type);
         return -1;
@@ -234,6 +236,17 @@ static int get_config(request_rec *r, CTX ctx, wsgi_config_t *conf)
     conf->content_type = S_totext(content_type);
     //ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, "status=%s", S_totext(status));
     //ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, "content_type=%s", S_totext(content_type));
+    return 0;
+}
+
+/* set headers */
+static int set_headers(request_rec *r, CTX ctx, int debug)
+{
+    kString *cookie = GET_PROP("wsgi.cookie");
+    if (cookie != NULL) {
+        apr_table_set(r->headers_out, "Set-Cookie", S_totext(cookie));
+        AP_LOG_DEBUG("Set-Cookie: %s", S_totext(cookie));
+    }
     return 0;
 }
 
@@ -297,6 +310,8 @@ static int konoha_handler(request_rec *r)
     ret = get_config(r, konoha, &wconf);
     if (ret != 0) goto TAIL;
     r->content_type = wconf.content_type;
+    ret = set_headers(r, konoha, debug);
+    if (ret != 0) goto TAIL;
     if (debug) {
         konoha_close(konoha);
         konoha_initialized = 0;

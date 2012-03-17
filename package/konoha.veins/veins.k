@@ -26,8 +26,10 @@
 
 using konoha.clearsilver.*;
 using konoha.conv.*;
+using konoha.cookie.*;
 using konoha.io.*;
 using konoha.json.*;
+using konoha.uuid.*;
 using konoha.wsgi.*;
 
 /* ------------------------------------------------------------------------ */
@@ -71,13 +73,53 @@ class TemplateContext
     }
 
     void parseFile(Path path) {
-        if (!path.startsWith("/")) {
+        if (!((to String)path).startsWith("/")) {
             path = $VIEW_DIR + path;
         }
         _file = path;
     }
 
+    void loadSettingValues(Hdf hdf) {
+        String static_url = $STATIC_URL;
+        if (static_url != null) {
+            if (isDebug()) {
+                ERR << "$STATIC_URL=" << static_url << EOL;
+            }
+            hdf.setValue("STATIC_URL", static_url);
+        }
+        String base_url = $BASE_URL;
+        if (base_url != null) {
+            if (isDebug()) {
+                ERR << "$BASE_URL=" << base_url << EOL;
+            }
+            hdf.setValue("BASE_URL", base_url);
+        }
+        String view_dir = $VIEW_DIR;
+        if (view_dir != null) {
+            if (isDebug()) {
+                ERR << "$VIEW_DIR=" << view_dir << EOL;
+            }
+            hdf.setValue("hdf.loadpaths.0", view_dir);
+        }
+        String model_dir = $MODEL_DIR;
+        if (model_dir != null) {
+            if (isDebug()) {
+                ERR << "$MODEL_DIR=" << model_dir << EOL;
+            }
+            if (view_dir == null) {
+                hdf.setValue("hdf.loadpaths.0", model_dir);
+            }
+            else {
+                hdf.setValue("hdf.loadpaths.1", model_dir);
+            }
+        }
+    }
+
     void loadHdf(Hdf hdf) {
+        loadSettingValues(hdf);
+        if (isDebug()) {
+            hdf.writeFile("/tmp/hdf");
+        }
         _cs = new Cs(hdf);
         if (str != null) {
             cs.parseString(str);
@@ -100,8 +142,43 @@ class Template
         }
     }
 
+    void set(String key, dynamic value) {
+        if (value.class == int) {
+            int ival = value;
+            hdf.setIntValue(key, ival);
+        }
+        else if (value.class == String) {
+            String sval = value;
+            hdf.setValue(key, sval);
+        }
+        else if (value.class == Array) {
+            for (int i = 0; i < |value|; i++) {
+                this[key + "." + (to String)i] = value[i];
+            }
+        }
+        else if (value.class == Map) {
+            String[] mkeys = value.keys();
+            for (int i = 0; i < |mkeys|; i++) {
+                this[key + "." + mkeys[i]] = value[mkeys[i]];
+            }
+        }
+        else {
+            if (isDebug()) {
+                ERR << "unsupported type: " << value.class << EOL;
+            }
+        }
+    }
+
+    int getInt(String key) {
+        return hdf.getIntValue(key);
+    }
+
+    String get(String key) {
+        return hdf.getValue(key);
+    }
+
     void readFile(Path path) {
-        if (!path.startsWith("/")) {
+        if (!((to String)path).startsWith("/")) {
             path = $MODEL_DIR + path;
         }
         hdf.readFile(path);
@@ -143,9 +220,11 @@ class Template
             _post_params = m;
         }
         m = {};
-        foreach (String ck in cookie.replace($/ /, "").split(";")) {
-            String[] k_v = ck.split("=");
-            m[k_v[0]] = k_v[1];
+        if (cookie != null) {
+            foreach (String ck in cookie.replace($/ /, "").split(";")) {
+                String[] k_v = ck.split("=");
+                m[k_v[0]] = k_v[1];
+            }
         }
         _cookies = m;
     }
@@ -206,6 +285,7 @@ class Session
 {
     Path path;
     String fname;
+    Map m;
 
     Session(String name) {
         if (name != null) {
@@ -214,38 +294,47 @@ class Session
         else {
             _fname = Uuid.getUuid4().convert(to:md5);
         }
-        if ($TMP_DIR != null) {
-            _path = $TMP_DIR + fname;
+        String tmp_dir = $TMP_DIR;
+        if (tmp_dir != null) {
+            _path = tmp_dir + fname;
         }
         else {
             _path = "/tmp/" + fname;
         }
+        load();
+    }
+
+    void load() {
+        InputStream ins = new InputStream(path);
+        if (ins == null) {
+            _m = {};
+        }
+        else {
+            _m = ins.readJson();
+            ins.close();
+        }
     }
 
     dynamic get(String key) {
-        InputStream ins = new InputStream(path);
-        Map m = ins.readJson();
-        ins.close();
         return m[key];
     }
 
     void set(String key, dynamic val) {
-        switch (val.class) {
-        case String: case Int: case Float:
-            InputStream ins = new InputStream(path);
-            Map m = ins.readJson();
-            ins.close();
+        Class[] classes = [String, Int, Float];
+        if (val.class in? classes) {
             m[key] = val;
-            OutputStream ous = new OutputStream(path);
-            ous.writeJson(m);
-            ous.close();
-            break;
-        default:
+        }
+        else {
             if (isDebug()) {
                 ERR << "unsupported type: " << val.class << EOL;
             }
-            break;
         }
+    }
+
+    void store() {
+        OutputStream ous = new OutputStream(path);
+        ous.writeJson(m);
+        ous.close();
     }
 }
 
@@ -280,12 +369,31 @@ class SessionMiddleware extends Middleware
 
     HttpResponse hookResponse(HttpRequest req, HttpResponse res) {
         if (isDebug()) {
-            ERR << "hook response: " << req << res << EOL;
+            ERR << "hook response" << EOL;
         }
         if (req.cookies["SESSION"] == null) {
+            Date now = new Date();
+            if (now.day < 15) {
+                now.day += 14;
+            }
+            else if (now.month < 12) {
+                now.day -= 14;
+                now.month += 1;
+            }
+            else {
+                now.year += 1;
+                now.day -= 14;
+                now.month -= 11;
+            }
             String cookie = "SESSION=" + req.session.fname + "; ";
-            cookie += "expires=" + 
+            cookie += "expires=" + now.toRFC1123() + "; ";
+            cookie += "path=/";
+            res["Set-Cookie"] = cookie;
+            if (isDebug()) {
+                ERR << "Set-Cookie: " << cookie << EOL;
+            }
         }
+        req.session.store();
         return res;
     }
 }
@@ -302,7 +410,7 @@ String[] g_args;
 {
     String[] middlewares = $MIDDLEWARES;
     String path = environ["PATH_INFO"];
-    if (|path| >= 1) {
+    if (|path| >= 1 && path != "/") {
         path = path.substring(1);
     }
     if (isDebug()) {

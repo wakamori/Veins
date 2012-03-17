@@ -29,6 +29,12 @@ $VIEW_DIR = "/Users/chen_ji/Devel/git/Veins/tests/view/";
 /* Absolute path to tmp directory. */
 $TMP_DIR = "/tmp/";
 
+/* Absolute URL to base URL. */
+$BASE_URL = "http://localhost/konoha";
+
+/* Absolute URL to static files. */
+$STATIC_URL = "http://localhost/~chen_ji/static";
+
 /* Middleware classes. */
 $MIDDLEWARES = [
     "SessionMiddleware"

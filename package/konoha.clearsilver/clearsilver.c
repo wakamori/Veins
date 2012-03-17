@@ -90,6 +90,68 @@ KMETHOD Hdf_new(CTX ctx, ksfp_t *sfp _RIX)
     RETURN_(new_ReturnRawPtr(ctx, sfp, hdf));
 }
 
+//## @Native Hdf Hdf.getObj(String name);
+KMETHOD Hdf_getObj(CTX ctx, ksfp_t *sfp _RIX)
+{
+    HDF *hdf = RawPtr_to(HDF *, sfp[0]);
+    const char *name = S_totext(sfp[1].s);
+    HDF *rethdf = hdf_get_obj(hdf, name);
+    if (rethdf == NULL) {
+        RETURN_(KNH_NULL);
+    }
+    RETURN_(new_ReturnRawPtr(ctx, sfp, rethdf));
+}
+
+//## @Native Hdf Hdf.objChild();
+KMETHOD Hdf_objChild(CTX ctx, ksfp_t *sfp _RIX)
+{
+    HDF *hdf = RawPtr_to(HDF *, sfp[0]);
+    HDF *rethdf = hdf_obj_child(hdf);
+    if (rethdf == NULL) {
+        RETURN_(KNH_NULL);
+    }
+    RETURN_(new_ReturnRawPtr(ctx, sfp, rethdf));
+}
+
+//## @Native String Hdf.objName();
+KMETHOD Hdf_objName(CTX ctx, ksfp_t *sfp _RIX)
+{
+    HDF *hdf = RawPtr_to(HDF *, sfp[0]);
+    RETURN_(new_String(ctx, hdf_obj_name(hdf)));
+}
+
+//## @Native Hdf Hdf.objNext();
+KMETHOD Hdf_objNext(CTX ctx, ksfp_t *sfp _RIX)
+{
+    HDF *hdf = RawPtr_to(HDF *, sfp[0]);
+    HDF *rethdf = hdf_obj_next(hdf);
+    if (rethdf == NULL) {
+        RETURN_(KNH_NULL);
+    }
+    RETURN_(new_ReturnRawPtr(ctx, sfp, rethdf));
+}
+
+//## @Native @Overload String Hdf.getValue(String name);
+KMETHOD Hdf_getValue(CTX ctx, ksfp_t *sfp _RIX)
+{
+    HDF *hdf = RawPtr_to(HDF *, sfp[0]);
+    const char *name = S_totext(sfp[1].s);
+    char *value = hdf_get_value(hdf, name, NULL);
+    if (value == NULL) {
+        RETURN_(KNH_TNULL(String));
+    }
+    RETURN_(new_String(ctx, value));
+}
+
+//## @Native int Hdf.getIntValue(String name);
+KMETHOD Hdf_getIntValue(CTX ctx, ksfp_t *sfp _RIX)
+{
+    HDF *hdf = RawPtr_to(HDF *, sfp[0]);
+    const char *name = S_totext(sfp[1].s);
+    int value = hdf_get_int_value(hdf, name, 0);
+    RETURNi_(value);
+}
+
 //## @Native @Overload void Hdf.setValue(String name, String value);
 KMETHOD Hdf_setValue(CTX ctx, ksfp_t *sfp _RIX)
 {

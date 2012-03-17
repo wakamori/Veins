@@ -82,7 +82,7 @@ class Cookie
                 ret += "; expires=" + m[key]["expires"];
             }
             if (m[key]["path"] != "") {
-                ret += "; Path=" + m[key]["path"];
+                ret += "; path=" + m[key]["path"];
             }
             ret += "\n";
         }
