@@ -240,7 +240,7 @@ static int konoha_handler(request_rec *r)
     struct stat st;
     ret = stat(handler, &st);
     if (ret != 0) {
-        AP_LOG_CRIT("KonohaHandler does not exists.");
+        AP_LOG_CRIT("KonohaHandler does not exists at %s.", handler);
         return OK;
     }
 

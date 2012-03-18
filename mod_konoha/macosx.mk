@@ -20,7 +20,7 @@ DEFS=-DK_INTERNAL=1
 #INCLUDES=-Imy/include/dir
 #LIBS=-Lmy/lib/dir -lmylib
 CFLAGS=-g0 -O2 -W -Wall #-std=c99
-LDFLAGS=-lapreq2 -ljson -lkonoha
+LDFLAGS=-ljson -lkonoha
 
 #   the default target
 all: local-shared-build
