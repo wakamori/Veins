@@ -1,5 +1,5 @@
 <?cs include:"header.cs" ?>
-    <h1>Request parameter check</h1>
+    <h1>Request parameter test</h1>
     <p>Request: <?cs var:method ?></p>
     <table>
         <caption>
