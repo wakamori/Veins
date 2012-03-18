@@ -203,8 +203,8 @@ class Template
 {
     String path;
     String method;
-    Map<String> get_params;
-    Map<String> post_params;
+    Map<String> params_get;
+    Map<String> params_post;
     Map<String> cookies;
 
     HttpRequest(String path, String method, String query, String cookie) {
@@ -213,13 +213,18 @@ class Template
         Map<String> m = {};
         foreach (String param in query.split("&")) {
             String[] k_v = param.split("=");
-            m[k_v[0]] = k_v[1].convert(to:durl);
+            if (|k_v| == 2 && k_v[1] != null) {
+                m[k_v[0]] = k_v[1].convert(to:durl);
+            }
+            else {
+                m[k_v[0]] = "";
+            }
         }
         if (method == "GET") {
-            _get_params = m;
+            _params_get = m;
         }
         else if (method == "POST") {
-            _post_params = m;
+            _params_post = m;
         }
         m = {};
         if (cookie != null) {
@@ -287,14 +292,17 @@ class Session
 {
     Path path;
     String fname;
+    String origname;
     Map m;
 
     Session(String name) {
         if (name != null) {
+            _origname = name;
             _fname = name.convert(to:md5);
         }
         else {
-            _fname = Uuid.getUuid4().convert(to:md5);
+            _origname = Uuid.getUuid4();
+            _fname = origname.convert(to:md5);
         }
         String tmp_dir = $TMP_DIR;
         if (tmp_dir != null) {
@@ -319,6 +327,14 @@ class Session
 
     dynamic get(String key) {
         return m[key];
+    }
+
+    String[] keys() {
+        return m.keys();
+    }
+
+    void remove(String key) {
+        m.remove(key);
     }
 
     void set(String key, dynamic val) {

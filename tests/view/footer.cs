@@ -2,7 +2,7 @@
 </div> <!-- #main-container -->
 <div id="footer-container">
     <footer class="wrapper">
-        <h3>footer</h3>
+        <h3><?cs var:footer ?></h3>
     </footer>
 </div>
 

@@ -76,7 +76,6 @@ static konoha_t konoha;
 module AP_MODULE_DECLARE_DATA konoha_module;
 
 /* utility of read from POST body */
-#if 0
 static int util_read(request_rec *r, const char **rbuf)
 {
     int rc;
@@ -110,48 +109,6 @@ static int util_read(request_rec *r, const char **rbuf)
 
     return rc;
 }
-#endif
-
-#if 0
-/* utility of read from POST body form */
-static int read_post(request_rec *r, apr_table_t **tab)
-{
-    const char *data;
-    const char *key, *val, *type;
-    int rc = OK;
-
-    if (r->method_number != M_POST) {
-        return DECLINED;
-    }
-
-    type = apr_table_get(r->headers_in, "Content-Type");
-    if (strcasecmp(type, "application/x-www-form-urlencoded") != 0) {
-        return DECLINED;
-    }
-
-    if ((rc = util_read(r, &data)) != OK) {
-        return rc;
-    }
-
-    if (*tab) {
-        apr_table_clear(*tab);
-    }
-    else {
-        *tab = apr_table_make(r->pool, 8);
-    }
-
-    while (*data && (val = ap_getword(r->pool, &data, '&'))) {
-        key = ap_getword(r->pool, &val, '=');
-
-        ap_unescape_url((char *)key);
-        ap_unescape_url((char *)val);
-
-        apr_table_merge(*tab, key, val);
-    }
-
-    return OK;
-}
-#endif
 
 /* call Script.application() */
 static int start_application(request_rec *r, CTX ctx, int debug)
@@ -184,9 +141,19 @@ static int start_application(request_rec *r, CTX ctx, int debug)
     /* other variables */
     if (r->method != NULL) {
         knh_DataMap_setString(ctx, env_map, "REQUEST_METHOD", r->method);
-    }
-    if (r->args != NULL) {
-        knh_DataMap_setString(ctx, env_map, "QUERY_STRING", r->args);
+        if (!strcmp(r->method, "POST")) {
+            const char *readbody = NULL;
+            util_read(r, &readbody);
+            if (readbody != NULL) {
+                knh_DataMap_setString(ctx, env_map, "QUERY_STRING", readbody);
+                //fputs(readbody, stdin);
+            }
+        }
+        else {
+            if (r->args != NULL) {
+                knh_DataMap_setString(ctx, env_map, "QUERY_STRING", r->args);
+            }
+        }
     }
     if (r->uri != NULL) {
         knh_DataMap_setString(ctx, env_map, "URI", r->uri);
