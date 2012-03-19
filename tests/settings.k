@@ -30,7 +30,7 @@ $VIEW_DIR = "/Users/chen_ji/Devel/git/Veins/tests/view/";
 $TMP_DIR = "/tmp/";
 
 /* Absolute URL to base URL. */
-$BASE_URL = "http://localhost/konoha";
+$BASE_URL = "http://localhost";
 
 /* Absolute URL to static files. */
 $STATIC_URL = "http://localhost/~chen_ji/static";
