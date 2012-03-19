@@ -1,0 +1,12 @@
+Title = Aspen
+Description = Online Konoha development environment
+Header {
+    Title = Aspen
+    Navigation {
+        0 {
+            Name = About
+            URL = /about/
+        }
+    }
+}
+Copyright = copyright &copy; 2012 Konoha Project
