@@ -1,6 +1,6 @@
 <?cs include:"header.cs" ?>
     <h1>Session test</h1>
-    <button onClick=”javascript:location.reload()”>Reload page</button>
+    <button onClick="javascript:location.reload()">Reload page</button>
     <p>session ID: <?cs var:Session.ID ?></p>
     <table>
         <caption>
