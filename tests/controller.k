@@ -47,10 +47,13 @@ HttpResponse session(HttpRequest req, String[] args)
         }
         else if (params["type"] == "renew") {
             req.session = req.session.renew();
+            tpl["Session.ID"] = req.session.fname.convert(to:md5);
         }
     }
     tpl.readFile("top.hdf");
-    tpl["Session.ID"] = req.cookies["SESSION"];
+    if (tpl["Session.ID"] == null) {
+        tpl["Session.ID"] = req.session.fname;
+    }
     Array items = [];
     foreach (String key in req.session.keys()) {
         items.add({"key": key, "value": req.session[key]});

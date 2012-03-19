@@ -408,7 +408,7 @@ class SessionMiddleware extends Middleware
                 req.cookies["SESSION"] != req.session.origname) {
             if (isDebug()) {
                 ERR << "old session: " << req.cookies["SESSION"] << EOL;
-                ERR << "new session: " << req.session.fname << EOL;
+                ERR << "new session: " << req.session.fname.convert(to:md5) << EOL;
             }
             Date now = new Date();
             if (now.day < 15) {
