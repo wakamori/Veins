@@ -103,9 +103,9 @@ HttpResponse request(HttpRequest req, String[] args)
 }
 
 Url.patterns = [
-    (new Regex("^/$"), top),
-    (new Regex("^request/$"), request),
-    (new Regex("^doc/\\w+/\\w+/$"), document),
-    (new Regex("^menu/\\w+/$"), menu),
-    (new Regex("^session/$"), session)
+    (new Regex("^test/$"), top),
+    (new Regex("^test/request/$"), request),
+    (new Regex("^test/doc/\\w+/\\w+/$"), document),
+    (new Regex("^test/menu/\\w+/$"), menu),
+    (new Regex("^test/session/$"), session)
 ];

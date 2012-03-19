@@ -30,10 +30,10 @@ $VIEW_DIR = "/Users/chen_ji/Devel/git/Veins/tests/view/";
 $TMP_DIR = "/tmp/";
 
 /* Absolute URL to base URL. */
-$BASE_URL = "http://localhost";
+$BASE_URL = "http://localhost/test";
 
 /* Absolute URL to static files. */
-$STATIC_URL = "http://localhost/~chen_ji/static";
+$STATIC_URL = "http://localhost/~chen_ji/test";
 
 /* Middleware classes. */
 $MIDDLEWARES = [

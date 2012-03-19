@@ -372,6 +372,116 @@ class Session
 }
 
 /* ------------------------------------------------------------------------ */
+/* matsu */
+
+@Singleton class FileStorage
+{
+    String checkName(String name) {
+        if(name.indexOf("/") != -1) return null;
+        if(name.indexOf("..") != -1) return null;
+        String storage_root;
+        if ($USER_DIR != null) {
+            storage_root = $USER_DIR
+        }
+        else {
+            storage_root = $TMP_DIR;
+            if (storage_root == null) {
+                storage_root = "/tmp/";
+            }
+        }
+        return STORAGE_ROOT + name;
+    }
+
+    InputStream open(String name) {
+        name = checkName(name);
+        if(name != null) {
+            return new InputStream(name);
+        }
+        return null;
+    }
+
+    OutputStream newFile(String name) {
+        name = checkName(name);
+        if (isDebug()) {
+            ERR << "newFile: " << name << EOL;
+        }
+        if(name != null) {
+            return new OutputStream(name);
+        }
+        return null;
+    }
+}
+
+class Permission
+{
+    String name;
+    Permission(String name) { _name = name; }
+}
+
+class Group
+{
+    String name;
+    Group(String name) { _name = name; }
+
+    boolean hasPermission(Permission perm) {
+        Connection c = new(user_db);
+        try {
+            r = c.query("select * from group_perms");
+            while(r.next()) {
+                if(r.getString("name") == name) {
+                    foreach(String p in r.getString("permissions").split(",")) {
+                        if(p == perm.name) return true;
+                    }
+                }
+            }
+        } finally {
+            c.close();
+        }
+        return false;
+    }
+}
+
+class User
+{
+    String name;
+    String[] perms;
+    String[] groups;
+
+    User(String name, String[] perms, String[] groups) {
+        _name = name;
+        _perms = perms;
+        _groups = groups;
+    }
+
+    boolean hasPermission(Permission perm) {
+        foreach(String p in perms) {
+            if(p == perm.name) return true;
+        }
+        foreach(String g in groups) {
+            if(new Group(g).hasPermission(perm)) return true;
+        }
+        return false;
+    }
+
+    @Static User authenticate(String name, String password) {
+        Connection c = new(user_db);
+        try {
+            r = c.query("select * from users");
+            while(r.next()) {
+                if(r.getString("name") == name && r.getString("password") == password) {
+                    String[] p = r.getString("permissions").split(",");
+                    String[] g = r.getString("groups").split(",");
+                    return new User(name, p, g);
+                }
+            }
+            return null;
+        } finally {
+            c.close();
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------ */
 /* Builtin middlwares. */
 
 class SessionMiddleware extends Middleware
@@ -503,6 +613,6 @@ String[] g_args;
         start_response("200 OK", headers);
         return g_res.content;
     }
-    start_response("200 OK", [("Content-Type", "text/plain")]);
-    return "Hello, world";
+    start_response("404 Not Found", [("Content-Type", "text/html")]);
+    return "";
 }

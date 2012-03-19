@@ -277,6 +277,10 @@ static int konoha_handler(request_rec *r)
     wsgi_config_t wconf;
     ret = get_config(r, konoha, &wconf);
     if (ret != 0) goto TAIL;
+    int rcode = OK;
+    if (!strncmp(wconf.status, "404", 3)) {
+        rcode = HTTP_NOT_FOUND;
+    }
     r->content_type = apr_pstrdup(r->pool, wconf.content_type);
     ret = set_headers(r, konoha, debug);
     if (ret != 0) goto TAIL;
@@ -285,7 +289,7 @@ static int konoha_handler(request_rec *r)
         konoha_initialized = 0;
     }
     //ap_rprintf(r, "KonohaHandler=\"%s\"\n", handler);
-    return OK;
+    return rcode;
 
 TAIL:
     AP_LOG_CRIT("Konoha closed with error: %d", ret);
