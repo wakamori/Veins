@@ -427,7 +427,7 @@ String[] g_args;
         Func<String,Tuple<String,String>[]> start_response)
 {
     String[] middlewares = $MIDDLEWARES;
-    String path = environ["PATH_INFO"];
+    String path = environ["URI"];
     if (|path| >= 1 && path != "/") {
         path = path.substring(1);
     }
