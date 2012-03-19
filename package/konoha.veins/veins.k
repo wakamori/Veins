@@ -29,6 +29,7 @@ using konoha.conv.*;
 using konoha.cookie.*;
 using konoha.io.*;
 using konoha.json.*;
+using konoha.posix.*;
 using konoha.uuid.*;
 using konoha.wsgi.*;
 
@@ -314,6 +315,20 @@ class Session
         load();
     }
 
+    Session renew(String name) {
+        if (System.unlink(path)) {
+            if (isDebug()) {
+                ERR << "unlink: " << path << EOL;
+            }
+        }
+        else {
+            if (isDebug()) {
+                ERR << "unlink failed: " << path << EOL;
+            }
+        }
+        return new Session(name);
+    }
+
     void load() {
         InputStream ins = new InputStream(path);
         if (ins == null) {
@@ -389,7 +404,12 @@ class SessionMiddleware extends Middleware
         if (isDebug()) {
             ERR << "hook response" << EOL;
         }
-        if (req.cookies["SESSION"] == null) {
+        if (req.cookies["SESSION"] == null ||
+                req.cookies["SESSION"] != req.session.origname) {
+            if (isDebug()) {
+                ERR << "old session: " << req.cookies["SESSION"] << EOL;
+                ERR << "new session: " << req.session.fname << EOL;
+            }
             Date now = new Date();
             if (now.day < 15) {
                 now.day += 14;

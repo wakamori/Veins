@@ -1,6 +1,10 @@
 <?cs include:"header.cs" ?>
     <h1>Session test</h1>
-    <button onClick="javascript:location.reload()">Reload page</button>
+    <button onclick="javascript:location.reload()">Reload</button>
+    <form action="<?cs var:BASE_URL ?><?cs var:Navigation.1.URL ?>" method="post">
+        <input type="hidden" name="type" value="renew">
+        <input type="submit" value="Renew">
+    </form>
     <p>session ID: <?cs var:Session.ID ?></p>
     <table>
         <caption>

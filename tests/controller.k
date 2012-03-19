@@ -45,6 +45,9 @@ HttpResponse session(HttpRequest req, String[] args)
                 req.session.remove(key);
             }
         }
+        else if (params["type"] == "renew") {
+            req.session = req.session.renew();
+        }
     }
     tpl.readFile("top.hdf");
     tpl["Session.ID"] = req.cookies["SESSION"];
