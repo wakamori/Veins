@@ -11,8 +11,10 @@ First, you need to install following packages.
 * httpd
 * httpd-devel
 * gcc
-* konoha (gcc-c++, cmake (> = 2.8), sqlite-devel)
+* konoha (gcc-c++, cmake (> = 2.8), sqlite-devel, pcre-devel)
 * json-c
+* libuuid-devel
+* clearsilver
 
 Then, compile mod\_konoha by typing following commands.
 

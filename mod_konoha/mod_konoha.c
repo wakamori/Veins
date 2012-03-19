@@ -41,6 +41,7 @@
 #include "http_protocol.h"
 #include "ap_config.h"
 
+#include "apr_strings.h"
 #include "http_log.h"
 #include <konoha1.h>
 #include <konoha1/inlinelibs.h>
@@ -276,7 +277,7 @@ static int konoha_handler(request_rec *r)
     wsgi_config_t wconf;
     ret = get_config(r, konoha, &wconf);
     if (ret != 0) goto TAIL;
-    r->content_type = wconf.content_type;
+    r->content_type = apr_pstrdup(r->pool, wconf.content_type);
     ret = set_headers(r, konoha, debug);
     if (ret != 0) goto TAIL;
     if (debug) {
