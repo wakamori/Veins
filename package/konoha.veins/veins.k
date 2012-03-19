@@ -652,6 +652,14 @@ String[] g_args;
         start_response(status, headers);
         return g_res.content;
     }
+    if (not path.endsWith("/")) {
+        String redirect_url = environ["URI"] + "/";
+        start_response("301 Moved Permanently", [
+            ("Content-Type", "text/html"),
+            ("Location", redirect_url)
+        ]);
+        return "";
+    }
     start_response("404 Not Found", [("Content-Type", "text/html")]);
     return "";
 }
