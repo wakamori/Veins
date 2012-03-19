@@ -186,13 +186,12 @@ static int start_application(request_rec *r, CTX ctx, int debug)
     KNH_SETv(ctx, lsfp[K_CALLDELTA+2].fo, fo);
     KNH_SCALL(ctx, lsfp, 0, mtd, 2);
     END_LOCAL(ctx, lsfp);
-    //AP_LOG_CRIT("lsfp[0]=%s", S_totext(lsfp[0].s));
     ap_rputs(S_totext(lsfp[0].s), r);
     return 0;
 }
 
 /* get config */
-static int get_config(request_rec *r, CTX ctx, wsgi_config_t *conf)
+static int get_config(request_rec *r, CTX ctx, wsgi_config_t *conf, int debug)
 {
     kString *status = GET_PROP("wsgi.status");
     kString *content_type = GET_PROP("wsgi.content_type");
@@ -202,8 +201,8 @@ static int get_config(request_rec *r, CTX ctx, wsgi_config_t *conf)
     }
     conf->status = S_totext(status);
     conf->content_type = S_totext(content_type);
-    //ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, "status=%s", S_totext(status));
-    //ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, "content_type=%s", S_totext(content_type));
+    AP_LOG_DEBUG("status=%s", S_totext(status));
+    AP_LOG_DEBUG("content_type=%s", S_totext(content_type));
     return 0;
 }
 
@@ -214,6 +213,11 @@ static int set_headers(request_rec *r, CTX ctx, int debug)
     if (cookie != NULL) {
         apr_table_set(r->headers_out, "Set-Cookie", S_totext(cookie));
         AP_LOG_DEBUG("Set-Cookie: %s", S_totext(cookie));
+    }
+    kString *location = GET_PROP("wsgi.location");
+    if (location != NULL) {
+        apr_table_set(r->headers_out, "Location", S_totext(location));
+        AP_LOG_DEBUG("Location: %s", S_totext(location));
     }
     return 0;
 }
@@ -263,23 +267,26 @@ static int konoha_handler(request_rec *r)
         konoha_initialized = 1;
         konoha_ginit(argc, argv);
         konoha = konoha_open();
-        //knh_loadPackage(konoha, STEXT("konoha.wsgi"));
     }
-    //ap_rprintf(r, "argc=%d\n", argc);
-    //int i;
-    //for (i = 0; i < argc; i++) {
-    //    ap_rprintf(r, "argv[%d]=%s\n", i, argv[i]);
-    //}
     ret = konoha_main(konoha, argc, argv);
     if (ret != 0) goto TAIL;
     ret = start_application(r, konoha, debug);
     if (ret != 0) goto TAIL;
     wsgi_config_t wconf;
-    ret = get_config(r, konoha, &wconf);
+    ret = get_config(r, konoha, &wconf, debug);
     if (ret != 0) goto TAIL;
-    int rcode = OK;
-    if (!strncmp(wconf.status, "404", 3)) {
+    int rcode;
+    switch (atoi(wconf.status)) {
+    case 301:
+        rcode = HTTP_MOVED_PERMANENTLY;
+        break;
+    case 404:
         rcode = HTTP_NOT_FOUND;
+        break;
+    case 200:
+    default:
+        rcode = OK;
+        break;
     }
     r->content_type = apr_pstrdup(r->pool, wconf.content_type);
     ret = set_headers(r, konoha, debug);
@@ -288,7 +295,6 @@ static int konoha_handler(request_rec *r)
         konoha_close(konoha);
         konoha_initialized = 0;
     }
-    //ap_rprintf(r, "KonohaHandler=\"%s\"\n", handler);
     return rcode;
 
 TAIL:

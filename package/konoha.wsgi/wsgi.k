@@ -36,6 +36,9 @@
             case "Set-Cookie":
                 $wsgi.cookie = t[1];
                 break;
+            case "Location":
+                $wsgi.location = t[1];
+                break;
             default:
                 ERR << "unknown header: " + t[0] << EOL;
             }

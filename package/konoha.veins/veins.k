@@ -30,6 +30,7 @@ using konoha.cookie.*;
 using konoha.io.*;
 using konoha.json.*;
 using konoha.posix.*;
+using konoha.sql.*;
 using konoha.uuid.*;
 using konoha.wsgi.*;
 
@@ -141,7 +142,6 @@ class Template
         if (template != null) {
             hdf.readString(template);
         }
-        _count = 0;
     }
 
     void set(String key, dynamic value) {
@@ -241,11 +241,15 @@ class Template
 class HttpResponse
 {
     String content;
+    int status;
     Map<String> h;
 
-    HttpResponse(String content) {
+    HttpResponse(String content, Map<String> headers) {
         _content = content;
-        _h = {};
+        _h = headers;
+        if (h == null) {
+            _h = {};
+        }
     }
 
     void set(String header, String value) {
@@ -379,17 +383,14 @@ class Session
     String checkName(String name) {
         if(name.indexOf("/") != -1) return null;
         if(name.indexOf("..") != -1) return null;
-        String storage_root;
-        if ($USER_DIR != null) {
-            storage_root = $USER_DIR
-        }
-        else {
+        String storage_root = $USER_DIR;
+        if (storage_root == null) {
             storage_root = $TMP_DIR;
             if (storage_root == null) {
                 storage_root = "/tmp/";
             }
         }
-        return STORAGE_ROOT + name;
+        return storage_root + name;
     }
 
     InputStream open(String name) {
@@ -421,12 +422,26 @@ class Permission
 class Group
 {
     String name;
-    Group(String name) { _name = name; }
+    String db_path;
+
+    Group(String name) {
+        _name = name;
+        _db_path = null;
+    }
 
     boolean hasPermission(Permission perm) {
-        Connection c = new(user_db);
+        if (db_path == null) {
+            Map dbs = $DATABASES;
+            if (dbs["default"] != null) {
+                String path = dbs["default"]["name"];
+                if (path != null) {
+                    _db_path = path;
+                }
+            }
+        }
+        Connection c = new(db_path);
         try {
-            r = c.query("select * from group_perms");
+            ResultSet r = c.query("select * from group_perms");
             while(r.next()) {
                 if(r.getString("name") == name) {
                     foreach(String p in r.getString("permissions").split(",")) {
@@ -446,11 +461,13 @@ class User
     String name;
     String[] perms;
     String[] groups;
+    String db_path;
 
     User(String name, String[] perms, String[] groups) {
         _name = name;
         _perms = perms;
         _groups = groups;
+        _db_path = null;
     }
 
     boolean hasPermission(Permission perm) {
@@ -464,9 +481,18 @@ class User
     }
 
     @Static User authenticate(String name, String password) {
-        Connection c = new(user_db);
+        if (db_path == null) {
+            Map dbs = $DATABASES;
+            if (dbs["default"] != null) {
+                String path = dbs["default"]["name"];
+                if (path != null) {
+                    _db_path = path;
+                }
+            }
+        }
+        Connection c = new(db_path);
         try {
-            r = c.query("select * from users");
+            ResultSet r = c.query("select * from users");
             while(r.next()) {
                 if(r.getString("name") == name && r.getString("password") == password) {
                     String[] p = r.getString("permissions").split(",");
@@ -581,9 +607,6 @@ String[] g_args;
     if (g_res == null) {
         if ($veins.defurlpatterns != null) {
             foreach (Tuple<Regex,Func<HttpRequest,String[]=>HttpResponse>> t in $veins.urlpatterns) {
-                if (isDebug()) {
-                    ERR << "tuple: " << t << EOL;
-                }
                 if (path.search(t[0]) >= 0) {
                     g_args = path.split("/");
                     if (|g_args| > 0) {
@@ -610,7 +633,23 @@ String[] g_args;
         foreach (String header in g_res.keys()) {
             headers.add((header, g_res[header]));
         }
-        start_response("200 OK", headers);
+        if (not "Content-Type" in? headers) {
+            headers.add(("Content-Type", "text/html"));
+        }
+        String status = "";
+        switch (g_res.status) {
+        case 301:
+            status = "301 Moved Permanently";
+            break;
+        case 404:
+            status = "404 Not Found";
+            break;
+        case 200:
+        default:
+            status = "200 OK";
+            break;
+        }
+        start_response(status, headers);
         return g_res.content;
     }
     start_response("404 Not Found", [("Content-Type", "text/html")]);
