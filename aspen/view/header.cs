@@ -38,7 +38,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-          <a class="brand" href="#"><?cs var:Header.Title ?></a>
+          <a class="brand" href="<?cs var:BASE_URL ?>/"><?cs var:Header.Title ?></a>
           <div class="nav-collapse">
             <ul class="nav">
                 <?cs each:item = Header.Navigation ?>
