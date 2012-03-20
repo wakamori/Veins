@@ -76,8 +76,19 @@ HttpResponse top(HttpRequest req, String[] args)
     return new HttpResponse(tpl.render(ctx));
 }
 
+HttpResponse about(HttpRequest req, String[] args)
+{
+    Template tpl = new Template();
+    tpl.readFile("top.hdf");
+    tpl.readFile("about.hdf");
+    TemplateContext ctx = new TemplateContext();
+    ctx.parseFile("about.cs");
+    return new HttpResponse(tpl.render(ctx));
+}
+
 Url.patterns = [
     (new Regex("^aspen/$"), top),
+    (new Regex("^aspen/about/$"), about),
     (new Regex("^aspen/login$"), login),
     (new Regex("^aspen/logout$"), logout),
 ];

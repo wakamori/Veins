@@ -1,0 +1,14 @@
+Links {
+    0 {
+        Name = Konoha Project Page
+        URL = http://konohascript.org
+    }
+    1 {
+        Name = Konoha Download Page
+        URL = http://code.google.com/p/konoha/
+    }
+    2 {
+        Name = Kuramitsu lab.
+        URL = http://www.ubicg.ynu.ac.jp/lab/
+    }
+}
