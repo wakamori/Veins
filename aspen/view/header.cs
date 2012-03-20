@@ -14,7 +14,7 @@
 	<meta name="viewport" content="width=device-width">
 
 	<link rel="stylesheet/less" href="<?cs var:STATIC_URL ?>/less/style.less">
-	<script src="<?cs var:STATIC_URL ?>/js/libs/less-1.2.1.min.js"></script>
+	<script src="<?cs var:STATIC_URL ?>/js/libs/less-1.3.0.min.js"></script>
 	
 	<!-- Use SimpLESS (Win/Linux/Mac) or LESS.app (Mac) to compile your .less files
 	to style.css, and replace the 2 lines above by this one:

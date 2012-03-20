@@ -8,13 +8,23 @@ Installation
 
 First, you need to install following packages.
 
-* httpd
-* httpd-devel
-* gcc
-* konoha (gcc-c++, cmake (> = 2.8), sqlite-devel, pcre-devel)
+For complie konohascript and dependent packages:
+
+* gcc-c++
+* cmake (> = 2.8)
+* sqlite-devel
+* pcre-devel
 * json-c
 * libuuid-devel
 * clearsilver
+* llvm (> = 3.0)
+
+For compile mod\_konoha:
+
+* httpd
+* httpd-devel
+* gcc
+* konohascript
 
 Then, compile mod\_konoha by typing following commands.
 
