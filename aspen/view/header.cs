@@ -28,7 +28,7 @@
 <!--[if lt IE 7]><p class=chromeframe>Your browser is <em>ancient!</em> <a href="http://browsehappy.com/">Upgrade to a different browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to experience this site.</p><![endif]-->
 
     <?cs if:ID ?>
-      <form name="logoutform" action="<?cs var:BASE_URL ?>/logout" method="post"></form>
+      <form name="logoutform" id="signoutform" action="<?cs var:BASE_URL ?>/logout" method="post" class="hideform"></form>
     <?cs /if ?>
     <div class="navbar navbar-fixed-top">
       <div class="navbar-inner">
@@ -54,7 +54,7 @@
               <li id="fat-menu" class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-user icon-white"></i> <?cs var:ID ?><b class="caret"></b></a>
                 <ul class="dropdown-menu">
-                  <li><a href="#" onclick="document.logoutform.submit()">Sign out</a></li>
+                  <li><a href="#" id="signoutbtn">Sign out</a></li>
                 </ul>
               </li>
             </ul>

@@ -10,6 +10,9 @@ $(function() {
         $("#sourceinput").val(editor.getValue());
         $("#codeform").submit();
     });
+    $("#signoutbtn").click(function() {
+        $("#signoutform").submit();
+    });
 });
 
 

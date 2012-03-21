@@ -1,5 +1,5 @@
 <?cs include:"header.cs" ?>
-<form action="/cgi-bin/konoha2js.k" method="post" target="resultframe" id="codeform">
+<form action="/cgi-bin/konoha2js.k" method="post" target="resultframe" id="codeform" class="hideform">
   <input type="hidden" name="requestedType" value="html">
   <input type="hidden" name="source" value="" id="sourceinput">
 </form>
@@ -15,11 +15,9 @@
     <a href="#" class="btn" data-dismiss="modal">Close</a>
   </div>
 </div>
-<div class="container">
-  <div class="btn-group">
-    <button class="btn btn-primary" data-toggle="modal" href="#resultwindow" id="runbtn">Run</button>
-  </div>
-  <textarea id="editor">// Your code goes here.
-print "hello, world";</textarea>
+<div class="btn-group">
+  <button class="btn btn-primary" data-toggle="modal" href="#resultwindow" id="runbtn">Run</button>
 </div>
+<textarea id="editor">// Your code goes here.
+print "hello, world";</textarea>
 <?cs include:"footer.cs" ?>
