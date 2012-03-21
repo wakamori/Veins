@@ -81,6 +81,7 @@ HttpResponse about(HttpRequest req, String[] args)
     Template tpl = new Template();
     tpl.readFile("top.hdf");
     tpl.readFile("about.hdf");
+    tpl["ID"] = req.session["id"];
     TemplateContext ctx = new TemplateContext();
     ctx.parseFile("about.cs");
     return new HttpResponse(tpl.render(ctx));
@@ -110,10 +111,32 @@ HttpResponse list(HttpRequest req, String[] args)
     return new HttpResponse(tpl.render(ctx));
 }
 
+HttpResponse user(HttpRequest req, String[] args)
+{
+    String user = args[0];
+    if (not User.hasUser(user)) {
+        HttpResponse res = new HttpResponse();
+        res.status = 404;
+        return res;
+    }
+    Template tpl = new Template();
+    if (tpl.load(user + ".hdf") == false) {
+        HttpResponse res = new HttpResponse();
+        res.status = 404;
+        return res;
+    }
+    tpl.readFile("top.hdf");
+    tpl["ID"] = req.session["id"];
+    TemplateContext ctx = new TemplateContext();
+    ctx.parseFile("list.cs");
+    return new HttpResponse(tpl.render(ctx));
+}
+
 Url.patterns = [
     (new Regex("^aspen/$"), top),
     (new Regex("^aspen/list/$"), list),
     (new Regex("^aspen/about/$"), about),
     (new Regex("^aspen/login$"), login),
     (new Regex("^aspen/logout$"), logout),
+    (new Regex("^aspen/.*$"), user)
 ];

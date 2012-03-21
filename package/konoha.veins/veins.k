@@ -194,6 +194,38 @@ class User
             c.close();
         }
     }
+
+    @Static boolean hasUser(String name) {
+        name = name.replace("'", "''").replace("\\", "\\\\");
+        if (isDebug()) {
+            ERR << "escaped name: " << name << EOL;
+        }
+        if (db_path == null) {
+            Map dbs = $DATABASES;
+            if (dbs["default"] != null) {
+                String path = dbs["default"]["name"];
+                if (path != null) {
+                    _db_path = path;
+                }
+            }
+        }
+        Connection c = new(db_path);
+        try {
+            ResultSet r = c.query("select * from users where name = '" + name + "'");
+            while(r.next()) {
+                if(r.getString("name") == name) {
+                    if (isDebug()) {
+                        ERR << "user '" + name + "'exists" << EOL;
+                    }
+                    return true;
+                }
+            }
+        } finally {
+            c.close();
+        }
+        ERR << "user '" + name + "' does not exist" << EOL;
+        return false;
+    }
 }
 
 /* ------------------------------------------------------------------------ */
