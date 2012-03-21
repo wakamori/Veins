@@ -10,7 +10,9 @@ using konoha.veins.*;
 HttpResponse login(HttpRequest req, String[] args)
 {
     if (req.method != "POST") {
-        /* error handling */
+        HttpResponse res = new HttpResponse();
+        res["Location"] = "./";
+        res.status = 301;
     }
     Map<String> params = req.params_post;
     String username = params["username"];
@@ -21,7 +23,9 @@ HttpResponse login(HttpRequest req, String[] args)
         req.session["id"] = user.name;
     }
     else {
-        /* User does not exist. */
+        HttpResponse res = new HttpResponse();
+        res["Location"] = "./";
+        res.status = 301;
     }
     if (remember == "on") {
         req.session["username"] = username;
@@ -42,7 +46,9 @@ HttpResponse login(HttpRequest req, String[] args)
 HttpResponse logout(HttpRequest req, String[] args)
 {
     if (req.method != "POST") {
-        /* error handling */
+        HttpResponse res = new HttpResponse();
+        res["Location"] = "./";
+        res.status = 301;
     }
     req.session.remove("id");
     HttpResponse res = new HttpResponse();
@@ -97,13 +103,7 @@ HttpResponse list(HttpRequest req, String[] args)
     }
     String id = req.session["id"];
     Template tpl = new Template();
-    if (tpl.load(id + ".hdf") == false) {
-        Array info = [
-            {"key": "ID", "value": id}
-        ];
-        tpl["Info"] = info;
-        tpl.save(id + ".hdf");
-    }
+    tpl.load(id + ".hdf");
     tpl.readFile("top.hdf");
     tpl["ID"] = req.session["id"];
     TemplateContext ctx = new TemplateContext();
@@ -120,11 +120,7 @@ HttpResponse user(HttpRequest req, String[] args)
         return res;
     }
     Template tpl = new Template();
-    if (tpl.load(user + ".hdf") == false) {
-        HttpResponse res = new HttpResponse();
-        res.status = 404;
-        return res;
-    }
+    tpl.load(user + ".hdf");
     tpl.readFile("top.hdf");
     tpl["ID"] = req.session["id"];
     TemplateContext ctx = new TemplateContext();
@@ -132,11 +128,62 @@ HttpResponse user(HttpRequest req, String[] args)
     return new HttpResponse(tpl.render(ctx));
 }
 
+HttpResponse signup(HttpRequest req, String[] args)
+{
+    if (req.method == "POST") {
+        String username = req.params_post["username"];
+        String password = req.params_post["password"];
+        User user = User.addUser(username, password);
+        if (user != null) {
+            Template tpl = new Template();
+            tpl.readFile("top.hdf");
+            tpl["Contents"] = "<p>User '" + user.name + "' is created.</p>";
+            TemplateContext ctx = new TemplateContext();
+            ctx.parseFile("empty.cs");
+            Template usertpl = new Template();
+            Array info = [
+                {"key": "ID", "value": user.name},
+                {"key": "email", "value": req.params_post["email"]},
+            ];
+            usertpl["Info"] = info;
+            usertpl.save(user.name + ".hdf");
+            req.session["id"] = user.name;
+            tpl["ID"] = user.name;
+            return new HttpResponse(tpl.render(ctx));
+        }
+    }
+    Template tpl = new Template();
+    tpl.readFile("top.hdf");
+    TemplateContext ctx = new TemplateContext();
+    ctx.parseFile("signup.cs");
+    return new HttpResponse(tpl.render(ctx));
+}
+
+HttpResponse check(HttpRequest req, String[] args)
+{
+    HttpResponse res = new HttpResponse();
+    if (req.method != "POST" || args[1] != "username") {
+        res["Location"] = "../";
+        res.status = 301;
+        return res;
+    }
+    res["Content-Type"] = "application/json; charset=utf-8";
+    if (User.hasUser(req.params_post["username"])) {
+        res.content = "{ \"exists\": true }";
+    }
+    else {
+        res.content = "{ \"exists\": false }";
+    }
+    return res;
+}
+
 Url.patterns = [
     (new Regex("^aspen/$"), top),
-    (new Regex("^aspen/list/$"), list),
     (new Regex("^aspen/about/$"), about),
+    (new Regex("^aspen/check/username$"), check),
+    (new Regex("^aspen/list/$"), list),
     (new Regex("^aspen/login$"), login),
     (new Regex("^aspen/logout$"), logout),
+    (new Regex("^aspen/signup$"), signup),
     (new Regex("^aspen/.*$"), user)
 ];

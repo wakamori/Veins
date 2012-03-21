@@ -1,0 +1,10 @@
+Info {
+  0 {
+    key = ID
+    value = chenji
+  }
+  1 {
+    key = email
+    value = chenji@example.com
+  }
+}

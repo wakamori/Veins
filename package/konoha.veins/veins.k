@@ -51,7 +51,7 @@ boolean isDebug()
 @Public void System.includeScript(String name)
 {
     if ($veins.root == null) {
-        script_name = $script.name;
+        String script_name = $script.name;
         if (script_name.indexOf("/") >= 0) {
             $veins.root = script_name.substring(0, script_name.lastIndexOf("/"));
         }
@@ -115,19 +115,16 @@ class Group
 
     Group(String name) {
         _name = name;
-        _db_path = null;
+        Map dbs = $DATABASES;
+        if (dbs["default"] != null) {
+            String path = dbs["default"]["name"];
+            if (path != null) {
+                _db_path = path;
+            }
+        }
     }
 
     boolean hasPermission(Permission perm) {
-        if (db_path == null) {
-            Map dbs = $DATABASES;
-            if (dbs["default"] != null) {
-                String path = dbs["default"]["name"];
-                if (path != null) {
-                    _db_path = path;
-                }
-            }
-        }
         Connection c = new(db_path);
         try {
             ResultSet r = c.query("select * from group_perms");
@@ -156,7 +153,13 @@ class User
         _name = name;
         _perms = perms;
         _groups = groups;
-        _db_path = null;
+        Map dbs = $DATABASES;
+        if (dbs["default"] != null) {
+            String path = dbs["default"]["name"];
+            if (path != null) {
+                _db_path = path;
+            }
+        }
     }
 
     boolean hasPermission(Permission perm) {
@@ -183,7 +186,7 @@ class User
         try {
             ResultSet r = c.query("select * from users");
             while(r.next()) {
-                if(r.getString("name") == name && r.getString("password") == password) {
+                if(r.getString("name") == name && r.getString("password") == password.convert(to:md5)) {
                     String[] p = r.getString("permissions").split(",");
                     String[] g = r.getString("groups").split(",");
                     return new User(name, p, g);
@@ -196,7 +199,7 @@ class User
     }
 
     @Static boolean hasUser(String name) {
-        name = name.replace("'", "''").replace("\\", "\\\\");
+        name = User.escape(name);
         if (isDebug()) {
             ERR << "escaped name: " << name << EOL;
         }
@@ -215,7 +218,7 @@ class User
             while(r.next()) {
                 if(r.getString("name") == name) {
                     if (isDebug()) {
-                        ERR << "user '" + name + "'exists" << EOL;
+                        ERR << "user '" + name + "' exists" << EOL;
                     }
                     return true;
                 }
@@ -225,6 +228,41 @@ class User
         }
         ERR << "user '" + name + "' does not exist" << EOL;
         return false;
+    }
+
+    @Static User addUser(String name, String password) {
+        if (User.hasUser(name)) {
+            return null;
+        }
+        name = User.escape(name);
+        if (db_path == null) {
+            Map dbs = $DATABASES;
+            if (dbs["default"] != null) {
+                String path = dbs["default"]["name"];
+                if (path != null) {
+                    _db_path = path;
+                }
+            }
+        }
+        Connection c = new(db_path);
+        try {
+            String query = "insert into users values('" + name + "',";
+            query += "'" + password.convert(to:md5) + "','','')";
+            if (isDebug()) {
+                ERR << "query: " << query << EOL;
+            }
+            c.exec(query);
+        } catch (Exception!! e) {
+            c.close();
+            return null;
+        } finally {
+            c.close();
+        }
+        return new User(name, [], []);
+    }
+
+    @Static String escape(String text) {
+        return text.replace("'", "''").replace("\\", "\\\\");
     }
 }
 
@@ -368,7 +406,7 @@ class Template
     boolean save(String name) {
         String path = FileStorage.checkName(name);
         if (path == null) return false;
-        hdf.writeFile(path);
+        hdf.writeFileAtomic(path);
         return true;
     }
 

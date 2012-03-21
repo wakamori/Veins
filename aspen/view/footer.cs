@@ -14,9 +14,7 @@
 <script src="<?cs var:STATIC_URL ?>/js/libs/bootstrap/modal.js"></script>
 <script src="<?cs var:STATIC_URL ?>/js/libs/bootstrap/transition.js"></script>
 
-<?cs if:ID ?>
 <script src="<?cs var:STATIC_URL ?>/js/script.js"></script>
-<?cs /if ?>
 <script>
 	var _gaq=[['_setAccount','UA-XXXXX-X'],['_trackPageview']];
 	(function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];

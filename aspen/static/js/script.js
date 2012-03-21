@@ -15,6 +15,33 @@ $(function() {
     $("#signoutbtn").click(function() {
         $("#signoutform").submit();
     });
+    $("input#username").blur(function() {
+        if (!this.value) {
+            return;
+        }
+        $.ajax({
+            type: "POST",
+            url: "/aspen/check/username",
+            dataType: "json",
+            data: {
+                username: this.value
+            },
+            success: function(msg) {
+                if (msg.exists) {
+                    $("#username-group").removeClass("success").addClass("error");
+                    $("#username-help").text("Username is already taken.");
+                }
+                else {
+                    $("#username-group").removeClass("error").addClass("success");
+                    $("#username-help").text("OK.");
+                }
+            }
+        });
+    });
+    $("input#username").focus(function() {
+        $("#username-group").removeClass("error").removeClass("success");
+        $("#username-help").text("");
+    });
 });
 
 
