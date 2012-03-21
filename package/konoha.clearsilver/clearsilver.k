@@ -54,6 +54,7 @@ include "lib:gluelink";
 @Native void Hdf.readFile(Path path);
 @Native void Hdf.readString(String s);
 @Native void Hdf.writeFile(Path path);
+@Native void Hdf.writeFileAtomic(Path path);
 @Native void Hdf.dump(String prefix);
 
 @Native Cs Cs.new(Hdf hdf);

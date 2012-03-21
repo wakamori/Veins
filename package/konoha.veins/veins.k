@@ -34,7 +34,7 @@ using konoha.sql.*;
 using konoha.uuid.*;
 using konoha.wsgi.*;
 
-/* ------------------------------------------------------------------------ */
+/* ======================================================================== */
 /* Private methods. */
 
 boolean isDebug()
@@ -45,7 +45,7 @@ boolean isDebug()
     return false;
 }
 
-/* ------------------------------------------------------------------------ */
+/* ======================================================================== */
 /* Utilities. */
 
 @Public void System.includeScript(String name)
@@ -61,8 +61,142 @@ boolean isDebug()
     }
 }
 
-/* ------------------------------------------------------------------------ */
+/* ======================================================================== */
 /* Classes. */
+
+/* ------------------------------------------------------------------------ */
+/* matsu */
+
+@Singleton class FileStorage
+{
+    String checkName(String name) {
+        if(name.indexOf("/") != -1) return null;
+        if(name.indexOf("..") != -1) return null;
+        String storage_root = $USER_DIR;
+        if (storage_root == null) {
+            storage_root = $TMP_DIR;
+            if (storage_root == null) {
+                storage_root = "/tmp/";
+            }
+        }
+        return storage_root + name;
+    }
+
+    InputStream open(String name) {
+        name = checkName(name);
+        if(name != null) {
+            return new InputStream(name);
+        }
+        return null;
+    }
+
+    OutputStream newFile(String name) {
+        name = checkName(name);
+        if (isDebug()) {
+            ERR << "newFile: " << name << EOL;
+        }
+        if(name != null) {
+            return new OutputStream(name);
+        }
+        return null;
+    }
+}
+
+class Permission
+{
+    String name;
+    Permission(String name) { _name = name; }
+}
+
+class Group
+{
+    String name;
+    String db_path;
+
+    Group(String name) {
+        _name = name;
+        _db_path = null;
+    }
+
+    boolean hasPermission(Permission perm) {
+        if (db_path == null) {
+            Map dbs = $DATABASES;
+            if (dbs["default"] != null) {
+                String path = dbs["default"]["name"];
+                if (path != null) {
+                    _db_path = path;
+                }
+            }
+        }
+        Connection c = new(db_path);
+        try {
+            ResultSet r = c.query("select * from group_perms");
+            while(r.next()) {
+                if(r.getString("name") == name) {
+                    foreach(String p in r.getString("permissions").split(",")) {
+                        if(p == perm.name) return true;
+                    }
+                }
+            }
+        } finally {
+            c.close();
+        }
+        return false;
+    }
+}
+
+class User
+{
+    String name;
+    String[] perms;
+    String[] groups;
+    String db_path;
+
+    User(String name, String[] perms, String[] groups) {
+        _name = name;
+        _perms = perms;
+        _groups = groups;
+        _db_path = null;
+    }
+
+    boolean hasPermission(Permission perm) {
+        foreach(String p in perms) {
+            if(p == perm.name) return true;
+        }
+        foreach(String g in groups) {
+            if(new Group(g).hasPermission(perm)) return true;
+        }
+        return false;
+    }
+
+    @Static User authenticate(String name, String password) {
+        if (db_path == null) {
+            Map dbs = $DATABASES;
+            if (dbs["default"] != null) {
+                String path = dbs["default"]["name"];
+                if (path != null) {
+                    _db_path = path;
+                }
+            }
+        }
+        Connection c = new(db_path);
+        try {
+            ResultSet r = c.query("select * from users");
+            while(r.next()) {
+                if(r.getString("name") == name && r.getString("password") == password) {
+                    String[] p = r.getString("permissions").split(",");
+                    String[] g = r.getString("groups").split(",");
+                    return new User(name, p, g);
+                }
+            }
+            return null;
+        } finally {
+            c.close();
+        }
+    }
+}
+
+/* ------------------------------------------------------------------------ */
 
 class TemplateContext
 {
@@ -197,6 +331,25 @@ class Template
         context.loadHdf(hdf);
         context.cs.render(delegate(this, render_cb));
         return buf;
+    }
+
+    boolean save(String name) {
+        String path = FileStorage.checkName(name);
+        if (path == null) return false;
+        hdf.writeFile(path);
+        return true;
+    }
+
+    boolean load(String name) {
+        String path = FileStorage.checkName(name);
+        if (path == null) return false;
+        InputStream ins = new InputStream(path);
+        if (ins == null) {
+            return false;
+        }
+        ins.close();
+        hdf.readFile(path);
+        return true;
     }
 }
 
@@ -375,139 +528,8 @@ class Session
     }
 }
 
-/* ------------------------------------------------------------------------ */
-/* matsu */
 
-@Singleton class FileStorage
-{
-    String checkName(String name) {
-        if(name.indexOf("/") != -1) return null;
-        if(name.indexOf("..") != -1) return null;
-        String storage_root = $USER_DIR;
-        if (storage_root == null) {
-            storage_root = $TMP_DIR;
-            if (storage_root == null) {
-                storage_root = "/tmp/";
-            }
-        }
-        return storage_root + name;
-    }
-
-    InputStream open(String name) {
-        name = checkName(name);
-        if(name != null) {
-            return new InputStream(name);
-        }
-        return null;
-    }
-
-    OutputStream newFile(String name) {
-        name = checkName(name);
-        if (isDebug()) {
-            ERR << "newFile: " << name << EOL;
-        }
-        if(name != null) {
-            return new OutputStream(name);
-        }
-        return null;
-    }
-}
-
-class Permission
-{
-    String name;
-    Permission(String name) { _name = name; }
-}
-
-class Group
-{
-    String name;
-    String db_path;
-
-    Group(String name) {
-        _name = name;
-        _db_path = null;
-    }
-
-    boolean hasPermission(Permission perm) {
-        if (db_path == null) {
-            Map dbs = $DATABASES;
-            if (dbs["default"] != null) {
-                String path = dbs["default"]["name"];
-                if (path != null) {
-                    _db_path = path;
-                }
-            }
-        }
-        Connection c = new(db_path);
-        try {
-            ResultSet r = c.query("select * from group_perms");
-            while(r.next()) {
-                if(r.getString("name") == name) {
-                    foreach(String p in r.getString("permissions").split(",")) {
-                        if(p == perm.name) return true;
-                    }
-                }
-            }
-        } finally {
-            c.close();
-        }
-        return false;
-    }
-}
-
-class User
-{
-    String name;
-    String[] perms;
-    String[] groups;
-    String db_path;
-
-    User(String name, String[] perms, String[] groups) {
-        _name = name;
-        _perms = perms;
-        _groups = groups;
-        _db_path = null;
-    }
-
-    boolean hasPermission(Permission perm) {
-        foreach(String p in perms) {
-            if(p == perm.name) return true;
-        }
-        foreach(String g in groups) {
-            if(new Group(g).hasPermission(perm)) return true;
-        }
-        return false;
-    }
-
-    @Static User authenticate(String name, String password) {
-        if (db_path == null) {
-            Map dbs = $DATABASES;
-            if (dbs["default"] != null) {
-                String path = dbs["default"]["name"];
-                if (path != null) {
-                    _db_path = path;
-                }
-            }
-        }
-        Connection c = new(db_path);
-        try {
-            ResultSet r = c.query("select * from users");
-            while(r.next()) {
-                if(r.getString("name") == name && r.getString("password") == password) {
-                    String[] p = r.getString("permissions").split(",");
-                    String[] g = r.getString("groups").split(",");
-                    return new User(name, p, g);
-                }
-            }
-            return null;
-        } finally {
-            c.close();
-        }
-    }
-}
-
-/* ------------------------------------------------------------------------ */
+/* ======================================================================== */
 /* Builtin middlwares. */
 
 class SessionMiddleware extends Middleware
@@ -572,7 +594,7 @@ class SessionMiddleware extends Middleware
     }
 }
 
-/* ------------------------------------------------------------------------ */
+/* ======================================================================== */
 
 HttpRequest g_req;
 HttpResponse g_res;

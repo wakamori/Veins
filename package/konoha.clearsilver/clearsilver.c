@@ -199,6 +199,15 @@ KMETHOD Hdf_writeFile(CTX ctx, ksfp_t *sfp _RIX)
     RETURNvoid_();
 }
 
+//## @Native void Hdf.writeFileAtomic(Path path);
+KMETHOD Hdf_writeFileAtomic(CTX ctx, ksfp_t *sfp _RIX)
+{
+    HDF *hdf = RawPtr_to(HDF *, sfp[0]);
+    const char *path = sfp[1].pth->ospath;
+    hdf_write_file_atomic(hdf, path);
+    RETURNvoid_();
+}
+
 //## @Native void Hdf.dump(String prefix);
 KMETHOD Hdf_dump(CTX ctx, ksfp_t *sfp _RIX)
 {
