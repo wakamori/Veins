@@ -45,6 +45,13 @@ boolean isDebug()
     return false;
 }
 
+String escapeSql(String text) {
+    if (text.indexOf(";") >= 0) {
+        throw new Script!!("Invalid text.");
+    }
+    return text.replace("'", "''").replace("\\", "\\\\");
+}
+
 /* ======================================================================== */
 /* Utilities. */
 
@@ -199,7 +206,7 @@ class User
     }
 
     @Static boolean hasUser(String name) {
-        name = User.escape(name);
+        name = escapeSql(name);
         if (isDebug()) {
             ERR << "escaped name: " << name << EOL;
         }
@@ -234,7 +241,7 @@ class User
         if (User.hasUser(name)) {
             return null;
         }
-        name = User.escape(name);
+        name = escapeSql(name);
         if (db_path == null) {
             Map dbs = $DATABASES;
             if (dbs["default"] != null) {
@@ -260,13 +267,97 @@ class User
         }
         return new User(name, [], []);
     }
-
-    @Static String escape(String text) {
-        return text.replace("'", "''").replace("\\", "\\\\");
-    }
 }
 
 /* ------------------------------------------------------------------------ */
+
+class Model
+{
+    String db_path;
+    String name;
+
+    Model(String name, Map<Class> scheme) {
+        name = escapeSql(name);
+        _name = name;
+        String query = "create table if not exists " + name + "(";
+        foreach (String key in scheme.keys()) {
+            String column = escapeSql(key);
+            String type = "";
+            Class c = scheme[key];
+            if (c == String) {
+                type = "text";
+            }
+            else if (c == int) {
+                type = "integer";
+            }
+            else {
+                throw new Script!!("Unsupported type is given.");
+            }
+            query += column + " " + type + ", ";
+        }
+        if (query.endsWith(", ")) {
+            query = query.substring(0, |query| - 2);
+        }
+        query += ")";
+        if (isDebug()) {
+            ERR << "model query: " << query << EOL;
+        }
+        Map dbs = $DATABASES;
+        if (dbs["default"] != null) {
+            String path = dbs["default"]["name"];
+            if (path != null) {
+                _db_path = path;
+            }
+        }
+        Connection con = new Connection(db_path);
+        con.exec(query);
+        con.close();
+    }
+
+    Map[] get(String column, Map param) {
+        column = escapeSql(column);
+        String query = "select " + column + " from " + name;
+        if (param != null && |param| > 0) {
+            query += " where ";
+            foreach (String key in param.keys()) {
+                Class c = param[key].class;
+                String value = "";
+                if (c == String) {
+                    value = "'" + param[key] + "'";
+                }
+                else if (c == int) {
+                    value = (to String)param[key];
+                }
+                else {
+                    throw new Script!!("Unsupported type is included.");
+                }
+                query += key + "=" + value + " and ";
+            }
+            if (query.endsWith(" and ")) {
+                query = query.substring(0, |query| - 5);
+            }
+        }
+        if (isDebug()) {
+            ERR << "get query: " << query << EOL;
+        }
+        Connection con = new Connection(db_path);
+        ResultSet r = con.query(query);
+        Map[] results = [];
+        while (r.next()) {
+            Map record = {};
+            for (int i = 0; i < |r|; i++) {
+                String name = r.getName(i);
+                record[name] = r[name];
+                if (isDebug()) {
+                    ERR << "record[" << name << "]=" << r[name] << EOL;
+                }
+            }
+            results.add(record);
+        }
+        con.close();
+        return results;
+    }
+}
 
 class TemplateContext
 {
