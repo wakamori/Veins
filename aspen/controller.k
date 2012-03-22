@@ -9,10 +9,11 @@ using konoha.veins.*;
 
 HttpResponse login(HttpRequest req, String[] args)
 {
+    HttpResponse res = new HttpResponse();
     if (req.method != "POST") {
-        HttpResponse res = new HttpResponse();
         res["Location"] = "./";
         res.status = 301;
+        return res;
     }
     Map<String> params = req.params_post;
     String username = params["username"];
@@ -23,9 +24,9 @@ HttpResponse login(HttpRequest req, String[] args)
         req.session["id"] = user.name;
     }
     else {
-        HttpResponse res = new HttpResponse();
         res["Location"] = "./";
         res.status = 301;
+        return res;
     }
     if (remember == "on") {
         req.session["username"] = username;
@@ -37,8 +38,7 @@ HttpResponse login(HttpRequest req, String[] args)
         req.session.remove("password");
         req.session.remove("remember");
     }
-    HttpResponse res = new HttpResponse();
-    res["Location"] = "./";
+    res["Location"] = "./" + username;
     res.status = 301;
     return res;
 }
@@ -62,15 +62,37 @@ HttpResponse editor(HttpRequest req, String[] args)
     Template tpl = new Template();
     tpl.readFile("top.hdf");
     tpl["ID"] = req.session["id"];
+    tpl["Code.Name"] = req.session["id"];
     TemplateContext ctx = new TemplateContext();
     ctx.parseFile("editor.cs");
+    return new HttpResponse(tpl.render(ctx));
+}
+
+HttpResponse user(HttpRequest req, String[] args)
+{
+    String user = args[0];
+    if (not User.hasUser(user)) {
+        HttpResponse res = new HttpResponse();
+        res.status = 404;
+        return res;
+    }
+    Template tpl = new Template();
+    tpl.load(user + ".hdf");
+    tpl.readFile("top.hdf");
+    tpl["ID"] = req.session["id"];
+    if (req.session["id"] == user) {
+        tpl["Myself"] = 1;
+    }
+    TemplateContext ctx = new TemplateContext();
+    ctx.parseFile("user.cs");
     return new HttpResponse(tpl.render(ctx));
 }
 
 HttpResponse top(HttpRequest req, String[] args)
 {
     if (req.session["id"] != null) {
-        return editor(req, args);
+        args.add(req.session["id"]);
+        return user(req, args);
     }
     Template tpl = new Template();
     tpl.readFile("top.hdf");
@@ -107,24 +129,7 @@ HttpResponse list(HttpRequest req, String[] args)
     tpl.readFile("top.hdf");
     tpl["ID"] = req.session["id"];
     TemplateContext ctx = new TemplateContext();
-    ctx.parseFile("list.cs");
-    return new HttpResponse(tpl.render(ctx));
-}
-
-HttpResponse user(HttpRequest req, String[] args)
-{
-    String user = args[0];
-    if (not User.hasUser(user)) {
-        HttpResponse res = new HttpResponse();
-        res.status = 404;
-        return res;
-    }
-    Template tpl = new Template();
-    tpl.load(user + ".hdf");
-    tpl.readFile("top.hdf");
-    tpl["ID"] = req.session["id"];
-    TemplateContext ctx = new TemplateContext();
-    ctx.parseFile("list.cs");
+    ctx.parseFile("user.cs");
     return new HttpResponse(tpl.render(ctx));
 }
 
@@ -192,6 +197,10 @@ HttpResponse check(HttpRequest req, String[] args)
     return res;
 }
 
+HttpResponse create(HttpRequest req, String[] args)
+{
+}
+
 Url.patterns = [
     (new Regex("^aspen/$"), top),
     (new Regex("^aspen/about/$"), about),
@@ -200,5 +209,6 @@ Url.patterns = [
     (new Regex("^aspen/login$"), login),
     (new Regex("^aspen/logout$"), logout),
     (new Regex("^aspen/signup$"), signup),
+    (new Regex("^aspen/action/new$"), create),
     (new Regex("^aspen/.*$"), user)
 ];

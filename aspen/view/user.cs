@@ -2,7 +2,6 @@
 <div class="container-fluid">
   <div class="row-fluid">
     <div class="span2">
-      <h3>User information</h3>
       <table class="table table-bordered">
         <tbody>
           <?cs each:item = Info ?>
@@ -15,7 +14,12 @@
       </table>
     </div>
     <div class="span10">
-      <h1>Your code</h1>
+      <?cs if:Myself ?>
+      <form action="<?cs var:BASE_URL ?>/create" method="post" class="form-inline">
+        <button type="submit" class="btn"><i class="icon-pencil"></i> Start coding</button>
+      </form>
+      <?cs /if ?>
+      <h1>Code</h1>
       <table class="table table-stripped">
         <thead>
           <tr><th>Name</th><th>Caption</th><th>Date</th></tr>
