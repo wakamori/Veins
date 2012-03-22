@@ -16,6 +16,7 @@
     <div class="span10">
       <?cs if:Myself ?>
       <form action="<?cs var:BASE_URL ?>/create" method="post" class="form-inline">
+        <input type="hidden" name="username" value="<?cs var:ID ?>">
         <button type="submit" class="btn"><i class="icon-pencil"></i> Start coding</button>
       </form>
       <?cs /if ?>

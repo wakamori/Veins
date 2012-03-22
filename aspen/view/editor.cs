@@ -15,10 +15,17 @@
     <a href="#" class="btn" data-dismiss="modal">Close</a>
   </div>
 </div>
+<ul class="breadcrumb">
+  <li>
+    <a href="<?cs var:BASE_URL ?>/<?cs var:User.Name ?>"><?cs var:User.Name ?></a> <span class="divider">/</span>
+  </li>
+  <li>
+    <a href="#"><?cs var:Code.Name ?></a>
+  </li>
+</ul>
 <div class="btn-group">
   <button class="btn btn-primary" data-toggle="modal" href="#resultwindow" id="runbtn">Run</button>
 </div>
-<h3><?cs var:Code.Name ?></h3>
 <textarea id="editor">// Your code goes here.
 print "hello, world";</textarea>
 <?cs include:"footer.cs" ?>

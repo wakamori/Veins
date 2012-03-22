@@ -199,6 +199,23 @@ HttpResponse check(HttpRequest req, String[] args)
 
 HttpResponse create(HttpRequest req, String[] args)
 {
+    HttpResponse res = new HttpResponse();
+    if (req.method != "POST") {
+        res["Location"] = "../";
+        res.status = 301;
+        return res;
+    }
+    if (req.session["id"] != req.params_post["username"]) {
+        res["Location"] = "../";
+        res.status = 301;
+        return res;
+    }
+    Date d = new Date();
+    String defaultname = (to String)d.year;
+    defaultname += (to String)d.month;
+    defaultname += (to String)d.day;
+    defaultname += (to String)d.hour;
+    defaultname += (to String)d.sec + ".k";
 }
 
 Url.patterns = [
@@ -209,6 +226,6 @@ Url.patterns = [
     (new Regex("^aspen/login$"), login),
     (new Regex("^aspen/logout$"), logout),
     (new Regex("^aspen/signup$"), signup),
-    (new Regex("^aspen/action/new$"), create),
+    (new Regex("^aspen/action/create$"), create),
     (new Regex("^aspen/.*$"), user)
 ];
