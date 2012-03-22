@@ -171,7 +171,7 @@ class Model
                 type = "integer";
             }
             else {
-                throw new Script!!("Unsupported type is given.");
+                throw new Script!!("scheme['" + key + "']: Unsupported type is given.");
             }
             if (i < |keys| - 1) {
                 query += column + " " + type + ", ";
@@ -207,7 +207,7 @@ class Model
                     value = escapeSql((to String)param[key]);
                 }
                 else {
-                    throw new Script!!("Unsupported type is included.");
+                    throw new Script!!("param['" + key + "']: Unsupported type is included.");
                 }
                 if (i < |keys| - 1) {
                     query += key + "=" + value + " and ";
@@ -252,7 +252,7 @@ class Model
                 values.add(escapeSql((to String)record[key]));
             }
             else {
-                throw new Script!!("Unsupported type is included.");
+                throw new Script!!("record['" + key + "']: Unsupported type is included.");
             }
             if (i < |keys| - 1) {
                 query += escapeSql(key) + ", ";
@@ -291,7 +291,7 @@ class Model
                 values.add(escapeSql((to String)record[key]));
             }
             else {
-                throw new Script!!("Unsupported type is included.");
+                throw new Script!!("record['" + key + "']: Unsupported type is included.");
             }
             if (i < |keys| - 1) {
                 query += escapeSql(key) + ", ";
@@ -357,26 +357,23 @@ class Permission
 class Group
 {
     String name;
-    String db_path;
+    Model group;
 
     Group(String name) {
         _name = name;
-        _db_path = getDatabase("user");
+        _group = new Model("group_perms", {
+            "name": String,
+            "permissions": String
+        });
     }
 
     boolean hasPermission(Permission perm) {
-        Connection c = new(db_path);
-        try {
-            ResultSet r = c.query("select * from group_perms");
-            while(r.next()) {
-                if(r.getString("name") == name) {
-                    foreach(String p in r.getString("permissions").split(",")) {
-                        if(p == perm.name) return true;
-                    }
-                }
+        Map[] m = group.get("*", {"name": name});
+        if (|m| == 1) {
+            String perms = (m[0]["permissions"] == null) ? "" : m[0]["permissions"];
+            foreach (String p in perms.split(",")) {
+                if (p == perm.name) return true;
             }
-        } finally {
-            c.close();
         }
         return false;
     }
@@ -387,13 +384,11 @@ class User
     String name;
     String[] perms;
     String[] groups;
-    String db_path;
 
     User(String name, String[] perms, String[] groups) {
         _name = name;
         _perms = perms;
         _groups = groups;
-        _db_path = getDatabase("user");
     }
 
     boolean hasPermission(Permission perm) {
@@ -407,48 +402,48 @@ class User
     }
 
     @Static User authenticate(String name, String password) {
-        if (db_path == null) {
-            _db_path = getDatabase("user");
+        Model user = new Model("users", {
+            "name": String,
+            "password": String,
+            "permissions": String,
+            "groups": String
+        });
+        Map[] m = user.get("*", {
+            "name": name,
+            "password": password.convert(to:md5)
+        });
+        if (|m| == 1) {
+            String perms = (m[0]["permissions"] == null) ? "" : m[0]["permissions"];
+            String groups = (m[0]["groups"] == null) ? "" : m[0]["permissions"];
+            String[] p = perms.split(",");
+            String[] g = groups.split(",");
+            return new User(name, p, g);
         }
-        Connection c = new(db_path);
-        try {
-            ResultSet r = c.query("select * from users");
-            while(r.next()) {
-                if(r.getString("name") == name && r.getString("password") == password.convert(to:md5)) {
-                    String[] p = r.getString("permissions").split(",");
-                    String[] g = r.getString("groups").split(",");
-                    return new User(name, p, g);
-                }
-            }
-            return null;
-        } finally {
-            c.close();
+        if (isDebug()) {
+            ERR << "authenticate result: " << m << EOL;
         }
+        return null;
     }
 
     @Static boolean hasUser(String name) {
-        if (db_path == null) {
-            _db_path = getDatabase("user");
-        }
-        name = escapeSql(name);
-        if (isDebug()) {
-            ERR << "escaped name: " << name << EOL;
-        }
-        Connection c = new(db_path);
-        try {
-            ResultSet r = c.query("select * from users where name = '" + name + "'");
-            while(r.next()) {
-                if(r.getString("name") == name) {
-                    if (isDebug()) {
-                        ERR << "user '" + name + "' exists" << EOL;
-                    }
-                    return true;
-                }
+        Model user = new Model("users", {
+            "name": String,
+            "password": String,
+            "permissions": String,
+            "groups": String
+        });
+        Map[] m = user.get("*", {
+            "name": name
+        });
+        if (|m| == 1) {
+            if (isDebug()) {
+                ERR << "user '" + name + "' exists" << EOL;
             }
-        } finally {
-            c.close();
+            return true;
         }
-        ERR << "user '" + name + "' does not exist" << EOL;
+        if (isDebug()) {
+            ERR << "user '" + name + "' does not exist" << EOL;
+        }
         return false;
     }
 
@@ -456,24 +451,16 @@ class User
         if (User.hasUser(name)) {
             return null;
         }
-        name = escapeSql(name);
-        if (db_path == null) {
-            _db_path = getDatabase("user");
-        }
-        Connection c = new(db_path);
-        try {
-            String query = "insert into users values('" + name + "',";
-            query += "'" + password.convert(to:md5) + "','','')";
-            if (isDebug()) {
-                ERR << "query: " << query << EOL;
-            }
-            c.exec(query);
-        } catch (Exception!! e) {
-            c.close();
-            return null;
-        } finally {
-            c.close();
-        }
+        Model user = new Model("users", {
+            "name": String,
+            "password": String,
+            "permissions": String,
+            "groups": String
+        });
+        user.set({
+            "name": name,
+            "password": password.convert(to:md5)
+        });
         return new User(name, [], []);
     }
 }
@@ -552,10 +539,13 @@ class Template
                 this[key + "." + mkeys[i]] = value[mkeys[i]];
             }
         }
-        else {
+        else if (value == null) {
             if (isDebug()) {
-                ERR << "unsupported type: " << value.class << EOL;
+                ERR << "Template['" + key + "']: value is null. ignored." << EOL;
             }
+        }
+        else {
+            throw new Script!!("Template['" + key + "']: Unsupported type is given.");
         }
     }
 
@@ -758,9 +748,7 @@ class Session
             m[key] = val;
         }
         else {
-            if (isDebug()) {
-                ERR << "unsupported type: " << val.class << EOL;
-            }
+            throw new Script!!("Session['" + key + "']: Unsupported type is given.");
         }
     }
 
