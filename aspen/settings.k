@@ -5,7 +5,7 @@
 /* Show debug messages when DEBUG is "true". */
 $DEBUG = "true";
 
-/* User database. */
+/* Database. */
 $DATABASES = {
     "default": {
         "engine": "sqlite3",
@@ -14,11 +14,19 @@ $DATABASES = {
         "password": "",
         "host": "",
         "port": ""
+    },
+    "user": {
+        "engine": "sqlite3",
+        "name": "/Users/chen_ji/Devel/git/Veins/aspen/userdb",
+        "user": "",
+        "password": "",
+        "host": "",
+        "port": ""
     }
 };
 
-/* Absolute path to user data directory. */
-$USER_DIR = "/Users/chen_ji/Devel/git/Veins/aspen/user/";
+/* Absolute path to media data directory. */
+$MEDIA_DIR = "/Users/chen_ji/Devel/git/Veins/aspen/user/";
 
 /* Absolute path to model data directory. */
 $MODEL_DIR = "/Users/chen_ji/Devel/git/Veins/aspen/model/";
@@ -44,4 +52,4 @@ $MIDDLEWARES = [
 /* Middlware settings. */
 
 /* Session engine ("file" or "cache"). Default is "file" */
-$SESSION_ENGINE = "file";
+//$SESSION_ENGINE = "file";

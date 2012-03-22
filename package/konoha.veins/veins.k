@@ -39,13 +39,108 @@ using konoha.wsgi.*;
 
 boolean isDebug()
 {
-    if ($DEBUG == "true") {
+    String debug = $DEBUG;
+    if (debug == "true" || debug == "on") {
         return true;
     }
     return false;
 }
 
-String escapeSql(String text) {
+String getDatabase(String dbname)
+{
+    if (dbname == null) {
+        dbname = "default";
+    }
+    Map dbs = $DATABASES;
+    if (dbs == null) {
+        throw new Script!!("$DATABASES is null");
+    }
+    if (dbs[dbname] == null) {
+        if (isDebug()) {
+            ERR << "$DATABASES['" + dbname + "'] is null" << EOL;
+        }
+        dbname = "default";
+        if (dbs[dbname] == null) {
+            throw new Script!!("$DATABASES['default'] is null");
+        }
+    }
+    if (dbs[dbname]["name"] == null) {
+        throw new Script!!("$DATABASES['" + dbname + "']['name'] is null");
+    }
+    return dbs[dbname]["name"];
+}
+
+String getMediaDir()
+{
+    String mediadir = $MEDIA_DIR;
+    if (mediadir == null) {
+        throw new Script!!("$MEDIA_DIR is null");
+    }
+    return mediadir;
+}
+
+String getModelDir()
+{
+    String modeldir = $MODEL_DIR;
+    if (modeldir == null) {
+        throw new Script!!("$MODEL_DIR is null");
+    }
+    return modeldir;
+}
+
+String getViewDir()
+{
+    String viewdir = $VIEW_DIR;
+    if (viewdir == null) {
+        throw new Script!!("$VIEW_DIR is null");
+    }
+    return viewdir;
+}
+
+String getTmpDir()
+{
+    String tmpdir = $TMP_DIR;
+    if (tmpdir == null) {
+        if (isDebug()) {
+            ERR << "$TMP_DIR is null" << EOL;
+        }
+        tmpdir = "/tmp/";
+    }
+    return tmpdir;
+}
+
+String getBaseUrl()
+{
+    String baseurl = $BASE_URL;
+    if (baseurl == null) {
+        throw new Script!!("$BASE_URL is null");
+    }
+    return baseurl;
+}
+
+String getStaticUrl()
+{
+    String staticurl = $STATIC_URL;
+    if (staticurl == null) {
+        throw new Script!!("$STATIC_URL is null");
+    }
+    return staticurl;
+}
+
+String[] getMiddlewares()
+{
+    String[] middlewares = $MIDDLEWARES;
+    if (middlewares == null) {
+        if (isDebug()) {
+            ERR << "$MIDDLEWARES is null" << EOL;
+        }
+        middlewares = [];
+    }
+    return middlewares;
+}
+
+String escapeSql(String text)
+{
     if (text.indexOf(";") >= 0) {
         throw new Script!!("Invalid text.");
     }
@@ -53,223 +148,7 @@ String escapeSql(String text) {
 }
 
 /* ======================================================================== */
-/* Utilities. */
-
-@Public void System.includeScript(String name)
-{
-    if ($veins.root == null) {
-        String script_name = $script.name;
-        if (script_name.indexOf("/") >= 0) {
-            $veins.root = script_name.substring(0, script_name.lastIndexOf("/"));
-        }
-    }
-    if ($veins.root != null && !name.startsWith("/")) {
-        eval("include \"" + $veins.root + "/" + name + "\";");
-    }
-}
-
-/* ======================================================================== */
 /* Classes. */
-
-/* ------------------------------------------------------------------------ */
-/* matsu */
-
-@Singleton class FileStorage
-{
-    String checkName(String name) {
-        if(name.indexOf("/") != -1) return null;
-        if(name.indexOf("..") != -1) return null;
-        String storage_root = $USER_DIR;
-        if (storage_root == null) {
-            storage_root = $TMP_DIR;
-            if (storage_root == null) {
-                storage_root = "/tmp/";
-            }
-        }
-        return storage_root + name;
-    }
-
-    InputStream open(String name) {
-        name = checkName(name);
-        if(name != null) {
-            return new InputStream(name);
-        }
-        return null;
-    }
-
-    OutputStream newFile(String name) {
-        name = checkName(name);
-        if (isDebug()) {
-            ERR << "newFile: " << name << EOL;
-        }
-        if(name != null) {
-            return new OutputStream(name);
-        }
-        return null;
-    }
-}
-
-class Permission
-{
-    String name;
-    Permission(String name) { _name = name; }
-}
-
-class Group
-{
-    String name;
-    String db_path;
-
-    Group(String name) {
-        _name = name;
-        Map dbs = $DATABASES;
-        if (dbs["default"] != null) {
-            String path = dbs["default"]["name"];
-            if (path != null) {
-                _db_path = path;
-            }
-        }
-    }
-
-    boolean hasPermission(Permission perm) {
-        Connection c = new(db_path);
-        try {
-            ResultSet r = c.query("select * from group_perms");
-            while(r.next()) {
-                if(r.getString("name") == name) {
-                    foreach(String p in r.getString("permissions").split(",")) {
-                        if(p == perm.name) return true;
-                    }
-                }
-            }
-        } finally {
-            c.close();
-        }
-        return false;
-    }
-}
-
-class User
-{
-    String name;
-    String[] perms;
-    String[] groups;
-    String db_path;
-
-    User(String name, String[] perms, String[] groups) {
-        _name = name;
-        _perms = perms;
-        _groups = groups;
-        Map dbs = $DATABASES;
-        if (dbs["default"] != null) {
-            String path = dbs["default"]["name"];
-            if (path != null) {
-                _db_path = path;
-            }
-        }
-    }
-
-    boolean hasPermission(Permission perm) {
-        foreach(String p in perms) {
-            if(p == perm.name) return true;
-        }
-        foreach(String g in groups) {
-            if(new Group(g).hasPermission(perm)) return true;
-        }
-        return false;
-    }
-
-    @Static User authenticate(String name, String password) {
-        if (db_path == null) {
-            Map dbs = $DATABASES;
-            if (dbs["default"] != null) {
-                String path = dbs["default"]["name"];
-                if (path != null) {
-                    _db_path = path;
-                }
-            }
-        }
-        Connection c = new(db_path);
-        try {
-            ResultSet r = c.query("select * from users");
-            while(r.next()) {
-                if(r.getString("name") == name && r.getString("password") == password.convert(to:md5)) {
-                    String[] p = r.getString("permissions").split(",");
-                    String[] g = r.getString("groups").split(",");
-                    return new User(name, p, g);
-                }
-            }
-            return null;
-        } finally {
-            c.close();
-        }
-    }
-
-    @Static boolean hasUser(String name) {
-        name = escapeSql(name);
-        if (isDebug()) {
-            ERR << "escaped name: " << name << EOL;
-        }
-        if (db_path == null) {
-            Map dbs = $DATABASES;
-            if (dbs["default"] != null) {
-                String path = dbs["default"]["name"];
-                if (path != null) {
-                    _db_path = path;
-                }
-            }
-        }
-        Connection c = new(db_path);
-        try {
-            ResultSet r = c.query("select * from users where name = '" + name + "'");
-            while(r.next()) {
-                if(r.getString("name") == name) {
-                    if (isDebug()) {
-                        ERR << "user '" + name + "' exists" << EOL;
-                    }
-                    return true;
-                }
-            }
-        } finally {
-            c.close();
-        }
-        ERR << "user '" + name + "' does not exist" << EOL;
-        return false;
-    }
-
-    @Static User addUser(String name, String password) {
-        if (User.hasUser(name)) {
-            return null;
-        }
-        name = escapeSql(name);
-        if (db_path == null) {
-            Map dbs = $DATABASES;
-            if (dbs["default"] != null) {
-                String path = dbs["default"]["name"];
-                if (path != null) {
-                    _db_path = path;
-                }
-            }
-        }
-        Connection c = new(db_path);
-        try {
-            String query = "insert into users values('" + name + "',";
-            query += "'" + password.convert(to:md5) + "','','')";
-            if (isDebug()) {
-                ERR << "query: " << query << EOL;
-            }
-            c.exec(query);
-        } catch (Exception!! e) {
-            c.close();
-            return null;
-        } finally {
-            c.close();
-        }
-        return new User(name, [], []);
-    }
-}
-
-/* ------------------------------------------------------------------------ */
 
 class Model
 {
@@ -278,7 +157,6 @@ class Model
 
     Model(String name, Map<Class> scheme) {
         name = escapeSql(name);
-        _name = name;
         String query = "create table if not exists " + name + "(";
         String[] keys = scheme.keys();
         for (int i = 0; i < |keys|; i++) {
@@ -305,13 +183,8 @@ class Model
         if (isDebug()) {
             ERR << "model query: " << query << EOL;
         }
-        Map dbs = $DATABASES;
-        if (dbs["default"] != null) {
-            String path = dbs["default"]["name"];
-            if (path != null) {
-                _db_path = path;
-            }
-        }
+        _db_path = getDatabase();
+        _name = name;
         Connection con = new Connection(db_path);
         con.exec(query);
         con.close();
@@ -444,6 +317,169 @@ class Model
     }
 }
 
+/* ------------------------------------------------------------------------ */
+/* matsu */
+
+@Singleton class FileStorage
+{
+    String checkName(String name) {
+        if(name.indexOf("/") != -1) return null;
+        if(name.indexOf("..") != -1) return null;
+        return getMediaDir() + name;
+    }
+
+    InputStream open(String name) {
+        name = checkName(name);
+        if(name != null) {
+            return new InputStream(name);
+        }
+        return null;
+    }
+
+    OutputStream newFile(String name) {
+        name = checkName(name);
+        if (isDebug()) {
+            ERR << "newFile: " << name << EOL;
+        }
+        if(name != null) {
+            return new OutputStream(name);
+        }
+        return null;
+    }
+}
+
+class Permission
+{
+    String name;
+    Permission(String name) { _name = name; }
+}
+
+class Group
+{
+    String name;
+    String db_path;
+
+    Group(String name) {
+        _name = name;
+        _db_path = getDatabase("user");
+    }
+
+    boolean hasPermission(Permission perm) {
+        Connection c = new(db_path);
+        try {
+            ResultSet r = c.query("select * from group_perms");
+            while(r.next()) {
+                if(r.getString("name") == name) {
+                    foreach(String p in r.getString("permissions").split(",")) {
+                        if(p == perm.name) return true;
+                    }
+                }
+            }
+        } finally {
+            c.close();
+        }
+        return false;
+    }
+}
+
+class User
+{
+    String name;
+    String[] perms;
+    String[] groups;
+    String db_path;
+
+    User(String name, String[] perms, String[] groups) {
+        _name = name;
+        _perms = perms;
+        _groups = groups;
+        _db_path = getDatabase("user");
+    }
+
+    boolean hasPermission(Permission perm) {
+        foreach(String p in perms) {
+            if(p == perm.name) return true;
+        }
+        foreach(String g in groups) {
+            if(new Group(g).hasPermission(perm)) return true;
+        }
+        return false;
+    }
+
+    @Static User authenticate(String name, String password) {
+        if (db_path == null) {
+            _db_path = getDatabase("user");
+        }
+        Connection c = new(db_path);
+        try {
+            ResultSet r = c.query("select * from users");
+            while(r.next()) {
+                if(r.getString("name") == name && r.getString("password") == password.convert(to:md5)) {
+                    String[] p = r.getString("permissions").split(",");
+                    String[] g = r.getString("groups").split(",");
+                    return new User(name, p, g);
+                }
+            }
+            return null;
+        } finally {
+            c.close();
+        }
+    }
+
+    @Static boolean hasUser(String name) {
+        if (db_path == null) {
+            _db_path = getDatabase("user");
+        }
+        name = escapeSql(name);
+        if (isDebug()) {
+            ERR << "escaped name: " << name << EOL;
+        }
+        Connection c = new(db_path);
+        try {
+            ResultSet r = c.query("select * from users where name = '" + name + "'");
+            while(r.next()) {
+                if(r.getString("name") == name) {
+                    if (isDebug()) {
+                        ERR << "user '" + name + "' exists" << EOL;
+                    }
+                    return true;
+                }
+            }
+        } finally {
+            c.close();
+        }
+        ERR << "user '" + name + "' does not exist" << EOL;
+        return false;
+    }
+
+    @Static User addUser(String name, String password) {
+        if (User.hasUser(name)) {
+            return null;
+        }
+        name = escapeSql(name);
+        if (db_path == null) {
+            _db_path = getDatabase("user");
+        }
+        Connection c = new(db_path);
+        try {
+            String query = "insert into users values('" + name + "',";
+            query += "'" + password.convert(to:md5) + "','','')";
+            if (isDebug()) {
+                ERR << "query: " << query << EOL;
+            }
+            c.exec(query);
+        } catch (Exception!! e) {
+            c.close();
+            return null;
+        } finally {
+            c.close();
+        }
+        return new User(name, [], []);
+    }
+}
+
+/* ------------------------------------------------------------------------ */
+
 class TemplateContext
 {
     Cs cs;
@@ -456,45 +492,16 @@ class TemplateContext
 
     void parseFile(Path path) {
         if (!((to String)path).startsWith("/")) {
-            path = $VIEW_DIR + path;
+            path = getViewDir() + path;
         }
         _file = path;
     }
 
     void loadSettingValues(Hdf hdf) {
-        String static_url = $STATIC_URL;
-        if (static_url != null) {
-            if (isDebug()) {
-                ERR << "$STATIC_URL=" << static_url << EOL;
-            }
-            hdf.setValue("STATIC_URL", static_url);
-        }
-        String base_url = $BASE_URL;
-        if (base_url != null) {
-            if (isDebug()) {
-                ERR << "$BASE_URL=" << base_url << EOL;
-            }
-            hdf.setValue("BASE_URL", base_url);
-        }
-        String view_dir = $VIEW_DIR;
-        if (view_dir != null) {
-            if (isDebug()) {
-                ERR << "$VIEW_DIR=" << view_dir << EOL;
-            }
-            hdf.setValue("hdf.loadpaths.0", view_dir);
-        }
-        String model_dir = $MODEL_DIR;
-        if (model_dir != null) {
-            if (isDebug()) {
-                ERR << "$MODEL_DIR=" << model_dir << EOL;
-            }
-            if (view_dir == null) {
-                hdf.setValue("hdf.loadpaths.0", model_dir);
-            }
-            else {
-                hdf.setValue("hdf.loadpaths.1", model_dir);
-            }
-        }
+        hdf.setValue("STATIC_URL", getStaticUrl());
+        hdf.setValue("BASE_URL", getBaseUrl());
+        hdf.setValue("hdf.loadpaths.0", getViewDir());
+        hdf.setValue("hdf.loadpaths.1", getModelDir());
     }
 
     void loadHdf(Hdf hdf) {
@@ -562,7 +569,7 @@ class Template
 
     void readFile(Path path) {
         if (!((to String)path).startsWith("/")) {
-            path = $MODEL_DIR + path;
+            path = getModelDir() + path;
         }
         hdf.readFile(path);
     }
@@ -667,19 +674,15 @@ class HttpResponse
 @Singleton class Url
 {
     Tuple<Regex,Func<HttpRequest,String[]=>HttpResponse>>[] getPatterns() {
-        if ($veins.defurlpatterns == null) {
-            $veins.defurlpatterns = "Urlpatterns";
+        Tuple<Regex,Func<HttpRequest,String[]=>HttpResponse>>[] patterns = $veins.urlpatterns;
+        if (patterns == null) {
             $veins.urlpatterns = new Tuple<Regex,Func<HttpRequest,String[]=>HttpResponse>>[0];
         }
         return $veins.urlpatterns;
     }
 
     void setPatterns(Tuple<Regex,Func<HttpRequest,String[]=>HttpResponse>>[] patterns) {
-        $veins.defurlpatterns = "Urlpatterns";
         $veins.urlpatterns = patterns;
-        if (isDebug()) {
-            ERR << "urlpatterns: " << ($veins.urlpatterns).class << EOL;
-        }
     }
 }
 
@@ -708,13 +711,7 @@ class Session
             _origname = Uuid.getUuid4();
             _fname = origname.convert(to:md5);
         }
-        String tmp_dir = $TMP_DIR;
-        if (tmp_dir != null) {
-            _path = tmp_dir + fname;
-        }
-        else {
-            _path = "/tmp/" + fname;
-        }
+        _path = getTmpDir() + fname;
         load();
     }
 
@@ -850,7 +847,7 @@ String[] g_args;
 @Public String Wsgi.application(Map<String> environ,
         Func<String,Tuple<String,String>[]> start_response)
 {
-    String[] middlewares = $MIDDLEWARES;
+    String[] middlewares = getMiddlewares();
     String path = environ["URI"];
     if (|path| >= 1 && path != "/") {
         path = path.substring(1);
@@ -873,23 +870,21 @@ String[] g_args;
         }
     }
     if (g_res == null) {
-        if ($veins.defurlpatterns != null) {
-            foreach (Tuple<Regex,Func<HttpRequest,String[]=>HttpResponse>> t in $veins.urlpatterns) {
-                if (path.search(t[0]) >= 0) {
-                    g_args = path.split("/");
-                    if (|g_args| > 0) {
-                        g_args.remove(0);
-                    }
-                    g_handler = t[1];
-                    foreach (String middleware in middlewares) {
-                        eval("g_res = " + middleware + ".hookHandler(g_req, g_handler, g_args);");
-                    }
-                    if (g_res != null) {
-                        break;
-                    }
-                    g_res = g_handler(g_req, g_args);
+        foreach (Tuple<Regex,Func<HttpRequest,String[]=>HttpResponse>> t in Url.getPatterns()) {
+            if (path.search(t[0]) >= 0) {
+                g_args = path.split("/");
+                if (|g_args| > 0) {
+                    g_args.remove(0);
+                }
+                g_handler = t[1];
+                foreach (String middleware in middlewares) {
+                    eval("g_res = " + middleware + ".hookHandler(g_req, g_handler, g_args);");
+                }
+                if (g_res != null) {
                     break;
                 }
+                g_res = g_handler(g_req, g_args);
+                break;
             }
         }
     }

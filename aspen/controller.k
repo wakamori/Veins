@@ -227,5 +227,5 @@ Url.patterns = [
     (new Regex("^aspen/logout$"), logout),
     (new Regex("^aspen/signup$"), signup),
     (new Regex("^aspen/action/create$"), create),
-    (new Regex("^aspen/.*$"), user)
+    (new Regex("^aspen/.+$"), user)
 ];
