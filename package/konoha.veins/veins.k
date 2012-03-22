@@ -280,7 +280,9 @@ class Model
         name = escapeSql(name);
         _name = name;
         String query = "create table if not exists " + name + "(";
-        foreach (String key in scheme.keys()) {
+        String[] keys = scheme.keys();
+        for (int i = 0; i < |keys|; i++) {
+            String key = keys[i];
             String column = escapeSql(key);
             String type = "";
             Class c = scheme[key];
@@ -293,12 +295,13 @@ class Model
             else {
                 throw new Script!!("Unsupported type is given.");
             }
-            query += column + " " + type + ", ";
+            if (i < |keys| - 1) {
+                query += column + " " + type + ", ";
+            }
+            else {
+                query += column + " " + type + ")";
+            }
         }
-        if (query.endsWith(", ")) {
-            query = query.substring(0, |query| - 2);
-        }
-        query += ")";
         if (isDebug()) {
             ERR << "model query: " << query << EOL;
         }
@@ -319,22 +322,26 @@ class Model
         String query = "select " + column + " from " + name;
         if (param != null && |param| > 0) {
             query += " where ";
-            foreach (String key in param.keys()) {
+            String[] keys = param.keys();
+            for (int i = 0; i < |keys|; i++) {
+                String key = keys[i];
                 Class c = param[key].class;
                 String value = "";
                 if (c == String) {
-                    value = "'" + param[key] + "'";
+                    value = "'" + escapeSql(param[key]) + "'";
                 }
                 else if (c == int) {
-                    value = (to String)param[key];
+                    value = escapeSql((to String)param[key]);
                 }
                 else {
                     throw new Script!!("Unsupported type is included.");
                 }
-                query += key + "=" + value + " and ";
-            }
-            if (query.endsWith(" and ")) {
-                query = query.substring(0, |query| - 5);
+                if (i < |keys| - 1) {
+                    query += key + "=" + value + " and ";
+                }
+                else {
+                    query += key + "=" + value;
+                }
             }
         }
         if (isDebug()) {
@@ -356,6 +363,84 @@ class Model
         }
         con.close();
         return results;
+    }
+
+    void set(Map record) {
+        String query = "insert into " + name + "(";
+        String[] values = [];
+        String[] keys = record.keys();
+        for (int i = 0; i < |keys|; i++) {
+            String key = keys[i];
+            Class c = record[key].class;
+            if (c == String) {
+                values.add("'" + escapeSql(record[key]) + "'");
+            }
+            else if (c == int) {
+                values.add(escapeSql((to String)record[key]));
+            }
+            else {
+                throw new Script!!("Unsupported type is included.");
+            }
+            if (i < |keys| - 1) {
+                query += escapeSql(key) + ", ";
+            }
+            else {
+                query += escapeSql(key) + ") values("
+            }
+        }
+        for (int i = 0; i < |values|; i++) {
+            if (i < |values| - 1) {
+                query += values[i] + ", ";
+            }
+            else {
+                query += values[i] + ")";
+            }
+        }
+        if (isDebug()) {
+            ERR << "get query: " << query << EOL;
+        }
+        Connection con = new Connection(db_path);
+        con.exec(query);
+        con.close();
+    }
+
+    void remove(Map record) {
+        String query = "insert into " + name + "(";
+        String[] values = [];
+        String[] keys = record.keys();
+        for (int i = 0; i < |keys|; i++) {
+            String key = keys[i];
+            Class c = record[key].class;
+            if (c == String) {
+                values.add("'" + escapeSql(record[key]) + "'");
+            }
+            else if (c == int) {
+                values.add(escapeSql((to String)record[key]));
+            }
+            else {
+                throw new Script!!("Unsupported type is included.");
+            }
+            if (i < |keys| - 1) {
+                query += escapeSql(key) + ", ";
+            }
+            else {
+                query += escapeSql(key) + ") values("
+            }
+        }
+        for (int i = 0; i < |values|; i++) {
+            if (i < |values| - 1) {
+                query += values[i] + ", ";
+            }
+            else {
+                query += values[i] + ")";
+            }
+        }
+        if (isDebug()) {
+            ERR << "get query: " << query << EOL;
+        }
+        Connection con = new Connection(db_path);
+        con.exec(query);
+        con.close();
     }
 }
 
