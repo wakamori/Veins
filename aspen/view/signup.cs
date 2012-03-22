@@ -3,6 +3,12 @@
 <form action="/aspen/signup" method="post" class="form-horizontal">
   <fieldset>
     <legend>Create your personal account</legend>
+    <?cs if:Error.Title ?>
+    <div class="alert alert-error">
+      <h4 class="alert-heading"><?cs var:Error.Title ?></h4>
+      <p><?cs var:Error.Contents ?></p>
+    </div>
+    <?cs /if ?>
     <div class="control-group" id="username-group">
       <label class="control-label" for="username">Username</label>
       <div class="controls">

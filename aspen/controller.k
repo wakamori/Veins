@@ -130,15 +130,33 @@ HttpResponse user(HttpRequest req, String[] args)
 
 HttpResponse signup(HttpRequest req, String[] args)
 {
+    Template tpl = new Template();
+    tpl.readFile("top.hdf");
+    TemplateContext ctx = new TemplateContext();
     if (req.method == "POST") {
         String username = req.params_post["username"];
         String password = req.params_post["password"];
         User user = User.addUser(username, password);
-        if (user != null) {
-            Template tpl = new Template();
-            tpl.readFile("top.hdf");
+        Regex r = new Regex("^/^([\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4})?$/");
+        if (user == null) {
+            ERR << "user is null" << EOL;
+            Map error = {
+                "Title": "Username is invalid.",
+                "Contents": "Cannot create user '" + username + "'. Please retry."
+            }
+            tpl["Error"] = error;
+        }
+        else if (req.params_post["email"].search(r) < 0) {
+            ERR << "email is invalid" << EOL;
+            Map error = {
+                "Title": "email is invalid.",
+                "Contents": "Cannot create user '" + username + "'. Please retry."
+            }
+            tpl["Error"] = error;
+        }
+        else {
+            ERR << "OK" << EOL;
             tpl["Contents"] = "<p>User '" + user.name + "' is created.</p>";
-            TemplateContext ctx = new TemplateContext();
             ctx.parseFile("empty.cs");
             Template usertpl = new Template();
             Array info = [
@@ -152,9 +170,6 @@ HttpResponse signup(HttpRequest req, String[] args)
             return new HttpResponse(tpl.render(ctx));
         }
     }
-    Template tpl = new Template();
-    tpl.readFile("top.hdf");
-    TemplateContext ctx = new TemplateContext();
     ctx.parseFile("signup.cs");
     return new HttpResponse(tpl.render(ctx));
 }
