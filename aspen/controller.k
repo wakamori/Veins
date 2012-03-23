@@ -7,27 +7,21 @@ include "/Users/chen_ji/Devel/git/Veins/aspen/settings.k";
 
 using konoha.veins.*;
 
+HttpResponse redirect(String location) {
+    HttpResponse res = new HttpResponse();
+    res["Location"] = location;
+    res.status = 301;
+    return res;
+}
+
 HttpResponse login(HttpRequest req, String[] args)
 {
-    HttpResponse res = new HttpResponse();
     if (req.method != "POST") {
-        res["Location"] = "./";
-        res.status = 301;
-        return res;
+        return redirect("./");
     }
-    Map<String> params = req.params_post;
-    String username = params["username"];
-    String password = params["password"];
-    String remember = params["remember"];
-    User user = User.authenticate(username, password);
-    if (user != null) {
-        req.session["id"] = user.name;
-    }
-    else {
-        res["Location"] = "./";
-        res.status = 301;
-        return res;
-    }
+    String username = req.params_post["username"];
+    String password = req.params_post["password"];
+    String remember = req.params_post["remember"];
     if (remember == "on") {
         req.session["username"] = username;
         req.session["password"] = password;
@@ -38,23 +32,23 @@ HttpResponse login(HttpRequest req, String[] args)
         req.session.remove("password");
         req.session.remove("remember");
     }
-    res["Location"] = "./" + username;
-    res.status = 301;
-    return res;
+    User user = User.authenticate(username, password);
+    if (user != null) {
+        req.session["id"] = user.name;
+    }
+    else {
+        return redirect("./");
+    }
+    return redirect("./");
 }
 
 HttpResponse logout(HttpRequest req, String[] args)
 {
     if (req.method != "POST") {
-        HttpResponse res = new HttpResponse();
-        res["Location"] = "./";
-        res.status = 301;
+        return redirect("./");
     }
     req.session.remove("id");
-    HttpResponse res = new HttpResponse();
-    res["Location"] = "./";
-    res.status = 301;
-    return res;
+    return redirect("./");
 }
 
 HttpResponse editor(HttpRequest req, String[] args)
@@ -72,9 +66,10 @@ HttpResponse user(HttpRequest req, String[] args)
 {
     String user = args[0];
     if (not User.hasUser(user)) {
-        HttpResponse res = new HttpResponse();
-        res.status = 404;
-        return res;
+        if (req.session["id"] == user) {
+            req.session.remove("id");
+        }
+        return null;
     }
     Template tpl = new Template();
     tpl.load(user + ".hdf");
@@ -91,8 +86,7 @@ HttpResponse user(HttpRequest req, String[] args)
 HttpResponse top(HttpRequest req, String[] args)
 {
     if (req.session["id"] != null) {
-        args.add(req.session["id"]);
-        return user(req, args);
+        return redirect("./" + req.session["id"]);
     }
     Template tpl = new Template();
     tpl.readFile("top.hdf");
@@ -118,10 +112,7 @@ HttpResponse about(HttpRequest req, String[] args)
 HttpResponse list(HttpRequest req, String[] args)
 {
     if (req.session["id"] == null) {
-        HttpResponse res = new HttpResponse();
-        res["Location"] = "../";
-        res.status = 301;
-        return res;
+        return redirect("../");
     }
     String id = req.session["id"];
     Template tpl = new Template();
@@ -135,58 +126,62 @@ HttpResponse list(HttpRequest req, String[] args)
 
 HttpResponse signup(HttpRequest req, String[] args)
 {
+    if (req.method != "POST") {
+        return redirect("./");
+    }
     Template tpl = new Template();
     tpl.readFile("top.hdf");
     TemplateContext ctx = new TemplateContext();
-    if (req.method == "POST") {
-        String username = req.params_post["username"];
-        String password = req.params_post["password"];
-        User user = User.addUser(username, password);
-        Regex r = new Regex("^/^([\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4})?$/");
-        if (user == null) {
-            ERR << "user is null" << EOL;
-            Map error = {
-                "Title": "Username is invalid.",
-                "Contents": "Cannot create user '" + username + "'. Please retry."
-            }
-            tpl["Error"] = error;
+    String username = req.params_post["username"];
+    String password = req.params_post["password"];
+    String email = req.params_post["email"];
+    Regex r = new Regex("^/^([\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4})?$/");
+    if (email.search(r) < 0) {
+        ERR << "email is invalid" << EOL;
+        Map error = {
+            "Title": "email is invalid.",
+            "Contents": "Cannot create user '" + username + "'. Please retry."
         }
-        else if (req.params_post["email"].search(r) < 0) {
-            ERR << "email is invalid" << EOL;
-            Map error = {
-                "Title": "email is invalid.",
-                "Contents": "Cannot create user '" + username + "'. Please retry."
-            }
-            tpl["Error"] = error;
-        }
-        else {
-            ERR << "OK" << EOL;
-            tpl["Contents"] = "<p>User '" + user.name + "' is created.</p>";
-            ctx.parseFile("empty.cs");
-            Template usertpl = new Template();
-            Array info = [
-                {"key": "ID", "value": user.name},
-                {"key": "email", "value": req.params_post["email"]},
-            ];
-            usertpl["Info"] = info;
-            usertpl.save(user.name + ".hdf");
-            req.session["id"] = user.name;
-            tpl["ID"] = user.name;
-            return new HttpResponse(tpl.render(ctx));
-        }
+        tpl["Input.username"] = username;
+        tpl["Input.email"] = email;
+        tpl["Error"] = error;
+        ctx.parseFile("signup.cs");
+        return new HttpResponse(tpl.render(ctx));
     }
-    ctx.parseFile("signup.cs");
+    User user = User.addUser(username, password);
+    if (user == null) {
+        ERR << "user is null" << EOL;
+        Map error = {
+            "Title": "Username is invalid.",
+            "Contents": "Cannot create user '" + username + "'. Please retry."
+        }
+        tpl["Input.username"] = username;
+        tpl["Input.email"] = email;
+        tpl["Error"] = error;
+        ctx.parseFile("signup.cs");
+        return new HttpResponse(tpl.render(ctx));
+    }
+    ERR << "OK" << EOL;
+    tpl["Contents"] = "<p>User '" + user.name + "' is created.</p>";
+    ctx.parseFile("empty.cs");
+    Template usertpl = new Template();
+    Array info = [
+        {"key": "ID", "value": user.name},
+        {"key": "email", "value": email},
+    ];
+    usertpl["Info"] = info;
+    usertpl.save(user.name + ".hdf");
+    req.session["id"] = user.name;
+    tpl["ID"] = user.name;
     return new HttpResponse(tpl.render(ctx));
 }
 
 HttpResponse check(HttpRequest req, String[] args)
 {
-    HttpResponse res = new HttpResponse();
     if (req.method != "POST" || args[1] != "username") {
-        res["Location"] = "../";
-        res.status = 301;
-        return res;
+        return redirect("../");
     }
+    HttpResponse res = new HttpResponse();
     res["Content-Type"] = "application/json; charset=utf-8";
     if (User.hasUser(req.params_post["username"])) {
         res.content = "{ \"exists\": true }";
@@ -199,23 +194,27 @@ HttpResponse check(HttpRequest req, String[] args)
 
 HttpResponse create(HttpRequest req, String[] args)
 {
-    HttpResponse res = new HttpResponse();
     if (req.method != "POST") {
-        res["Location"] = "../";
-        res.status = 301;
-        return res;
+        return redirect("../");
     }
     if (req.session["id"] != req.params_post["username"]) {
-        res["Location"] = "../";
-        res.status = 301;
-        return res;
+        return redirect("../");
     }
+    HttpResponse res = new HttpResponse();
     Date d = new Date();
     String defaultname = (to String)d.year;
     defaultname += (to String)d.month;
     defaultname += (to String)d.day;
     defaultname += (to String)d.hour;
     defaultname += (to String)d.sec + ".k";
+    Model scripts = new Model("scripts", {
+        "user": String,
+        "name": String,
+        "date": String
+    });
+    scripts.add({
+        "user": 
+    });
 }
 
 Url.patterns = [

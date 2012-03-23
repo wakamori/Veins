@@ -12,14 +12,14 @@
     <div class="control-group" id="username-group">
       <label class="control-label" for="username">Username</label>
       <div class="controls">
-        <input type="text" class="input-xlarge" id="username" name="username">
+        <input type="text" class="input-xlarge" id="username" name="username"<?cs if:Input.username ?> value="<?cs var:Input.username ?>"<?cs /if ?>>
         <span class="help-inline" id="username-help"></span>
       </div>
     </div>
     <div class="control-group" id="email-group">
       <label class="control-label" for="email">Email Address</label>
       <div class="controls">
-        <input type="email" class="input-xlarge" id="email" name="email">
+        <input type="email" class="input-xlarge" id="email" name="email"<?cs if:Input.email ?> value="<?cs var:Input.email ?>"<?cs /if ?>>
         <span class="help-inline" id="email-help"></span>
       </div>
     </div>

@@ -15,7 +15,7 @@ $DATABASES = {
         "host": "",
         "port": ""
     },
-    "user": {
+    "users": {
         "engine": "sqlite3",
         "name": "/Users/chen_ji/Devel/git/Veins/aspen/userdb",
         "user": "",

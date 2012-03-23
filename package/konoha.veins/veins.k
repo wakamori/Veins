@@ -139,12 +139,26 @@ String[] getMiddlewares()
     return middlewares;
 }
 
-String escapeSql(String text)
+String escapeSqlText(String text)
 {
     if (text.indexOf(";") >= 0) {
         throw new Script!!("Invalid text.");
     }
     return text.replace("'", "''").replace("\\", "\\\\");
+}
+
+String escapeSqlValue(dynamic sql)
+{
+    Class c = sql.class;
+    if (c == String) {
+        return "'" + escapeSqlText(sql) + "'";
+    }
+    else if (c == int) {
+        return escapeSqlText((to String)sql);
+    }
+    else {
+        throw new Script!!("sql: Unsupported type is included.");
+    }
 }
 
 /* ======================================================================== */
@@ -155,13 +169,13 @@ class Model
     String db_path;
     String name;
 
-    Model(String name, Map<Class> scheme) {
-        name = escapeSql(name);
+    Model(String name, Map<Class> scheme, String[] primary_keys) {
+        name = escapeSqlText(name);
         String query = "create table if not exists " + name + "(";
         String[] keys = scheme.keys();
         for (int i = 0; i < |keys|; i++) {
             String key = keys[i];
-            String column = escapeSql(key);
+            String column = escapeSqlText(key);
             String type = "";
             Class c = scheme[key];
             if (c == String) {
@@ -177,13 +191,25 @@ class Model
                 query += column + " " + type + ", ";
             }
             else {
-                query += column + " " + type + ")";
+                query += column + " " + type;
+                if (|primary_keys| > 0) {
+                    query += ", primary key(";
+                    for (int j = 0; j < |primary_keys|; j++) {
+                        if (j < |primary_keys| - 1) {
+                            query += escapeSqlText(primary_keys[j]) + ", ";
+                        }
+                        else {
+                            query += escapeSqlText(primary_keys[j]) + ")";
+                        }
+                    }
+                }
+                query += ")";
             }
         }
         if (isDebug()) {
             ERR << "model query: " << query << EOL;
         }
-        _db_path = getDatabase();
+        _db_path = getDatabase(name);
         _name = name;
         Connection con = new Connection(db_path);
         con.exec(query);
@@ -191,29 +217,19 @@ class Model
     }
 
     Map[] get(String column, Map param) {
-        column = escapeSql(column);
+        column = escapeSqlText(column);
         String query = "select " + column + " from " + name;
         if (param != null && |param| > 0) {
             query += " where ";
             String[] keys = param.keys();
             for (int i = 0; i < |keys|; i++) {
                 String key = keys[i];
-                Class c = param[key].class;
-                String value = "";
-                if (c == String) {
-                    value = "'" + escapeSql(param[key]) + "'";
-                }
-                else if (c == int) {
-                    value = escapeSql((to String)param[key]);
-                }
-                else {
-                    throw new Script!!("param['" + key + "']: Unsupported type is included.");
-                }
+                String value = escapeSqlValue(param[key]);
                 if (i < |keys| - 1) {
-                    query += key + "=" + value + " and ";
+                    query += key + " = " + value + " and ";
                 }
                 else {
-                    query += key + "=" + value;
+                    query += key + " = " + value;
                 }
             }
         }
@@ -238,27 +254,18 @@ class Model
         return results;
     }
 
-    void set(Map record) {
-        String query = "insert into " + name + "(";
+    void set(Map record, String key, dynamic value) {
+        String query = "insert or replace into " + name + "(";
         String[] values = [];
         String[] keys = record.keys();
         for (int i = 0; i < |keys|; i++) {
             String key = keys[i];
-            Class c = record[key].class;
-            if (c == String) {
-                values.add("'" + escapeSql(record[key]) + "'");
-            }
-            else if (c == int) {
-                values.add(escapeSql((to String)record[key]));
-            }
-            else {
-                throw new Script!!("record['" + key + "']: Unsupported type is included.");
-            }
+            values.add(escapeSqlValue(record[key]));
             if (i < |keys| - 1) {
-                query += escapeSql(key) + ", ";
+                query += escapeSqlText(key) + ", ";
             }
             else {
-                query += escapeSql(key) + ") values("
+                query += escapeSqlText(key) + ") values(";
             }
         }
         for (int i = 0; i < |values|; i++) {
@@ -269,35 +276,29 @@ class Model
                 query += values[i] + ")";
             }
         }
+        if (key != null && value != null) {
+            query += " where " + escapeSqlText(key) + " = " + escapeSqlValue(value);
+        }
         if (isDebug()) {
-            ERR << "get query: " << query << EOL;
+            ERR << "set query: " << query << EOL;
         }
         Connection con = new Connection(db_path);
         con.exec(query);
         con.close();
     }
 
-    void remove(Map record) {
+    void add(Map record) {
         String query = "insert into " + name + "(";
         String[] values = [];
         String[] keys = record.keys();
         for (int i = 0; i < |keys|; i++) {
             String key = keys[i];
-            Class c = record[key].class;
-            if (c == String) {
-                values.add("'" + escapeSql(record[key]) + "'");
-            }
-            else if (c == int) {
-                values.add(escapeSql((to String)record[key]));
-            }
-            else {
-                throw new Script!!("record['" + key + "']: Unsupported type is included.");
-            }
+            values.add(escapeSqlValue(record[key]));
             if (i < |keys| - 1) {
-                query += escapeSql(key) + ", ";
+                query += escapeSqlText(key) + ", ";
             }
             else {
-                query += escapeSql(key) + ") values("
+                query += escapeSqlText(key) + ") values(";
             }
         }
         for (int i = 0; i < |values|; i++) {
@@ -309,7 +310,20 @@ class Model
             }
         }
         if (isDebug()) {
-            ERR << "get query: " << query << EOL;
+            ERR << "add query: " << query << EOL;
+        }
+        Connection con = new Connection(db_path);
+        con.exec(query);
+        con.close();
+    }
+
+    void remove(String key, dynamic value) {
+        String query = "delete from " + name;
+        if (key != null && value != null) {
+            query += " where " + escapeSqlText(key) + " = " + escapeSqlValue(value);
+        }
+        if (isDebug()) {
+            ERR << "remove query: " << query << EOL;
         }
         Connection con = new Connection(db_path);
         con.exec(query);
@@ -328,21 +342,21 @@ class Model
         return getMediaDir() + name;
     }
 
-    InputStream open(String name) {
+    InputStream open(String name, String mode) {
         name = checkName(name);
         if(name != null) {
-            return new InputStream(name);
+            return new InputStream(name, mode);
         }
         return null;
     }
 
-    OutputStream newFile(String name) {
+    OutputStream newFile(String name, String mode) {
         name = checkName(name);
         if (isDebug()) {
             ERR << "newFile: " << name << EOL;
         }
         if(name != null) {
-            return new OutputStream(name);
+            return new OutputStream(name, mode);
         }
         return null;
     }
@@ -457,7 +471,7 @@ class User
             "permissions": String,
             "groups": String
         });
-        user.set({
+        user.add({
             "name": name,
             "password": password.convert(to:md5)
         });
@@ -865,6 +879,10 @@ String[] g_args;
                     g_args.remove(0);
                 }
                 g_handler = t[1];
+                if (isDebug()) {
+                    ERR << "handler: " << g_handler << EOL;
+                    ERR << "args: " << g_args << EOL;
+                }
                 foreach (String middleware in middlewares) {
                     eval("g_res = " + middleware + ".hookHandler(g_req, g_handler, g_args);");
                 }
