@@ -421,7 +421,7 @@ class User
             "password": String,
             "permissions": String,
             "groups": String
-        });
+        }, ["name"]);
         Map[] m = user.get("*", {
             "name": name,
             "password": password.convert(to:md5)
@@ -445,7 +445,7 @@ class User
             "password": String,
             "permissions": String,
             "groups": String
-        });
+        }, ["name"]);
         Map[] m = user.get("*", {
             "name": name
         });
@@ -470,7 +470,7 @@ class User
             "password": String,
             "permissions": String,
             "groups": String
-        });
+        }, ["name"]);
         user.add({
             "name": name,
             "password": password.convert(to:md5)

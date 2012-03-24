@@ -126,16 +126,17 @@ HttpResponse list(HttpRequest req, String[] args)
 
 HttpResponse signup(HttpRequest req, String[] args)
 {
-    if (req.method != "POST") {
-        return redirect("./");
-    }
     Template tpl = new Template();
     tpl.readFile("top.hdf");
     TemplateContext ctx = new TemplateContext();
+    if (req.method != "POST") {
+        ctx.parseFile("signup.cs");
+        return new HttpResponse(tpl.render(ctx));
+    }
     String username = req.params_post["username"];
     String password = req.params_post["password"];
     String email = req.params_post["email"];
-    Regex r = new Regex("^/^([\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4})?$/");
+    Regex r = new Regex("^([\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4})?$");
     if (email.search(r) < 0) {
         ERR << "email is invalid" << EOL;
         Map error = {
@@ -162,8 +163,6 @@ HttpResponse signup(HttpRequest req, String[] args)
         return new HttpResponse(tpl.render(ctx));
     }
     ERR << "OK" << EOL;
-    tpl["Contents"] = "<p>User '" + user.name + "' is created.</p>";
-    ctx.parseFile("empty.cs");
     Template usertpl = new Template();
     Array info = [
         {"key": "ID", "value": user.name},
@@ -172,8 +171,7 @@ HttpResponse signup(HttpRequest req, String[] args)
     usertpl["Info"] = info;
     usertpl.save(user.name + ".hdf");
     req.session["id"] = user.name;
-    tpl["ID"] = user.name;
-    return new HttpResponse(tpl.render(ctx));
+    return redirect("./");
 }
 
 HttpResponse check(HttpRequest req, String[] args)
@@ -211,9 +209,6 @@ HttpResponse create(HttpRequest req, String[] args)
         "user": String,
         "name": String,
         "date": String
-    });
-    scripts.add({
-        "user": 
     });
 }
 
