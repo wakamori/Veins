@@ -149,14 +149,13 @@ String escapeSqlText(String text)
 
 String escapeSqlValue(dynamic sql)
 {
-    ERR << "sql: " << sql << EOL;
     Class c = sql.class;
     if (c == String) {
-        ERR << "sql: " << escapeSqlText(sql) << EOL;
         return "'" + escapeSqlText(sql) + "'";
     }
     else if (c == int) {
-        return escapeSqlText((to String)sql);
+        int i = sql;
+        return escapeSqlText((to String)i);
     }
     else {
         throw new Script!!("sql: Unsupported type is included.");

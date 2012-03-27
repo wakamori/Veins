@@ -17,7 +17,7 @@
       <?cs if:Myself ?>
       <form action="<?cs var:BASE_URL ?>/action/create" method="post" class="form-inline">
         <input type="hidden" name="username" value="<?cs var:ID ?>">
-        <button type="submit" class="btn"><i class="icon-pencil"></i> Start coding</button>
+        <button type="submit" class="btn"><i class="icon-pencil"></i> Create code</button>
       </form>
       <?cs /if ?>
       <h1>Code</h1>
@@ -28,7 +28,7 @@
         <tbody>
           <?cs each:item = Code ?>
           <tr>
-            <td><a href="<?cs var:BASE_URL ?>/<?cs var:User ?>/<?cs var:item.Name ?>"><?cs var:item.Name ?></a></td>
+            <td><a href="<?cs var:BASE_URL ?>/<?cs var:User ?>/<?cs var:item.Id ?>"><?cs var:item.Name ?></a></td>
             <td><?cs var:item.Caption ?></td>
             <td><?cs var:item.Date ?></td>
           </tr>

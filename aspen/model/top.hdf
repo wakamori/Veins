@@ -7,10 +7,6 @@ Header {
             Name = About
             URL = /about/
         }
-        1 {
-            Name = Info
-            URL = /list/
-        }
     }
 }
 Copyright = copyright &copy; 2012 Konoha Project

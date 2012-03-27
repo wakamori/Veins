@@ -238,7 +238,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
                     "do else extends finally float for foreach if " +
                     "instanceof int new print " +
                     "return switch this throw " +
-                    "try void while"),
+                    "try using void while"),
     blockKeywords: words("catch class do else finally for foreach if switch try while"),
     atoms: words("true false null"),
     hooks: {

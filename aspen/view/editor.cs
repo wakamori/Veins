@@ -19,7 +19,7 @@
   <li>
     <a href="<?cs var:BASE_URL ?>/<?cs var:User.Name ?>"><?cs var:User.Name ?></a> <span class="divider">/</span>
   </li>
-  <li class="active"><?cs var:Code.Name ?></li>
+  <li class="active" id="codename"><?cs var:Code.Name ?></li>
 </ul>
 <div id="alertbox"></div>
 <div class="btn-group">

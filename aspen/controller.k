@@ -19,10 +19,11 @@ Model getScripts()
 {
     return new Model("scripts", {
         "user": String,
+        "id": int,
         "name": String,
         "body": String,
         "date": String
-    }, ["user", "name"]);
+    }, ["user", "id"]);
 }
 
 HttpResponse login(HttpRequest req, String[] args)
@@ -68,15 +69,15 @@ HttpResponse editor(HttpRequest req, String[] args)
     tpl.readFile("top.hdf");
     tpl["ID"] = req.session["id"];
     tpl["User.Name"] = args[0];
-    tpl["Code.Name"] = args[1];
     Model scripts = getScripts();
-    Map[] m = scripts.get("body", {
+    Map[] m = scripts.get("*", {
         "user": args[0],
-        "name": args[1]
+        "id": (to int)args[1]
     });
     if (|m| == 0) {
         return null;
     }
+    tpl["Code.Name"] = m[0]["name"];
     tpl["Code.Body"] = m[0]["body"].convert(to:durl);
     TemplateContext ctx = new TemplateContext();
     if (req.session["id"] == args[0]) {
@@ -113,7 +114,10 @@ HttpResponse user(HttpRequest req, String[] args)
     Array codelist = [];
     Model scripts = getScripts();
     foreach (Map m in scripts.get("*", {"user": user})) {
+        int id = m["id"];
+        ERR << "id: " << id << EOL;
         codelist.add({
+            "Id": (to String)id,
             "Name": m["name"],
             "Date": m["date"]
         });
@@ -151,21 +155,6 @@ HttpResponse about(HttpRequest req, String[] args)
     tpl["ID"] = req.session["id"];
     TemplateContext ctx = new TemplateContext();
     ctx.parseFile("about.cs");
-    return new HttpResponse(tpl.render(ctx));
-}
-
-HttpResponse list(HttpRequest req, String[] args)
-{
-    if (req.session["id"] == null) {
-        return redirect("../");
-    }
-    String id = req.session["id"];
-    Template tpl = new Template();
-    tpl.load(id + ".hdf");
-    tpl.readFile("top.hdf");
-    tpl["ID"] = req.session["id"];
-    TemplateContext ctx = new TemplateContext();
-    ctx.parseFile("user.cs");
     return new HttpResponse(tpl.render(ctx));
 }
 
@@ -246,6 +235,7 @@ HttpResponse save(HttpRequest req, String[] args)
     HttpResponse res = new HttpResponse();
     res["Content-Type"] = "application/json; charset=utf-8";
     String user = req.params_post["user"];
+    String id = req.params_post["id"];
     String name = req.params_post["name"];
     String body = req.params_post["body"];
     if (user != req.session["id"]) {
@@ -255,6 +245,7 @@ HttpResponse save(HttpRequest req, String[] args)
     Model scripts = getScripts();
     scripts.set({
         "user": user,
+        "id": (to int)id,
         "name": name,
         "body": body.convert(to:url),
         "date": (to String)new Date()
@@ -274,26 +265,26 @@ HttpResponse create(HttpRequest req, String[] args)
     }
     HttpResponse res = new HttpResponse();
     Date d = new Date();
-    String defaultname = (to String)d.year;
-    defaultname += (to String)d.month;
-    defaultname += (to String)d.day;
-    defaultname += (to String)d.hour;
-    defaultname += (to String)d.sec;
+    String id = (to String)d.year;
+    id += (to String)d.month;
+    id += (to String)d.day;
+    id += (to String)d.hour;
+    id += (to String)d.sec;
     Model scripts = getScripts();
     scripts.set({
         "user": username,
-        "name": defaultname,
+        "id": (to int)id,
+        "name": "noname",
         "body": "",
         "date": (to String)d
     });
-    return redirect("../" + username + "/" + defaultname);
+    return redirect("../" + username + "/" + id);
 }
 
 Url.patterns = [
     (new Regex("^aspen/$"), top),
     (new Regex("^aspen/about/$"), about),
     (new Regex("^aspen/check/username$"), check),
-    (new Regex("^aspen/list/$"), list),
     (new Regex("^aspen/login$"), login),
     (new Regex("^aspen/logout$"), logout),
     (new Regex("^aspen/signup$"), signup),

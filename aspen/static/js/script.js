@@ -19,7 +19,7 @@ $(function() {
             }
             return a[a.length - 2];
         }
-        function getName(url) {
+        function getId(url) {
             var a = url.split("/");
             if (a[a.length - 1] == "") {
                 a.pop();
@@ -33,7 +33,8 @@ $(function() {
                 dataType: "json",
                 data: {
                     user: getUser(document.URL),
-                    name: getName(document.URL),
+                    id: getId(document.URL),
+                    name: $("#codename").text(),
                     body: editor.getValue()
                 },
                 success: function(msg) {
