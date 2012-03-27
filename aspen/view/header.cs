@@ -72,6 +72,7 @@
               <li id="fat-menu" class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-user icon-white"></i> <?cs var:ID ?><b class="caret"></b></a>
                 <ul class="dropdown-menu">
+                  <li><a href="<?cs var:BASE_URL ?>/<?cs var:ID ?>"><i class="icon-home"></i> Home</a></li>
                   <li><a href="#" id="signoutbtn">Sign out</a></li>
                 </ul>
               </li>
