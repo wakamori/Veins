@@ -9,6 +9,7 @@
 <script src="<?cs var:STATIC_URL ?>/js/libs/bootstrap/collapse.js"></script>
 <script src="<?cs var:STATIC_URL ?>/js/libs/bootstrap/dropdown.js"></script>
 <script src="<?cs var:STATIC_URL ?>/js/libs/CodeMirror-2.22/lib/codemirror.js"></script>
+<script src="<?cs var:STATIC_URL ?>/js/libs/CodeMirror-2.22/mode/clike/clike.js"></script>
 <script src="<?cs var:STATIC_URL ?>/js/libs/bootstrap/alert.js"></script>
 <script src="<?cs var:STATIC_URL ?>/js/libs/bootstrap/modal.js"></script>
 <script src="<?cs var:STATIC_URL ?>/js/libs/bootstrap/transition.js"></script>

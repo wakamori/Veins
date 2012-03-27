@@ -231,4 +231,21 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
       }
     }
   });
+  /* added by chen_ji */
+  CodeMirror.defineMIME("text/x-konoha", {
+    name: "clike",
+    keywords: words("assert assure boolean break byte case catch class continue default " +
+                    "do else extends finally float for foreach if " +
+                    "instanceof int new print " +
+                    "return switch this throw " +
+                    "try void while"),
+    blockKeywords: words("catch class do else finally for foreach if switch try while"),
+    atoms: words("true false null"),
+    hooks: {
+      "@": function(stream, state) {
+        stream.eatWhile(/[\w\$_]/);
+        return "meta";
+      }
+    }
+  });
 }());

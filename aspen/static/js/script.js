@@ -5,7 +5,8 @@
 $(function() {
     if ($("#editor")[0] != undefined) {
         var editor = CodeMirror.fromTextArea($("#editor")[0], {
-            lineNumbers: true
+            lineNumbers: true,
+            mode: "text/x-konoha"
         });
         $("#runbtn").click(function() {
             $("#sourceinput").val(editor.getValue());

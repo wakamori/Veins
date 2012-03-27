@@ -9,7 +9,7 @@
     <h3>Result</h3>
   </div>
   <div class="modal-body" id="body">
-    <iframe name="resultframe"></iframe>
+    <iframe name="resultframe" id="resultframe"></iframe>
   </div>
   <div class="modal-footer">
     <a href="#" class="btn" data-dismiss="modal">Close</a>
