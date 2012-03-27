@@ -22,6 +22,14 @@ $DATABASES = {
         "password": "",
         "host": "",
         "port": ""
+    },
+    "scripts": {
+        "engine": "sqlite3",
+        "name": "/Users/chen_ji/Devel/git/Veins/aspen/scriptdb",
+        "user": "",
+        "password": "",
+        "host": "",
+        "port": ""
     }
 };
 

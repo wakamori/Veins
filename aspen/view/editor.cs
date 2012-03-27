@@ -19,13 +19,11 @@
   <li>
     <a href="<?cs var:BASE_URL ?>/<?cs var:User.Name ?>"><?cs var:User.Name ?></a> <span class="divider">/</span>
   </li>
-  <li>
-    <a href="#"><?cs var:Code.Name ?></a>
-  </li>
+  <li class="active"><?cs var:Code.Name ?></li>
 </ul>
+<div id="alertbox"></div>
 <div class="btn-group">
-  <button class="btn btn-primary" data-toggle="modal" href="#resultwindow" id="runbtn">Run</button>
+  <button class="btn btn-primary" data-toggle="modal" href="#resultwindow" id="runbtn">Run</button><button class="btn" id="savebtn">Save</button>
 </div>
-<textarea id="editor">// Your code goes here.
-print "hello, world";</textarea>
+<textarea id="editor"><?cs var:Code.Body ?></textarea>
 <?cs include:"footer.cs" ?>

@@ -1,27 +1,12 @@
 <?cs include:"header.cs" ?>
-<div class="modal fade" id="sign-in">
-  <div class="modal-header">
-    <a class="close" data-dismiss="modal">&times;</a>
-    <h3>Sign in form</h3>
-  </div>
-  <div class="modal-body">
-    <form class="well" action="<?cs var:BASE_URL ?>/login" method="post">
-      <input name="type" type="hidden" value="login">
-      <input name="username" type="text" class="input-medium" placeholder="Username"<?cs if:Remember == "on" ?> value="<?cs var:Username ?>"<?cs /if ?>>
-      <input name="password" type="password" class="input-medium" placeholder="Password"<?cs if:Remember == "on" ?> value="<?cs var:Password ?>"<?cs /if ?>>
-      <label class="checkbox">
-        <input type="checkbox" name="remember" value="on"<?cs if:Remember == "on" ?> checked<?cs /if ?>> Remember me
-      </label>
-      <button type="submit" class="btn">Sign in</button>
-    </form>
-  </div>
-</div>
-
 <!-- Main hero unit for a primary marketing message or call to action -->
 <div class="hero-unit">
   <h1>Aspen</h1>
   <p>Aspen is an online Konoha development environment. You can edit, run and debug your Konoha code on your browser.</p>
-  <p><a class="btn btn-primary btn-large" data-toggle="modal" href="#sign-in">Try now</a></p>
+  <p>
+    <a class="btn btn-primary btn-large" data-toggle="modal" href="#sign-in">Try now</a>
+    <a class="btn btn-large" href="<?cs var:BASE_URL ?>/signup">Sign up</a>
+  </p>
 </div>
 
 <!-- Example row of columns -->

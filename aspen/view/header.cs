@@ -29,6 +29,24 @@
 
     <?cs if:ID ?>
       <form name="logoutform" id="signoutform" action="<?cs var:BASE_URL ?>/logout" method="post" class="hideform"></form>
+    <?cs else ?>
+      <div class="modal fade" id="sign-in">
+        <div class="modal-header">
+          <a class="close" data-dismiss="modal">&times;</a>
+          <h3>Sign in form</h3>
+        </div>
+        <div class="modal-body">
+          <form class="well" action="<?cs var:BASE_URL ?>/login" method="post">
+            <input name="type" type="hidden" value="login">
+            <input name="username" type="text" class="input-medium" placeholder="Username"<?cs if:Remember == "on" ?> value="<?cs var:Username ?>"<?cs /if ?>>
+            <input name="password" type="password" class="input-medium" placeholder="Password"<?cs if:Remember == "on" ?> value="<?cs var:Password ?>"<?cs /if ?>>
+            <label class="checkbox">
+              <input type="checkbox" name="remember" value="on"<?cs if:Remember == "on" ?> checked<?cs /if ?>> Remember me
+            </label>
+            <button type="submit" class="btn">Sign in</button>
+          </form>
+        </div>
+      </div>
     <?cs /if ?>
     <div class="navbar navbar-fixed-top">
       <div class="navbar-inner">
@@ -41,24 +59,28 @@
           <a class="brand" href="<?cs var:BASE_URL ?>/"><?cs var:Header.Title ?></a>
           <div class="nav-collapse">
             <ul class="nav">
-                <?cs each:item = Header.Navigation ?>
-                    <li>
-                        <a href="<?cs var:BASE_URL ?><?cs var:item.URL ?>">
-                            <?cs var:item.Name ?>
-                        </a>
-                    </li>
-                <?cs /each ?>
+              <?cs each:item = Header.Navigation ?>
+              <li>
+                <a href="<?cs var:BASE_URL ?><?cs var:item.URL ?>">
+                  <?cs var:item.Name ?>
+                </a>
+              </li>
+              <?cs /each ?>
             </ul>
-            <?cs if:ID ?>
             <ul class="nav pull-right">
+              <?cs if:ID ?>
               <li id="fat-menu" class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-user icon-white"></i> <?cs var:ID ?><b class="caret"></b></a>
                 <ul class="dropdown-menu">
                   <li><a href="#" id="signoutbtn">Sign out</a></li>
                 </ul>
               </li>
+              <?cs else ?>
+              <li>
+                <a data-toggle="modal" href="#sign-in">Sign in</a>
+              </li>
+              <?cs /if ?>
             </ul>
-            <?cs /if ?>
           </div><!--/.nav-collapse -->
         </div>
       </div>

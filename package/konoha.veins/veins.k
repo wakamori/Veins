@@ -144,13 +144,15 @@ String escapeSqlText(String text)
     if (text.indexOf(";") >= 0) {
         throw new Script!!("Invalid text.");
     }
-    return text.replace("'", "''").replace("\\", "\\\\");
+    return text.replace($/'/, "''").replace($/\\/, "\\\\");
 }
 
 String escapeSqlValue(dynamic sql)
 {
+    ERR << "sql: " << sql << EOL;
     Class c = sql.class;
     if (c == String) {
+        ERR << "sql: " << escapeSqlText(sql) << EOL;
         return "'" + escapeSqlText(sql) + "'";
     }
     else if (c == int) {
@@ -254,12 +256,13 @@ class Model
         return results;
     }
 
-    void set(Map record, String key, dynamic value) {
+    void set(Map record) {
         String query = "insert or replace into " + name + "(";
         String[] values = [];
         String[] keys = record.keys();
         for (int i = 0; i < |keys|; i++) {
             String key = keys[i];
+            ERR << "key: " << key << ", value: " << record[key] << EOL;
             values.add(escapeSqlValue(record[key]));
             if (i < |keys| - 1) {
                 query += escapeSqlText(key) + ", ";
@@ -275,9 +278,6 @@ class Model
             else {
                 query += values[i] + ")";
             }
-        }
-        if (key != null && value != null) {
-            query += " where " + escapeSqlText(key) + " = " + escapeSqlValue(value);
         }
         if (isDebug()) {
             ERR << "set query: " << query << EOL;
@@ -417,11 +417,12 @@ class User
 
     @Static User authenticate(String name, String password) {
         Model user = new Model("users", {
+            "id": int,
             "name": String,
             "password": String,
             "permissions": String,
             "groups": String
-        }, ["name"]);
+        }, ["id", "name"]);
         Map[] m = user.get("*", {
             "name": name,
             "password": password.convert(to:md5)
@@ -441,11 +442,12 @@ class User
 
     @Static boolean hasUser(String name) {
         Model user = new Model("users", {
+            "id": int,
             "name": String,
             "password": String,
             "permissions": String,
             "groups": String
-        }, ["name"]);
+        }, ["id", "name"]);
         Map[] m = user.get("*", {
             "name": name
         });
@@ -466,11 +468,12 @@ class User
             return null;
         }
         Model user = new Model("users", {
+            "id": int,
             "name": String,
             "password": String,
             "permissions": String,
             "groups": String
-        }, ["name"]);
+        }, ["id", "name"]);
         user.add({
             "name": name,
             "password": password.convert(to:md5)

@@ -11,6 +11,46 @@ $(function() {
             $("#sourceinput").val(editor.getValue());
             $("#codeform").submit();
         });
+        function getUser(url) {
+            var a = url.split("/");
+            if (a[a.length - 1] == "") {
+                a.pop();
+            }
+            return a[a.length - 2];
+        }
+        function getName(url) {
+            var a = url.split("/");
+            if (a[a.length - 1] == "") {
+                a.pop();
+            }
+            return a[a.length - 1];
+        }
+        $("#savebtn").click(function() {
+            $.ajax({
+                type: "POST",
+                url: "/aspen/action/save",
+                dataType: "json",
+                data: {
+                    user: getUser(document.URL),
+                    name: getName(document.URL),
+                    body: editor.getValue()
+                },
+                success: function(msg) {
+                    var $box = $("<div>").addClass("alert").addClass("fade").addClass("in");
+                    $box.append($("<a>").addClass("close").attr("data-dismiss", "alert").attr("href", "#").html("&times;"));
+                    if (msg.error) {
+                        $box.addClass("alert-error");
+                        $box.append($("<strong>").text("Error!"));
+                    }
+                    else {
+                        $box.addClass("alert-success");
+                        $box.append($("<strong>").text("OK!"));
+                    }
+                    $box.append(" " + msg.message);
+                    $("#alertbox").html($box);
+                }
+            });
+        });
     }
     $("#signoutbtn").click(function() {
         $("#signoutform").submit();

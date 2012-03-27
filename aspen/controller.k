@@ -7,11 +7,22 @@ include "/Users/chen_ji/Devel/git/Veins/aspen/settings.k";
 
 using konoha.veins.*;
 
-HttpResponse redirect(String location) {
+HttpResponse redirect(String location)
+{
     HttpResponse res = new HttpResponse();
     res["Location"] = location;
     res.status = 301;
     return res;
+}
+
+Model getScripts()
+{
+    return new Model("scripts", {
+        "user": String,
+        "name": String,
+        "body": String,
+        "date": String
+    }, ["user", "name"]);
 }
 
 HttpResponse login(HttpRequest req, String[] args)
@@ -56,7 +67,17 @@ HttpResponse editor(HttpRequest req, String[] args)
     Template tpl = new Template();
     tpl.readFile("top.hdf");
     tpl["ID"] = req.session["id"];
-    tpl["Code.Name"] = req.session["id"];
+    tpl["User.Name"] = args[0];
+    tpl["Code.Name"] = args[1];
+    Model scripts = getScripts();
+    Map[] m = scripts.get("body", {
+        "user": args[0],
+        "name": args[1]
+    });
+    if (|m| == 0) {
+        return null;
+    }
+    tpl["Code.Body"] = m[0]["body"].convert(to:durl);
     TemplateContext ctx = new TemplateContext();
     ctx.parseFile("editor.cs");
     return new HttpResponse(tpl.render(ctx));
@@ -71,13 +92,29 @@ HttpResponse user(HttpRequest req, String[] args)
         }
         return null;
     }
+    if (|args| > 1 && |args[1]| > 0) {
+        return editor(req, args);
+    }
     Template tpl = new Template();
     tpl.load(user + ".hdf");
     tpl.readFile("top.hdf");
+    tpl["Username"] = req.session["username"];
+    tpl["Password"] = req.session["password"];
+    tpl["Remember"] = req.session["remember"];
     tpl["ID"] = req.session["id"];
     if (req.session["id"] == user) {
         tpl["Myself"] = 1;
     }
+    Array codelist = [];
+    Model scripts = getScripts();
+    foreach (Map m in scripts.get("*", {"user": user})) {
+        codelist.add({
+            "Name": m["name"],
+            "Date": m["date"]
+        });
+    }
+    tpl["User"] = user;
+    tpl["Code"] = codelist;
     TemplateContext ctx = new TemplateContext();
     ctx.parseFile("user.cs");
     return new HttpResponse(tpl.render(ctx));
@@ -102,6 +139,9 @@ HttpResponse about(HttpRequest req, String[] args)
 {
     Template tpl = new Template();
     tpl.readFile("top.hdf");
+    tpl["Username"] = req.session["username"];
+    tpl["Password"] = req.session["password"];
+    tpl["Remember"] = req.session["remember"];
     tpl.readFile("about.hdf");
     tpl["ID"] = req.session["id"];
     TemplateContext ctx = new TemplateContext();
@@ -128,6 +168,9 @@ HttpResponse signup(HttpRequest req, String[] args)
 {
     Template tpl = new Template();
     tpl.readFile("top.hdf");
+    tpl["Username"] = req.session["username"];
+    tpl["Password"] = req.session["password"];
+    tpl["Remember"] = req.session["remember"];
     TemplateContext ctx = new TemplateContext();
     if (req.method != "POST") {
         ctx.parseFile("signup.cs");
@@ -190,12 +233,38 @@ HttpResponse check(HttpRequest req, String[] args)
     return res;
 }
 
+HttpResponse save(HttpRequest req, String[] args)
+{
+    if (req.method != "POST") {
+        return redirect("../");
+    }
+    HttpResponse res = new HttpResponse();
+    res["Content-Type"] = "application/json; charset=utf-8";
+    String user = req.params_post["user"];
+    String name = req.params_post["name"];
+    String body = req.params_post["body"];
+    if (user != req.session["id"]) {
+        res.content = "{ \"error\": true, \"message\": \"Parameter 'user' is invalid.\" }";
+        return res;
+    }
+    Model scripts = getScripts();
+    scripts.set({
+        "user": user,
+        "name": name,
+        "body": body.convert(to:url),
+        "date": (to String)new Date()
+    });
+    res.content = "{ \"message\": \"Script saved successfully.\" }";
+    return res;
+}
+
 HttpResponse create(HttpRequest req, String[] args)
 {
     if (req.method != "POST") {
         return redirect("../");
     }
-    if (req.session["id"] != req.params_post["username"]) {
+    String username = req.session["id"];
+    if (username != req.params_post["username"]) {
         return redirect("../");
     }
     HttpResponse res = new HttpResponse();
@@ -204,12 +273,15 @@ HttpResponse create(HttpRequest req, String[] args)
     defaultname += (to String)d.month;
     defaultname += (to String)d.day;
     defaultname += (to String)d.hour;
-    defaultname += (to String)d.sec + ".k";
-    Model scripts = new Model("scripts", {
-        "user": String,
-        "name": String,
-        "date": String
+    defaultname += (to String)d.sec;
+    Model scripts = getScripts();
+    scripts.set({
+        "user": username,
+        "name": defaultname,
+        "body": "",
+        "date": (to String)d
     });
+    return redirect("../" + username + "/" + defaultname);
 }
 
 Url.patterns = [
@@ -221,5 +293,6 @@ Url.patterns = [
     (new Regex("^aspen/logout$"), logout),
     (new Regex("^aspen/signup$"), signup),
     (new Regex("^aspen/action/create$"), create),
+    (new Regex("^aspen/action/save$"), save),
     (new Regex("^aspen/.+$"), user)
 ];

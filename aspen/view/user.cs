@@ -15,20 +15,20 @@
     </div>
     <div class="span10">
       <?cs if:Myself ?>
-      <form action="<?cs var:BASE_URL ?>/create" method="post" class="form-inline">
+      <form action="<?cs var:BASE_URL ?>/action/create" method="post" class="form-inline">
         <input type="hidden" name="username" value="<?cs var:ID ?>">
         <button type="submit" class="btn"><i class="icon-pencil"></i> Start coding</button>
       </form>
       <?cs /if ?>
       <h1>Code</h1>
-      <table class="table table-stripped">
+      <table class="table table-striped">
         <thead>
           <tr><th>Name</th><th>Caption</th><th>Date</th></tr>
         </thead>
         <tbody>
           <?cs each:item = Code ?>
           <tr>
-            <td><?cs var:item.Name ?></td>
+            <td><a href="<?cs var:BASE_URL ?>/<?cs var:User ?>/<?cs var:item.Name ?>"><?cs var:item.Name ?></a></td>
             <td><?cs var:item.Caption ?></td>
             <td><?cs var:item.Date ?></td>
           </tr>
