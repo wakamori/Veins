@@ -51,6 +51,7 @@ $(function() {
                 }
             });
         });
+        $("#resultframe");
     }
     $("#signoutbtn").click(function() {
         $("#signoutform").submit();

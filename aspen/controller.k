@@ -79,7 +79,12 @@ HttpResponse editor(HttpRequest req, String[] args)
     }
     tpl["Code.Body"] = m[0]["body"].convert(to:durl);
     TemplateContext ctx = new TemplateContext();
-    ctx.parseFile("editor.cs");
+    if (req.session["id"] == args[0]) {
+        ctx.parseFile("editor.cs");
+    }
+    else {
+        ctx.parseFile("viewer.cs");
+    }
     return new HttpResponse(tpl.render(ctx));
 }
 
