@@ -38,7 +38,6 @@ extern "C" {
 
 static kbool_t tourl(CTX ctx, knh_conv_t *cv, const char *text, size_t len, kBytes *tobuf)
 {
-    fprintf(stderr, "text=%s\nlen=%lu\n", text, len);
 	int i;
 	for (i = 0; i < len; i++) {
 		unsigned char c = text[i];

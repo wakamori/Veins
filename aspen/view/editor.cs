@@ -6,7 +6,7 @@
 <div class="modal fade" id="resultwindow">
   <div class="modal-header">
     <a class="close" data-dismiss="modal">&times;</a>
-    <h3>Result</h3>
+    <h3 id="window-title">Result</h3>
   </div>
   <div class="modal-body" id="body">
     <iframe name="resultframe" id="resultframe"></iframe>
@@ -21,9 +21,10 @@
   </li>
   <li class="active" id="codename"><?cs var:Code.Name ?></li>
 </ul>
-<div id="alertbox"></div>
 <div class="btn-group">
-  <button class="btn btn-primary" data-toggle="modal" href="#resultwindow" id="runbtn">Run</button><button class="btn" id="savebtn">Save</button>
+  <button class="btn btn-primary" data-toggle="modal" href="#resultwindow" id="runbtn">Run</button>
+  <button class="btn" id="checkbtn">Check</button>
+  <button class="btn" id="savebtn">Save</button>
 </div>
 <textarea id="editor"><?cs var:Code.Body ?></textarea>
 <?cs include:"footer.cs" ?>

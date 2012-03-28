@@ -48,7 +48,6 @@
         </div>
       </div>
     <?cs /if ?>
-    <div id="confirmDiv"></div>
     <div class="navbar navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container">
@@ -89,3 +88,5 @@
     </div>
 
     <div class="container">
+      <div id="confirmDiv"></div>
+      <div id="alertbox"></div>

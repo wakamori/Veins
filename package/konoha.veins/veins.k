@@ -323,13 +323,54 @@ class Model
         con.close();
     }
 
-    void remove(String key, dynamic value) {
-        String query = "delete from " + name;
-        if (key != null && value != null) {
-            query += " where " + key.escapeSql() + " = " + escapeSqlValue(value);
+    void remove(Map record) {
+        String query = "delete from " + name + " where ";
+        String[] keys = record.keys();
+        for (int i = 0; i < |keys|; i++) {
+            String key = keys[i];
+            if (i < |keys| - 1) {
+                query += key.escapeSql() + " = " + escapeSqlValue(record[key]) + " and ";
+            }
+            else {
+                query += key.escapeSql() + " = " + escapeSqlValue(record[key]);
+            }
         }
         if (isDebug()) {
             ERR << "remove query: " << query << EOL;
+        }
+        Connection con = new Connection(db_path);
+        con.exec(query);
+        con.close();
+    }
+
+    void update(Map record, Map param) {
+        String query = "update " + name + " set ";
+        String[] keys = record.keys();
+        int i;
+        for (i = 0; i < |keys|; i++) {
+            String key = keys[i];
+            if (i < |keys| - 1) {
+                query += key.escapeSql() + " = " + escapeSqlValue(record[key]) + ", ";
+            }
+            else {
+                query += key.escapeSql() + " = " + escapeSqlValue(record[key]);
+            }
+        }
+        if (param != null && |param| > 0) {
+            query += " where ";
+            keys = param.keys();
+            for (i = 0; i < |keys|; i++) {
+                String key = keys[i];
+                if (i < |keys| - 1) {
+                    query += key.escapeSql() + " = " + escapeSqlValue(param[key]) + " and ";
+                }
+                else {
+                    query += key.escapeSql() + " = " + escapeSqlValue(param[key]);
+                }
+            }
+        }
+        if (isDebug()) {
+            ERR << "update query: " << query << EOL;
         }
         Connection con = new Connection(db_path);
         con.exec(query);

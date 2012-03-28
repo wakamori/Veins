@@ -221,12 +221,14 @@ HttpResponse check(HttpRequest req, String[] args)
     }
     HttpResponse res = new HttpResponse();
     res["Content-Type"] = "application/json; charset=utf-8";
+    Json j = new Json();
     if (User.hasUser(req.params_post["username"])) {
-        res.content = "{ \"exists\": true }";
+        j["exists"] = true;
     }
     else {
-        res.content = "{ \"exists\": false }";
+        j["exists"] = false;
     }
+    res.content = j.stringify();
     return res;
 }
 
@@ -237,23 +239,32 @@ HttpResponse save(HttpRequest req, String[] args)
     }
     HttpResponse res = new HttpResponse();
     res["Content-Type"] = "application/json; charset=utf-8";
+    Json j = new Json();
     String user = req.params_post["user"];
     String id = req.params_post["id"];
     String name = req.params_post["name"];
     String body = req.params_post["body"];
     if (user != req.session["id"]) {
-        res.content = "{ \"error\": true, \"message\": \"Parameter 'user' is invalid.\" }";
+        j["error"] = true;
+        j["message"] = "Parameter 'user' is invalid.";
+        res.content = j.stringify();
         return res;
     }
     Model scripts = getScripts();
-    scripts.set({
+    Map m = {};
+    if (name != null) {
+        m["name"] = name;
+    }
+    if (body != null) {
+        m["body"] = body.convert(to:url);
+    }
+    m["date"] = (to String)new Date();
+    scripts.update(m, {
         "user": user,
-        "id": (to int)id,
-        "name": name,
-        "body": body.convert(to:url),
-        "date": (to String)new Date()
+        "id": (to int)id
     });
-    res.content = "{ \"message\": \"Script saved successfully.\" }";
+    j["message"] = "Script saved successfully.";
+    res.content = j.stringify();
     return res;
 }
 
@@ -300,43 +311,33 @@ HttpResponse delete(HttpRequest req, String[] args)
     if (req.session["id"] == null) {
         return redirect("../");
     }
+    HttpResponse res = new HttpResponse();
+    res["Content-Type"] = "application/json; charset=utf-8";
+    Json j = new Json();
     if (req.method == "POST") {
-        String codename = req.params_post["codename"];
-        String description = req.params_post["description"];
-        HttpResponse res = new HttpResponse();
-        Date d = new Date();
-        String id = (to String)d.year;
-        id += (to String)d.month;
-        id += (to String)d.day;
-        id += (to String)d.hour;
-        id += (to String)d.sec;
+        int id = (to int)req.params_post["id"];
+        if (id == 0 || req.session["id"] == null) {
+            j["error"] = true;
+            j["message"] = "Invalid id or user.";
+            res.content = j.stringify();
+            return res;
+        }
         Model scripts = getScripts();
-        scripts.set({
+        scripts.remove({
             "user": req.session["id"],
-            "id": (to int)id,
-            "name": codename,
-            "description": description,
-            "body": "",
-            "date": (to String)d
+            "id": id
         });
-        return redirect("../" + req.session["id"] + "/" + id);
+        j["message"] = "Script deleted successfully.";
+        res.content = j.stringify();
+        return res;
     }
-    Template tpl = new Template();
-    tpl.readFile("top.hdf");
-    tpl["Username"] = req.session["username"];
-    tpl["Password"] = req.session["password"];
-    tpl["Remember"] = req.session["remember"];
-    tpl["ID"] = req.session["id"];
-    tpl.readFile("create.hdf");
-    TemplateContext ctx = new TemplateContext();
-    ctx.parseFile("form.cs");
-    return new HttpResponse(tpl.render(ctx));
+    return redirect("../");
 }
 
 Url.patterns = [
     (new Regex("^aspen/$"), top),
     (new Regex("^aspen/about/$"), about),
-    (new Regex("^aspen/check/username$"), check),
+    (new Regex("^aspen/check/.+$"), check),
     (new Regex("^aspen/login$"), login),
     (new Regex("^aspen/logout$"), logout),
     (new Regex("^aspen/signup$"), signup),

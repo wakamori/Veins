@@ -25,10 +25,10 @@
         </thead>
         <tbody>
           <?cs each:item = Code ?>
-          <tr>
+          <tr id="<?cs var:item.Id ?>">
             <td><a href="<?cs var:BASE_URL ?>/<?cs var:User ?>/<?cs var:item.Id ?>"><?cs var:item.Name ?></a></td>
             <td><?cs var:item.Description ?></td>
-            <td><button class="btn btn-mini">Edit</button></td>
+            <td><a href="<?cs var:BASE_URL ?>/<?cs var:User ?>/<?cs var:item.Id ?>" class="btn btn-mini">Edit</a> <button class="btn btn-mini confirm">Delete</button></td>
             <td><?cs var:item.Date ?></td>
           </tr>
           <?cs /each ?>
