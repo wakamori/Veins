@@ -15,7 +15,7 @@ HttpResponse redirect(String location)
     return res;
 }
 
-Model getScripts()
+Model defineScripts()
 {
     return new Model("scripts", {
         "user": String,
@@ -79,7 +79,7 @@ HttpResponse editor(HttpRequest req, String[] args)
 {
     Template tpl = getDefaultTemplate(req);
     tpl["User.Name"] = args[0];
-    Model scripts = getScripts();
+    Model scripts = defineScripts();
     Map[] m = scripts.get("*", {
         "user": args[0],
         "id": (to int)args[1]
@@ -117,7 +117,7 @@ HttpResponse user(HttpRequest req, String[] args)
         tpl["Myself"] = 1;
     }
     Array codelist = [];
-    Model scripts = getScripts();
+    Model scripts = defineScripts();
     foreach (Map m in scripts.get("*", {"user": user})) {
         int id = m["id"];
         ERR << "id: " << id << EOL;
@@ -241,7 +241,7 @@ HttpResponse save(HttpRequest req, String[] args)
         res.content = j.stringify();
         return res;
     }
-    Model scripts = getScripts();
+    Model scripts = defineScripts();
     Map m = {};
     if (name != null) {
         m["name"] = name;
@@ -274,7 +274,7 @@ HttpResponse create(HttpRequest req, String[] args)
         id += (to String)d.day;
         id += (to String)d.hour;
         id += (to String)d.sec;
-        Model scripts = getScripts();
+        Model scripts = defineScripts();
         scripts.set({
             "user": req.session["id"],
             "id": (to int)id,
@@ -308,7 +308,7 @@ HttpResponse delete(HttpRequest req, String[] args)
             res.content = j.stringify();
             return res;
         }
-        Model scripts = getScripts();
+        Model scripts = defineScripts();
         scripts.remove({
             "user": req.session["id"],
             "id": id
@@ -325,23 +325,32 @@ HttpResponse search(HttpRequest req, String[] args)
     if (req.method != "POST") {
         return redirect("../");
     }
-    HttpResponse res = new HttpResponse();
-    int id = (to int)req.params_post["id"];
-    if (id == 0 || req.session["id"] == null) {
-        j["error"] = true;
-        j["message"] = "Invalid id or user.";
-        res.content = j.stringify();
-        return res;
+    Template tpl = getDefaultTemplate(req);
+    String searchtext = req.params_post["text"];
+    tpl["Search.Text"] = searchtext;
+    Array matched_names = [];
+    Array matched_scripts = [];
+    if (searchtext != null && searchtext != "") {
+        String[] names = User.getList();
+        Model scripts = defineScripts();
+        foreach (String name in names) {
+            if (name.indexOf(searchtext) >= 0) {
+                matched_names.add(name);
+            }
+        }
+        Map[] records = scripts.get("user, id, name");
+        foreach (Map record in records) {
+            String name = record["name"];
+            if (name.indexOf(searchtext) >= 0) {
+                matched_scripts.add(record);
+            }
+        }
     }
-    Model scripts = getScripts();
-    scripts.remove({
-        "user": req.session["id"],
-        "id": id
-    });
-    j["message"] = "Script deleted successfully.";
-    res.content = j.stringify();
-    return res;
-    return redirect("../");
+    tpl["Result.Users"] = matched_names;
+    tpl["Result.Codes"] = matched_scripts;
+    TemplateContext ctx = new TemplateContext();
+    ctx.parseFile("search.cs");
+    return new HttpResponse(tpl.render(ctx));
 }
 
 Url.patterns = [

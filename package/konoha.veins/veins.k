@@ -527,6 +527,22 @@ class User
         });
         return new User(name, [], []);
     }
+
+    @Static String[] getList() {
+        Model user = new Model("users", {
+            "id": int,
+            "name": String,
+            "password": String,
+            "permissions": String,
+            "groups": String
+        }, ["id", "name"]);
+        Map[] maps = user.get("name");
+        String[] list = [];
+        foreach (Map m in maps) {
+            list.add(m["name"]);
+        }
+        return list;
+    }
 }
 
 /* ------------------------------------------------------------------------ */
