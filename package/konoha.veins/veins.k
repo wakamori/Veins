@@ -511,7 +511,7 @@ class User
     }
 
     @Static User addUser(String name, String password) {
-        if (User.hasUser(name)) {
+        if (User.hasUser(name) || |name| > 20) {
             return null;
         }
         Model user = new Model("users", {

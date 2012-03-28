@@ -59,7 +59,8 @@ $(function() {
     if ($("#editor")[0] != undefined) {
         var editor = CodeMirror.fromTextArea($("#editor")[0], {
             lineNumbers: true,
-            mode: "text/x-konoha"
+            mode: "text/x-konoha",
+            readOnly: $("#editor").hasClass("readonly")
         });
         $("#runbtn").click(function() {
             $("#sourceinput").val(editor.getValue());

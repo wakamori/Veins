@@ -28,7 +28,7 @@
 <!--[if lt IE 7]><p class=chromeframe>Your browser is <em>ancient!</em> <a href="http://browsehappy.com/">Upgrade to a different browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to experience this site.</p><![endif]-->
 
     <?cs if:ID ?>
-      <form name="logoutform" id="signoutform" action="<?cs var:BASE_URL ?>/logout" method="post" class="hideform"></form>
+      <form name="logoutform" id="signoutform" action="<?cs var:BASE_URL ?>/action/logout" method="post" class="hideform"></form>
     <?cs else ?>
       <div class="modal fade" id="sign-in">
         <div class="modal-header">
@@ -36,7 +36,7 @@
           <h3>Sign in form</h3>
         </div>
         <div class="modal-body">
-          <form class="well" action="<?cs var:BASE_URL ?>/login" method="post">
+          <form class="well" action="<?cs var:BASE_URL ?>/action/login" method="post">
             <input name="type" type="hidden" value="login">
             <input name="username" type="text" class="input-medium" placeholder="Username"<?cs if:Remember == "on" ?> value="<?cs var:Username ?>"<?cs /if ?>>
             <input name="password" type="password" class="input-medium" placeholder="Password"<?cs if:Remember == "on" ?> value="<?cs var:Password ?>"<?cs /if ?>>
@@ -67,6 +67,9 @@
               </li>
               <?cs /each ?>
             </ul>
+            <form class="navbar-search" action="<?cs var:BASE_URL ?>/action/search" method="post">
+              <input type="text" name="text" class="search-query" placeholder="Search">
+            </form>
             <ul class="nav pull-right">
               <?cs if:ID ?>
               <li id="fat-menu" class="dropdown">

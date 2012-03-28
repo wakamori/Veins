@@ -15,7 +15,7 @@
   </div>
   <div class="row-fluid">
     <div class="span6">
-      <textarea id="editor"><?cs var:Code.Body ?></textarea>
+      <textarea id="editor" class="readonly"><?cs var:Code.Body ?></textarea>
     </div>
     <div class="span6">
       <iframe name="resultframe" id="resultframe"></iframe>
