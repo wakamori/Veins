@@ -26,6 +26,36 @@ $(function() {
             }
             return a[a.length - 1];
         }
+        $("#codename").editInPlace({
+            callback: function(unused, enteredText) {
+                $.ajax({
+                    type: "POST",
+                    url: "/aspen/action/save",
+                    dataType: "json",
+                    data: {
+                        user: getUser(document.URL),
+                        id: getId(document.URL),
+                        name: enteredText,
+                        body: editor.getValue()
+                    },
+                    success: function(msg) {
+                        var $box = $("<div>").addClass("alert").addClass("fade").addClass("in");
+                        $box.append($("<a>").addClass("close").attr("data-dismiss", "alert").attr("href", "#").html("&times;"));
+                        if (msg.error) {
+                            $box.addClass("alert-error");
+                            $box.append($("<strong>").text("Error!"));
+                        }
+                        else {
+                            $box.addClass("alert-success");
+                            $box.append($("<strong>").text("OK!"));
+                        }
+                        $box.append(" " + msg.message);
+                        $("#alertbox").html($box);
+                    }
+                });
+                return enteredText;
+            }
+        });
         $("#savebtn").click(function() {
             $.ajax({
                 type: "POST",

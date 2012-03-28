@@ -5,6 +5,7 @@
 </div> <!-- /container -->
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 <script>window.jQuery || document.write('<script src="<?cs var:STATIC_URL ?>/js/libs/jquery-1.7.1.min.js"><\/script>')</script>
+<script src="<?cs var:STATIC_URL ?>/js/libs/jquery.editinplace.js"></script>
 
 <script src="<?cs var:STATIC_URL ?>/js/libs/bootstrap/collapse.js"></script>
 <script src="<?cs var:STATIC_URL ?>/js/libs/bootstrap/dropdown.js"></script>
