@@ -21,6 +21,7 @@ Model getScripts()
         "user": String,
         "id": int,
         "name": String,
+        "description": String,
         "body": String,
         "date": String
     }, ["user", "id"]);
@@ -119,6 +120,7 @@ HttpResponse user(HttpRequest req, String[] args)
         codelist.add({
             "Id": (to String)id,
             "Name": m["name"],
+            "Description": m["description"],
             "Date": m["date"]
         });
     }
@@ -162,12 +164,13 @@ HttpResponse signup(HttpRequest req, String[] args)
 {
     Template tpl = new Template();
     tpl.readFile("top.hdf");
+    tpl.readFile("signup.hdf");
     tpl["Username"] = req.session["username"];
     tpl["Password"] = req.session["password"];
     tpl["Remember"] = req.session["remember"];
     TemplateContext ctx = new TemplateContext();
     if (req.method != "POST") {
-        ctx.parseFile("signup.cs");
+        ctx.parseFile("form.cs");
         return new HttpResponse(tpl.render(ctx));
     }
     String username = req.params_post["username"];
@@ -180,10 +183,10 @@ HttpResponse signup(HttpRequest req, String[] args)
             "Title": "email is invalid.",
             "Contents": "Cannot create user '" + username + "'. Please retry."
         }
-        tpl["Input.username"] = username;
-        tpl["Input.email"] = email;
+        tpl["Inputs.0.Value"] = username;
+        tpl["Inputs.1.Value"] = email;
         tpl["Error"] = error;
-        ctx.parseFile("signup.cs");
+        ctx.parseFile("form.cs");
         return new HttpResponse(tpl.render(ctx));
     }
     User user = User.addUser(username, password);
@@ -193,10 +196,10 @@ HttpResponse signup(HttpRequest req, String[] args)
             "Title": "Username is invalid.",
             "Contents": "Cannot create user '" + username + "'. Please retry."
         }
-        tpl["Input.username"] = username;
-        tpl["Input.email"] = email;
+        tpl["Inputs.0.Value"] = username;
+        tpl["Inputs.1.Value"] = email;
         tpl["Error"] = error;
-        ctx.parseFile("signup.cs");
+        ctx.parseFile("form.cs");
         return new HttpResponse(tpl.render(ctx));
     }
     ERR << "OK" << EOL;
@@ -256,29 +259,78 @@ HttpResponse save(HttpRequest req, String[] args)
 
 HttpResponse create(HttpRequest req, String[] args)
 {
-    if (req.method != "POST") {
+    if (req.session["id"] == null) {
         return redirect("../");
     }
-    String username = req.session["id"];
-    if (username != req.params_post["username"]) {
+    if (req.method == "POST") {
+        String codename = req.params_post["codename"];
+        String description = req.params_post["description"];
+        HttpResponse res = new HttpResponse();
+        Date d = new Date();
+        String id = (to String)d.year;
+        id += (to String)d.month;
+        id += (to String)d.day;
+        id += (to String)d.hour;
+        id += (to String)d.sec;
+        Model scripts = getScripts();
+        scripts.set({
+            "user": req.session["id"],
+            "id": (to int)id,
+            "name": codename,
+            "description": description,
+            "body": "",
+            "date": (to String)d
+        });
+        return redirect("../" + req.session["id"] + "/" + id);
+    }
+    Template tpl = new Template();
+    tpl.readFile("top.hdf");
+    tpl["Username"] = req.session["username"];
+    tpl["Password"] = req.session["password"];
+    tpl["Remember"] = req.session["remember"];
+    tpl["ID"] = req.session["id"];
+    tpl.readFile("create.hdf");
+    TemplateContext ctx = new TemplateContext();
+    ctx.parseFile("form.cs");
+    return new HttpResponse(tpl.render(ctx));
+}
+
+HttpResponse delete(HttpRequest req, String[] args)
+{
+    if (req.session["id"] == null) {
         return redirect("../");
     }
-    HttpResponse res = new HttpResponse();
-    Date d = new Date();
-    String id = (to String)d.year;
-    id += (to String)d.month;
-    id += (to String)d.day;
-    id += (to String)d.hour;
-    id += (to String)d.sec;
-    Model scripts = getScripts();
-    scripts.set({
-        "user": username,
-        "id": (to int)id,
-        "name": "noname",
-        "body": "",
-        "date": (to String)d
-    });
-    return redirect("../" + username + "/" + id);
+    if (req.method == "POST") {
+        String codename = req.params_post["codename"];
+        String description = req.params_post["description"];
+        HttpResponse res = new HttpResponse();
+        Date d = new Date();
+        String id = (to String)d.year;
+        id += (to String)d.month;
+        id += (to String)d.day;
+        id += (to String)d.hour;
+        id += (to String)d.sec;
+        Model scripts = getScripts();
+        scripts.set({
+            "user": req.session["id"],
+            "id": (to int)id,
+            "name": codename,
+            "description": description,
+            "body": "",
+            "date": (to String)d
+        });
+        return redirect("../" + req.session["id"] + "/" + id);
+    }
+    Template tpl = new Template();
+    tpl.readFile("top.hdf");
+    tpl["Username"] = req.session["username"];
+    tpl["Password"] = req.session["password"];
+    tpl["Remember"] = req.session["remember"];
+    tpl["ID"] = req.session["id"];
+    tpl.readFile("create.hdf");
+    TemplateContext ctx = new TemplateContext();
+    ctx.parseFile("form.cs");
+    return new HttpResponse(tpl.render(ctx));
 }
 
 Url.patterns = [
@@ -289,6 +341,7 @@ Url.patterns = [
     (new Regex("^aspen/logout$"), logout),
     (new Regex("^aspen/signup$"), signup),
     (new Regex("^aspen/action/create$"), create),
+    (new Regex("^aspen/action/delete$"), delete),
     (new Regex("^aspen/action/save$"), save),
     (new Regex("^aspen/.+$"), user)
 ];

@@ -27,6 +27,7 @@
 #define K_INTERNAL
 #include <konoha1.h>
 #include <ClearSilver/ClearSilver.h>
+#include <ClearSilver/cgi/cgi.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -78,6 +79,20 @@ static knh_IntData_t CsConstInt[] = {
 DEFAPI(void) constCs(CTX ctx, kclass_t cid, const knh_LoaderAPI_t *kapi)
 {
     kapi->loadClassIntConst(ctx, cid, CsConstInt);
+}
+
+static void kCgi_free(CTX ctx, kRawPtr *po)
+{
+    if (po->rawptr != NULL) {
+        po->rawptr = NULL;
+    }
+}
+
+DEFAPI(void) defCgi(CTX ctx, kclass_t cid, kclassdef_t *cdef)
+{
+    cdef->name = "Cgi";
+    cdef->init = Default_init;
+    cdef->free = kCgi_free;
 }
 
 /* ------------------------------------------------------------------------ */
@@ -225,6 +240,7 @@ KMETHOD Cs_new(CTX ctx, ksfp_t *sfp _RIX)
     HDF *hdf = RawPtr_to(HDF *, sfp[1]);
     CSPARSE *cs;
     cs_init(&cs, hdf);
+    cgi_register_strfuncs(cs);
     RETURN_(new_ReturnRawPtr(ctx, sfp, cs));
 }
 
@@ -296,6 +312,28 @@ KMETHOD Cs_dump(CTX ctx, ksfp_t *sfp _RIX)
     };
     cs_dump(cs, &arg, render_cb);
     RETURNvoid_();
+}
+
+/* ------------------------------------------------------------------------ */
+
+//## @Native @Static String Cgi.urlEscape(String buf);
+KMETHOD Cgi_urlEscape(CTX ctx, ksfp_t *sfp _RIX)
+{
+    char *esc = NULL;
+    cgi_url_escape(S_totext(sfp[1].s), &esc);
+    kString *s = new_String(ctx, esc);
+    free(esc);
+    RETURN_(s);
+}
+
+//## @Native @Static String Cgi.htmlEscape(String buf);
+KMETHOD Cgi_htmlEscape(CTX ctx, ksfp_t *sfp _RIX)
+{
+    char *esc = NULL;
+    cgi_html_escape_strfunc(S_totext(sfp[1].s), &esc);
+    kString *s = new_String(ctx, esc);
+    free(esc);
+    RETURN_(s);
 }
 
 /* ------------------------------------------------------------------------ */

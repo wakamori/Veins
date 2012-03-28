@@ -35,6 +35,22 @@ using konoha.uuid.*;
 using konoha.wsgi.*;
 
 /* ======================================================================== */
+/* Utilities. */
+
+@Public String String.escapeHtml()
+{
+    return Cgi.htmlEscape(this);
+}
+
+@Public String String.escapeSql()
+{
+    if (this.indexOf(";") >= 0) {
+        throw new Script!!("Invalid sql.");
+    }
+    return this.replace($/'/, "''").replace($/\\/, "\\\\");
+}
+
+/* ======================================================================== */
 /* Private methods. */
 
 boolean isDebug()
@@ -139,23 +155,15 @@ String[] getMiddlewares()
     return middlewares;
 }
 
-String escapeSqlText(String text)
-{
-    if (text.indexOf(";") >= 0) {
-        throw new Script!!("Invalid text.");
-    }
-    return text.replace($/'/, "''").replace($/\\/, "\\\\");
-}
-
 String escapeSqlValue(dynamic sql)
 {
     Class c = sql.class;
     if (c == String) {
-        return "'" + escapeSqlText(sql) + "'";
+        return "'" + sql.escapeSql() + "'";
     }
     else if (c == int) {
         int i = sql;
-        return escapeSqlText((to String)i);
+        return ((to String)i).escapeSql();
     }
     else {
         throw new Script!!("sql: Unsupported type is included.");
@@ -171,12 +179,12 @@ class Model
     String name;
 
     Model(String name, Map<Class> scheme, String[] primary_keys) {
-        name = escapeSqlText(name);
+        name = name.escapeSql();
         String query = "create table if not exists " + name + "(";
         String[] keys = scheme.keys();
         for (int i = 0; i < |keys|; i++) {
             String key = keys[i];
-            String column = escapeSqlText(key);
+            String column = key.escapeSql();
             String type = "";
             Class c = scheme[key];
             if (c == String) {
@@ -197,10 +205,10 @@ class Model
                     query += ", primary key(";
                     for (int j = 0; j < |primary_keys|; j++) {
                         if (j < |primary_keys| - 1) {
-                            query += escapeSqlText(primary_keys[j]) + ", ";
+                            query += primary_keys[j].escapeSql() + ", ";
                         }
                         else {
-                            query += escapeSqlText(primary_keys[j]) + ")";
+                            query += primary_keys[j].escapeSql() + ")";
                         }
                     }
                 }
@@ -218,7 +226,7 @@ class Model
     }
 
     Map[] get(String column, Map param) {
-        column = escapeSqlText(column);
+        column = column.escapeSql();
         String query = "select " + column + " from " + name;
         if (param != null && |param| > 0) {
             query += " where ";
@@ -261,13 +269,12 @@ class Model
         String[] keys = record.keys();
         for (int i = 0; i < |keys|; i++) {
             String key = keys[i];
-            ERR << "key: " << key << ", value: " << record[key] << EOL;
             values.add(escapeSqlValue(record[key]));
             if (i < |keys| - 1) {
-                query += escapeSqlText(key) + ", ";
+                query += key.escapeSql() + ", ";
             }
             else {
-                query += escapeSqlText(key) + ") values(";
+                query += key.escapeSql() + ") values(";
             }
         }
         for (int i = 0; i < |values|; i++) {
@@ -294,10 +301,10 @@ class Model
             String key = keys[i];
             values.add(escapeSqlValue(record[key]));
             if (i < |keys| - 1) {
-                query += escapeSqlText(key) + ", ";
+                query += key.escapeSql() + ", ";
             }
             else {
-                query += escapeSqlText(key) + ") values(";
+                query += key.escapeSql() + ") values(";
             }
         }
         for (int i = 0; i < |values|; i++) {
@@ -319,7 +326,7 @@ class Model
     void remove(String key, dynamic value) {
         String query = "delete from " + name;
         if (key != null && value != null) {
-            query += " where " + escapeSqlText(key) + " = " + escapeSqlValue(value);
+            query += " where " + key.escapeSql() + " = " + escapeSqlValue(value);
         }
         if (isDebug()) {
             ERR << "remove query: " << query << EOL;
@@ -541,7 +548,7 @@ class Template
         }
         else if (value.class == String) {
             String sval = value;
-            hdf.setValue(key, sval);
+            hdf.setValue(key, sval.escapeHtml());
         }
         else if (value.class == Array) {
             int i = 0;

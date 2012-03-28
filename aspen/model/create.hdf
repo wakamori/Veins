@@ -1,0 +1,30 @@
+Form {
+    Title = Create a New Code
+    Action = "/aspen/create"
+    Inputs {
+        0 {
+            Label = Code Name
+            ID = codename
+            Input {
+                Type = text
+                Name = codename
+            }
+        }
+        1 {
+            Label = Description
+            ID = description
+            Input {
+                Type = text
+                Name = description
+            }
+        }
+    }
+    Buttons {
+        0 {
+            Type = submit
+            ID = create-btn
+            Class = btn btn-primary
+            Text = Create code
+        }
+    }
+}

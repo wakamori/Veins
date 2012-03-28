@@ -1,0 +1,46 @@
+Form {
+    Title = Sign up for Aspen
+    Caption = Create your personal account.
+    Action = "/aspen/signup"
+    Inputs {
+        0 {
+            Label = Username
+            ID = username
+            Input {
+                Type = text
+                Name = username
+            }
+        }
+        1 {
+            Label = Email Address
+            ID = email
+            Input {
+                Type = email
+                Name = email
+            }
+        }
+        2 {
+            Label = Password
+            ID = password
+            Input {
+                Type = password
+                Name = password
+            }
+        }
+        3 {
+            Label = Confirm Password
+            ID = confirm
+            Input {
+                Type = password
+            }
+        }
+    }
+    Buttons {
+        0 {
+            Type = submit
+            ID = create-btn
+            Class = btn btn-primary
+            Text = Create an account
+        }
+    }
+}

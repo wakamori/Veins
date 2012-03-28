@@ -35,6 +35,7 @@ include "lib:gluelink";
 // [classes]
 @Native class Hdf;
 @Native class Cs;
+@Native class Cgi;
 
 @Native Hdf Hdf.new();
 @Native Hdf Hdf.getObj(String name);
@@ -62,3 +63,6 @@ include "lib:gluelink";
 @Native void Cs.parseString(String buf);
 @Native void Cs.render(Func<String=>int> cb);
 @Native void Cs.dump(Func<String=>int> cb);
+
+@Native @Static String Cgi.urlEscape(String buf);
+@Native @Static String Cgi.htmlEscape(String buf);
