@@ -26,13 +26,37 @@
 
 using konoha.clearsilver.*;
 using konoha.conv.*;
-using konoha.cookie.*;
 using konoha.io.*;
 using konoha.json.*;
 using konoha.posix.*;
 using konoha.sql.*;
 using konoha.uuid.*;
 using konoha.wsgi.*;
+
+/* ======================================================================== */
+/* Native methods. */
+
+include "lib:gluelink";
+
+@Native @Singleton class Uuid;
+
+@Native String Uuid.getUuid4();
+
+@Native @Public int Date.getYear();
+@Native @Public void Date.setYear(int year);
+@Native @Public int Date.getMonth();
+@Native @Public void Date.setMonth(int month);
+@Native @Public int Date.getDay();
+@Native @Public void Date.setDay(int day);
+@Native @Public int Date.getHour();
+@Native @Public void Date.setHour(int hour);
+@Native @Public int Date.getMin();
+@Native @Public void Date.setMin(int min);
+@Native @Public int Date.getSec();
+@Native @Public void Date.setSec(int sec);
+@Native @Public int Date.getGmtoff();
+@Native @Public void Date.setGmtoff(int gmtoff);
+@Native @Public String Date.toRFC1123();
 
 /* ======================================================================== */
 /* Utilities. */
@@ -718,26 +742,63 @@ class HttpResponse
 {
     String content;
     int status;
-    Map<String> h;
+    Tuple<String,String>[] h;
 
-    HttpResponse(String content, Map<String> headers) {
+    HttpResponse(String content, Tuple<String,String>[] headers) {
         _content = content;
         _h = headers;
         if (h == null) {
-            _h = {};
+            _h = [];
         }
     }
 
     void set(String header, String value) {
-        h[header] = value;
+        h.add((header, value));
     }
 
-    String get(String header) {
-        return h[header];
+    String[] get(String header) {
+        String[] ret = [];
+        foreach (Tuple<String,String> t in _h) {
+            if (t[0] == header) {
+                ret.add(t[1]);
+            }
+        }
+        return ret;
     }
 
     String[] keys(void) {
-        return h.keys();
+        String[] keys = []
+        foreach (Tuple<String,String> t in _h) {
+            if (not (t[0] in? keys)) {
+                keys.add(t[0]);
+            }
+        }
+        return keys;
+    }
+
+    void setCookie(String key, String value, String expires, String path) {
+        path = (path == null) ? "/" : path;
+        String cookie = key + "=" + value + "; ";
+        if (expires != null && expires != "") {
+            cookie += "expires=" + expires + "; ";
+        }
+        cookie += "path=" + path ;
+        this["Set-Cookie"] = cookie;
+        if (isDebug()) {
+            ERR << "Set-Cookie: " << cookie << EOL;
+        }
+    }
+
+    void deleteCookie(String key, String path) {
+        path = (path == null) ? "/" : path;
+        String cookie = key + "=dummy; ";
+        Date past = new Date();
+        past.year = 1970;
+        cookie += "expires=" + past.toRFC1123() + "; ";
+        this["Set-Cookie"] = cookie;
+        if (isDebug()) {
+            ERR << "Delete-Cookie: " << cookie << EOL;
+        }
     }
 }
 
@@ -892,13 +953,7 @@ class SessionMiddleware extends Middleware
                 now.day -= 14;
                 now.month -= 11;
             }
-            String cookie = "SESSION=" + req.session.fname + "; ";
-            cookie += "expires=" + now.toRFC1123() + "; ";
-            cookie += "path=/";
-            res["Set-Cookie"] = cookie;
-            if (isDebug()) {
-                ERR << "Set-Cookie: " << cookie << EOL;
-            }
+            res.setCookie("SESSION", req.session.fname, now.toRFC1123());
         }
         req.session.store();
         return res;
@@ -964,10 +1019,7 @@ String[] g_args;
         foreach (String middleware in middlewares) {
             eval("g_res = " + middleware + ".hookResponse(g_req, g_res);");
         }
-        Tuple<String,String>[] headers = [];
-        foreach (String header in g_res.keys()) {
-            headers.add((header, g_res[header]));
-        }
+        Tuple<String,String>[] headers = g_res.h;
         if (not "Content-Type" in? headers) {
             headers.add(("Content-Type", "text/html"));
         }

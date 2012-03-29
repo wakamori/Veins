@@ -27,6 +27,7 @@
 #define K_INTERNAL
 #include <konoha1.h>
 #include <time.h>
+#include <uuid/uuid.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -46,6 +47,108 @@ static time_t kdate_totime(kdate_t dt)
         .tm_isdst = -1
     };
     return mktime(&t);
+}
+
+static kbool_t tourl(CTX ctx, knh_conv_t *cv, const char *text, size_t len, kBytes *tobuf)
+{
+    int i;
+    for (i = 0; i < len; i++) {
+        unsigned char c = text[i];
+        if (isalnum(c) || c == '.' || c == '-' || c == '_') {
+            knh_Bytes_putc(ctx, tobuf, c);
+        } else if (c == ' ') { // ' ' => '+'
+            knh_Bytes_putc(ctx, tobuf, '+');
+        } else { // '\0ff' => "%ff"
+            knh_Bytes_putc(ctx, tobuf, '%');
+            char buf[3] = {0};
+            snprintf(buf, 3, "%02X", c);
+            knh_Bytes_write2(ctx, tobuf, (const char *)buf, 2);
+        }
+    }
+    return 1;
+}
+
+static kbool_t fromurl(CTX ctx, knh_conv_t *cv, const char *text, size_t len, kBytes *tobuf)
+{
+    int i = 0;
+    while (i < len) {
+        unsigned char c = text[i];
+        switch (c) {
+        case '+': // '+' => ' '
+            knh_Bytes_putc(ctx, tobuf, ' ');
+            i++;
+            break;
+        case '%':
+            if (i + 2 < len) {
+                // "%ff" => '\0ff'
+                char hex[3] = {
+                    text[i + 1],
+                    text[i + 2],
+                    '\0'
+                };
+                long decval = 0x20;
+                char *endptr = NULL;
+                decval = strtol(hex, &endptr, 16);
+                if (endptr != NULL && 0 <= decval && decval <= UCHAR_MAX) {
+                    knh_Bytes_putc(ctx, tobuf, (int)decval);
+                } else {
+                    knh_Bytes_putc(ctx, tobuf, '%');
+                    knh_Bytes_write2(ctx, tobuf, (const char *)hex, 2);
+                }
+                i += 3;
+                break;
+            }
+            // fall through
+        default:
+            knh_Bytes_putc(ctx, tobuf, c);
+            i++;
+            break;
+        }
+    }
+    return 1;
+}
+
+static const knh_ConverterDPI_t TO_url = {
+    K_DSPI_CONVTO, // type
+    "url",         // name
+    NULL,          // open
+    tourl,         // conv
+    tourl,         // enc
+    tourl,         // dec
+    tourl,         // sconv
+    NULL,          // close
+    NULL           // setparam
+};
+
+static const knh_ConverterDPI_t FROM_url = {
+    K_DSPI_CONVFROM,  // type
+    "durl",           // name
+    NULL,             // open
+    fromurl,          // conv
+    fromurl,          // enc
+    fromurl,          // dec
+    fromurl,          // sconv
+    NULL,             // close
+    NULL              // setparam
+};
+
+/* ------------------------------------------------------------------------ */
+
+DEFAPI(void) defUuid(CTX ctx, kclass_t cid, kclassdef_t *cdef)
+{
+    cdef->name = "Uuid";
+}
+
+/* ------------------------------------------------------------------------ */
+
+//## @Native String Uuid.getUuid4();
+KMETHOD Uuid_getUuid4(CTX ctx, ksfp_t *sfp _RIX)
+{
+    uuid_t u;
+    char buf[37];
+    uuid_generate(u);
+    uuid_unparse(u, buf);
+    RETURN_(new_String(ctx, buf));
 }
 
 /* ------------------------------------------------------------------------ */
@@ -188,7 +291,9 @@ KMETHOD Date_toRFC1123(CTX ctx, ksfp_t *sfp _RIX)
 
 DEFAPI(const knh_PackageDef_t*) init(CTX ctx, knh_LoaderAPI_t *kapi)
 {
-    RETURN_PKGINFO("konoha.cookie");
+    kapi->addConverterDPI(ctx, "url", &TO_url, NULL);
+    kapi->addConverterDPI(ctx, "durl", &FROM_url, NULL);
+    RETURN_PKGINFO("konoha.veins");
 }
 
 #endif /* _SETUP */

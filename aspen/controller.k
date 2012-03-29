@@ -322,11 +322,11 @@ HttpResponse delete(HttpRequest req, String[] args)
 
 HttpResponse search(HttpRequest req, String[] args)
 {
-    if (req.method != "POST") {
+    if (req.method == "POST") {
         return redirect("../");
     }
     Template tpl = getDefaultTemplate(req);
-    String searchtext = req.params_post["text"];
+    String searchtext = req.params_get["text"];
     tpl["Search.Text"] = searchtext;
     Array matched_names = [];
     Array matched_scripts = [];

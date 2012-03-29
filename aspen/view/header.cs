@@ -67,7 +67,7 @@
               </li>
               <?cs /each ?>
             </ul>
-            <form class="navbar-search" action="<?cs var:BASE_URL ?>/action/search" method="post">
+            <form class="navbar-search" action="<?cs var:BASE_URL ?>/action/search" method="get">
               <input type="text" name="text" class="search-query" placeholder="Search">
             </form>
             <ul class="nav pull-right">
