@@ -29,6 +29,11 @@
 #include <konoha1/inlinelibs.h>
 #include <time.h>
 #include <uuid/uuid.h>
+#include <openssl/sha.h>
+#include <openssl/hmac.h>
+#include <openssl/evp.h>
+#include <openssl/bio.h>
+#include <openssl/buffer.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -133,7 +138,7 @@ static const knh_ConverterDPI_t FROM_url = {
     NULL              // setparam
 };
 
-static kbool_t xorconvert(CTX ctx, knh_conv_t *cv, const char *text, size_t len, kBytes *tobuf)
+static kbool_t xorConvert(CTX ctx, knh_conv_t *cv, const char *text, size_t len, kBytes *tobuf)
 {
     int i, key;
     kInt *ki = (kInt *)knh_getPropertyNULL(ctx, STEXT("SEED"));
@@ -155,10 +160,117 @@ static const knh_ConverterDPI_t xorConverter = {
     K_DSPI_CONVTO,    // type
     "xor",            // name
     NULL,             // open
-    xorconvert,       // conv
-    xorconvert,       // enc
-    xorconvert,       // dec
-    xorconvert,       // sconv
+    xorConvert,       // conv
+    xorConvert,       // enc
+    xorConvert,       // dec
+    xorConvert,       // sconv
+    NULL,             // close
+    NULL              // setparam
+};
+
+static kbool_t base64encode(CTX ctx, knh_conv_t *cv, const char *text, size_t len, kBytes *tobuf)
+{
+    BIO *bmem, *b64;
+    BUF_MEM *bptr;
+
+    b64 = BIO_new(BIO_f_base64());
+    bmem = BIO_new(BIO_s_mem());
+    b64 = BIO_push(b64, bmem);
+    BIO_write(b64, text, len);
+    (void)BIO_flush(b64);
+    BIO_get_mem_ptr(b64, &bptr);
+
+    knh_Bytes_write2(ctx, tobuf, (const char *)bptr->data, bptr->length);
+    knh_Bytes_putc(ctx, tobuf, 0);
+    BIO_free_all(b64);
+
+    return 1;
+}
+
+static kbool_t base64decode(CTX ctx, knh_conv_t *cv, const char *text, size_t len, kBytes *tobuf)
+{
+    BIO *bmem, *b64;
+
+    char *buffer = (char *)malloc(len);
+    memset(buffer, 0, len);
+
+    b64 = BIO_new(BIO_f_base64());
+    BIO_set_flags(b64, BIO_FLAGS_BASE64_NO_NL);
+    bmem = BIO_new_mem_buf((char *)text, len);
+    b64 = BIO_push(b64, bmem);
+
+    BIO_read(b64, buffer, len);
+    BIO_free_all(b64);
+
+    knh_Bytes_write2(ctx, tobuf, (const char *)buffer, len);
+
+    return 1;
+}
+
+static const knh_ConverterDPI_t base64Encoder = {
+    K_DSPI_CONVTO,    // type
+    "base64",         // name
+    NULL,             // open
+    base64encode,     // conv
+    base64encode,     // enc
+    base64encode,     // dec
+    base64encode,     // sconv
+    NULL,             // close
+    NULL              // setparam
+};
+
+static const knh_ConverterDPI_t base64Decoder = {
+    K_DSPI_CONVTO,    // type
+    "dbase64",        // name
+    NULL,             // open
+    base64decode,     // conv
+    base64decode,     // enc
+    base64decode,     // dec
+    base64decode,     // sconv
+    NULL,             // close
+    NULL              // setparam
+};
+
+static kbool_t SHA256Digest(CTX ctx, knh_conv_t *cv, const char *text, size_t len, kBytes *tobuf)
+{
+    SHA256_CTX context;
+    unsigned char md[SHA256_DIGEST_LENGTH];
+
+    SHA256_Init(&context);
+    SHA256_Update(&context, text, len);
+    SHA256_Final(md, &context);
+
+    knh_Bytes_write2(ctx, tobuf, (const char *)md, SHA256_DIGEST_LENGTH);
+    return 1;
+}
+
+static kbool_t SHA256String(CTX ctx, knh_conv_t *cv, const char *text, size_t len, kBytes *tobuf)
+{
+    SHA256_CTX context;
+    unsigned char md[SHA256_DIGEST_LENGTH];
+
+    SHA256_Init(&context);
+    SHA256_Update(&context, text, len);
+    SHA256_Final(md, &context);
+
+    char dbuf[4];
+    size_t i;
+    for (i = 0; i < SHA256_DIGEST_LENGTH; i++) {
+        knh_snprintf(dbuf, sizeof(dbuf), "%02x", md[i]);
+        knh_Bytes_write2(ctx, tobuf, dbuf, 2);
+    }
+
+    return 1;
+}
+
+static const knh_ConverterDPI_t SHA256Converter = {
+    K_DSPI_CONVTO,    // type
+    "SHA256",         // name
+    NULL,             // open
+    SHA256Digest,     // conv
+    SHA256Digest,     // enc
+    SHA256String,     // dec
+    SHA256String,     // sconv
     NULL,             // close
     NULL              // setparam
 };
@@ -325,6 +437,9 @@ DEFAPI(const knh_PackageDef_t*) init(CTX ctx, knh_LoaderAPI_t *kapi)
     kapi->addConverterDPI(ctx, "url", &TO_url, NULL);
     kapi->addConverterDPI(ctx, "durl", &FROM_url, NULL);
     kapi->addConverterDPI(ctx, "xor", &xorConverter, NULL);
+    kapi->addConverterDPI(ctx, "base64",  &base64Encoder, NULL);
+    kapi->addConverterDPI(ctx, "dbase64", &base64Decoder, NULL);
+    kapi->addConverterDPI(ctx, "SHA256", &SHA256Converter, NULL);
     RETURN_PKGINFO("konoha.veins");
 }
 

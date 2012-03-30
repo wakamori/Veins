@@ -494,7 +494,7 @@ class User
         }, ["id", "name"]);
         Map[] m = user.get("*", {
             "name": name,
-            "password": password.convert(to:md5)
+            "password": password.convert(to:SHA256)
         });
         if (|m| == 1) {
             String perms = m[0]["permissions"];
@@ -545,7 +545,7 @@ class User
         }, ["id", "name"]);
         user.add({
             "name": name,
-            "password": password.convert(to:md5)
+            "password": password.convert(to:SHA256)
         });
         return new User(name, [], []);
     }
@@ -834,11 +834,11 @@ class Session
     Session(String name) {
         if (name != null && name != "") {
             _origname = name;
-            _fname = name.convert(to:md5);
+            _fname = name.convert(to:SHA256);
         }
         else {
             _origname = Uuid.getUuid4();
-            _fname = origname.convert(to:md5);
+            _fname = origname.convert(to:SHA256);
         }
         _path = getTmpDir() + fname;
         if (load()) {
@@ -947,7 +947,7 @@ class SessionMiddleware extends Middleware
                 req.cookies["SESSION"] != req.session.origname) {
             if (isDebug()) {
                 ERR << "old session: " << req.cookies["SESSION"] << EOL;
-                ERR << "new session: " << req.session.fname.convert(to:md5) << EOL;
+                ERR << "new session: " << req.session.fname.convert(to:SHA256) << EOL;
             }
             Date now = new Date();
             if (now.day < 15) {

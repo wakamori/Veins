@@ -47,7 +47,7 @@ HttpResponse session(HttpRequest req, String[] args)
         }
         else if (params["type"] == "renew") {
             req.session = req.session.renew();
-            tpl["Session.ID"] = req.session.fname.convert(to:md5);
+            tpl["Session.ID"] = req.session.fname.convert(to:SHA256);
         }
     }
     tpl.readFile("top.hdf");
