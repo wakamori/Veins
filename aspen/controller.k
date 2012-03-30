@@ -54,6 +54,11 @@ HttpResponse login(HttpRequest req, String[] args)
         req.session["password"] = password;
         req.session["remember"] = remember;
     }
+    else {
+        req.session.remove("username");
+        req.session.remove("password");
+        req.session.remove("remember");
+    }
     User user = User.authenticate(username, password);
     if (user != null) {
         req.session["id"] = user.name;
