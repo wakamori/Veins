@@ -32,9 +32,9 @@ Template getDefaultTemplate(HttpRequest req)
     Template tpl = new Template();
     tpl.readFile("top.hdf");
     tpl["ID"] = req.session["id"];
-    tpl["Username"] = req.cookies["username"];
-    tpl["Password"] = req.cookies["password"];
-    tpl["Remember"] = req.cookies["remember"];
+    tpl["Username"] = req.session["username"];
+    tpl["Password"] = req.session["password"];
+    tpl["Remember"] = req.session["remember"];
     return tpl;
 }
 
@@ -50,14 +50,9 @@ HttpResponse login(HttpRequest req, String[] args)
     String password = req.params_post["password"];
     String remember = req.params_post["remember"];
     if (remember == "on") {
-        res.setCookie("username", username);
-        res.setCookie("password", password);
-        res.setCookie("remember", remember);
-    }
-    else {
-        res.deleteCookie("username");
-        res.deleteCookie("password");
-        res.deleteCookie("remember");
+        req.session["username"] = username;
+        req.session["password"] = password;
+        req.session["remember"] = remember;
     }
     User user = User.authenticate(username, password);
     if (user != null) {

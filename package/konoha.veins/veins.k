@@ -497,10 +497,10 @@ class User
             "password": password.convert(to:md5)
         });
         if (|m| == 1) {
-            String perms = (m[0]["permissions"] == null) ? "" : m[0]["permissions"];
-            String groups = (m[0]["groups"] == null) ? "" : m[0]["permissions"];
-            String[] p = perms.split(",");
-            String[] g = groups.split(",");
+            String perms = m[0]["permissions"];
+            String groups = m[0]["permissions"];
+            String[] p = (perms == null) ? [] : perms.split(",");
+            String[] g = (groups == null) ? [] : groups.split(",");
             return new User(name, p, g);
         }
         if (isDebug()) {
@@ -832,7 +832,7 @@ class Session
     Json j;
 
     Session(String name) {
-        if (name != null) {
+        if (name != null && name != "") {
             _origname = name;
             _fname = name.convert(to:md5);
         }
@@ -841,7 +841,16 @@ class Session
             _fname = origname.convert(to:md5);
         }
         _path = getTmpDir() + fname;
-        load();
+        if (load()) {
+            if (isDebug()) {
+                ERR << "load succeeded" << EOL;
+            }
+        }
+        else {
+            if (isDebug()) {
+                ERR << "load succeeded" << EOL;
+            }
+        }
     }
 
     Session renew(String name) {
@@ -858,14 +867,16 @@ class Session
         return new Session(name);
     }
 
-    void load() {
+    boolean load() {
         InputStream ins = new InputStream(path);
         if (ins == null) {
             _j = new Json();
+            return false;
         }
         else {
             _j = Json.parse(ins.read().decode(to:xor));
             ins.close();
+            return true;
         }
     }
 
@@ -951,7 +962,8 @@ class SessionMiddleware extends Middleware
                 now.day -= 14;
                 now.month -= 11;
             }
-            res.setCookie("SESSION", req.session.fname, now.toRFC1123());
+            //res.setCookie("SESSION", req.session.fname, now.toRFC1123());
+            res.setCookie("SESSION", req.session.fname);
         }
         req.session.store();
         return res;
