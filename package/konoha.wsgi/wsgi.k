@@ -28,13 +28,14 @@
 {
     void startResponse(String status, Tuple<String,String>[] headers) {
         $wsgi.status = status;
+        String[] cookies = [];
         foreach (Tuple<String,String> t in headers) {
             switch (t[0]) {
             case "Content-Type":
                 $wsgi.content_type = t[1];
                 break;
             case "Set-Cookie":
-                $wsgi.cookie = t[1];
+                cookies.add(t[1]);
                 break;
             case "Location":
                 $wsgi.location = t[1];
@@ -42,6 +43,9 @@
             default:
                 ERR << "unknown header: " + t[0] << EOL;
             }
+        }
+        if (|cookies| > 0) {
+            $wsgi.cookie = cookies;
         }
     }
 }

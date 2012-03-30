@@ -32,9 +32,9 @@ Template getDefaultTemplate(HttpRequest req)
     Template tpl = new Template();
     tpl.readFile("top.hdf");
     tpl["ID"] = req.session["id"];
-    tpl["Username"] = req.session["username"];
-    tpl["Password"] = req.session["password"];
-    tpl["Remember"] = req.session["remember"];
+    tpl["Username"] = req.cookies["username"];
+    tpl["Password"] = req.cookies["password"];
+    tpl["Remember"] = req.cookies["remember"];
     return tpl;
 }
 
@@ -43,27 +43,27 @@ HttpResponse login(HttpRequest req, String[] args)
     if (req.method != "POST") {
         return redirect("../");
     }
+    HttpResponse res = new HttpResponse();
+    res["Location"] = "../";
+    res.status = 301;
     String username = req.params_post["username"];
     String password = req.params_post["password"];
     String remember = req.params_post["remember"];
     if (remember == "on") {
-        req.session["username"] = username;
-        req.session["password"] = password;
-        req.session["remember"] = remember;
+        res.setCookie("username", username);
+        res.setCookie("password", password);
+        res.setCookie("remember", remember);
     }
     else {
-        req.session.remove("username");
-        req.session.remove("password");
-        req.session.remove("remember");
+        res.deleteCookie("username");
+        res.deleteCookie("password");
+        res.deleteCookie("remember");
     }
     User user = User.authenticate(username, password);
     if (user != null) {
         req.session["id"] = user.name;
     }
-    else {
-        return redirect("../");
-    }
-    return redirect("../");
+    return res;
 }
 
 HttpResponse logout(HttpRequest req, String[] args)

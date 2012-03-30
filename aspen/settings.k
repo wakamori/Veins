@@ -5,6 +5,9 @@
 /* Show debug messages when DEBUG is "true". */
 $DEBUG = "true";
 
+/* Set a random seed number for encryption. */
+$SEED = 945934988;
+
 /* Database. */
 $DATABASES = {
     "default": {

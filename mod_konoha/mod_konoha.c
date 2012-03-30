@@ -207,12 +207,24 @@ static int get_config(request_rec *r, CTX ctx, wsgi_config_t *conf, int debug)
 }
 
 /* set headers */
-static int set_headers(request_rec *r, CTX ctx, int debug)
+static int set_headers(request_rec *r, CTX ctx, int debug, int rcode)
 {
-    kString *cookie = GET_PROP("wsgi.cookie");
-    if (cookie != NULL) {
-        apr_table_set(r->headers_out, "Set-Cookie", S_totext(cookie));
-        AP_LOG_DEBUG("Set-Cookie: %s", S_totext(cookie));
+    kArray *cookies = (kArray *)knh_getPropertyNULL(ctx, STEXT("wsgi.cookie"));
+    if (cookies != NULL) {
+        size_t i;
+        for (i = 0; i < knh_Array_size(cookies); i++) {
+            kString *cookie = (kString *)knh_Array_n(cookies, i);
+            if (cookie != NULL) {
+                if (rcode == OK) {
+                    apr_table_add(r->headers_out, "Set-Cookie", S_totext(cookie));
+                    AP_LOG_DEBUG("Set-Cookie: %s", S_totext(cookie));
+                }
+                else {
+                    apr_table_add(r->err_headers_out, "Set-Cookie", S_totext(cookie));
+                    AP_LOG_DEBUG("Set-Cookie: %s", S_totext(cookie));
+                }
+            }
+        }
     }
     kString *location = GET_PROP("wsgi.location");
     if (location != NULL) {
@@ -289,7 +301,7 @@ static int konoha_handler(request_rec *r)
         break;
     }
     r->content_type = apr_pstrdup(r->pool, wconf.content_type);
-    ret = set_headers(r, konoha, debug);
+    ret = set_headers(r, konoha, debug, rcode);
     if (ret != 0) goto TAIL;
     if (debug) {
         konoha_close(konoha);

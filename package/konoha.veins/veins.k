@@ -25,12 +25,10 @@
  ****************************************************************************/
 
 using konoha.clearsilver.*;
-using konoha.conv.*;
 using konoha.io.*;
 using konoha.json.*;
 using konoha.posix.*;
 using konoha.sql.*;
-using konoha.uuid.*;
 using konoha.wsgi.*;
 
 /* ======================================================================== */
@@ -782,7 +780,7 @@ class HttpResponse
         if (expires != null && expires != "") {
             cookie += "expires=" + expires + "; ";
         }
-        cookie += "path=" + path ;
+        cookie += "path=" + path + ";";
         this["Set-Cookie"] = cookie;
         if (isDebug()) {
             ERR << "Set-Cookie: " << cookie << EOL;
@@ -794,7 +792,7 @@ class HttpResponse
         String cookie = key + "=dummy; ";
         Date past = new Date();
         past.year = 1970;
-        cookie += "expires=" + past.toRFC1123() + "; ";
+        cookie += "expires=" + past.toRFC1123();
         this["Set-Cookie"] = cookie;
         if (isDebug()) {
             ERR << "Delete-Cookie: " << cookie << EOL;
@@ -831,7 +829,7 @@ class Session
     Path path;
     String fname;
     String origname;
-    Map m;
+    Json j;
 
     Session(String name) {
         if (name != null) {
@@ -863,30 +861,30 @@ class Session
     void load() {
         InputStream ins = new InputStream(path);
         if (ins == null) {
-            _m = {};
+            _j = new Json();
         }
         else {
-            _m = ins.readJson();
+            _j = Json.parse(ins.read().decode(to:xor));
             ins.close();
         }
     }
 
     dynamic get(String key) {
-        return m[key];
+        return j[key];
     }
 
     String[] keys() {
-        return m.keys();
+        return j.getKeys();
     }
 
     void remove(String key) {
-        m.remove(key);
+        j.delete(key);
     }
 
     void set(String key, dynamic val) {
-        Class[] classes = [String, Int, Float];
+        Class[] classes = [String, int, float];
         if (val.class in? classes) {
-            m[key] = val;
+            j[key] = val;
         }
         else {
             throw new Script!!("Session['" + key + "']: Unsupported type is given.");
@@ -895,7 +893,7 @@ class Session
 
     void store() {
         OutputStream ous = new OutputStream(path);
-        ous.writeJson(m);
+        ous.write(j.stringify().encode(to:xor));
         ous.close();
     }
 }

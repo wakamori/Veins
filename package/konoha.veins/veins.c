@@ -26,6 +26,7 @@
 
 #define K_INTERNAL
 #include <konoha1.h>
+#include <konoha1/inlinelibs.h>
 #include <time.h>
 #include <uuid/uuid.h>
 
@@ -128,6 +129,36 @@ static const knh_ConverterDPI_t FROM_url = {
     fromurl,          // enc
     fromurl,          // dec
     fromurl,          // sconv
+    NULL,             // close
+    NULL              // setparam
+};
+
+static kbool_t xorconvert(CTX ctx, knh_conv_t *cv, const char *text, size_t len, kBytes *tobuf)
+{
+    int i, key;
+    kInt *ki = (kInt *)knh_getPropertyNULL(ctx, STEXT("SEED"));
+    if (ki != NULL) {
+        key = N_toint(ki);
+    }
+    else {
+        key = knh_rand();
+        knh_setProperty(ctx, new_String(ctx, "SEED"), (dynamic *)new_Int(ctx, key));
+    }
+    for (i = 0; i < len; i++) {
+        unsigned char c = text[i];
+        knh_Bytes_putc(ctx, tobuf, c ^ key);
+    }
+    return 1;
+}
+
+static const knh_ConverterDPI_t xorConverter = {
+    K_DSPI_CONVTO,    // type
+    "xor",            // name
+    NULL,             // open
+    xorconvert,       // conv
+    xorconvert,       // enc
+    xorconvert,       // dec
+    xorconvert,       // sconv
     NULL,             // close
     NULL              // setparam
 };
@@ -293,6 +324,7 @@ DEFAPI(const knh_PackageDef_t*) init(CTX ctx, knh_LoaderAPI_t *kapi)
 {
     kapi->addConverterDPI(ctx, "url", &TO_url, NULL);
     kapi->addConverterDPI(ctx, "durl", &FROM_url, NULL);
+    kapi->addConverterDPI(ctx, "xor", &xorConverter, NULL);
     RETURN_PKGINFO("konoha.veins");
 }
 
