@@ -2,6 +2,7 @@
 <form action="/cgi-bin/konoha2js.k" method="post" target="resultframe" id="codeform" class="hideform">
   <input type="hidden" name="requestedType" value="html">
   <input type="hidden" name="source" value="" id="sourceinput">
+  <input type="hidden" name="htmlDocument" value="" id="htmlinput">
 </form>
 <div class="modal fade" id="resultwindow">
   <div class="modal-header">
@@ -39,13 +40,13 @@
         </ul>
         <div class="tab-content">
           <div class="tab-pane active" id="1">
-            <textarea id="editor1"><?cs var:Code.Body ?></textarea>
+            <textarea id="editor1"><?cs var:Code.Body.Js ?></textarea>
           </div>
           <div class="tab-pane" id="2">
-            <textarea id="editor2"></textarea>
+            <textarea id="editor2"><?cs var:Code.Body.Ks ?></textarea>
           </div>
           <div class="tab-pane" id="3">
-            <textarea id="editor3"></textarea>
+            <textarea id="editor3"><?cs var:Code.Body.Html ?></textarea>
           </div>
         </div>
       </div>

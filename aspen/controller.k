@@ -22,7 +22,9 @@ Model defineScripts()
         "id": int,
         "name": String,
         "description": String,
-        "body": String,
+        "js": String,
+        "ks": String,
+        "html": String,
         "date": String
     }, ["user", "id"]);
 }
@@ -87,8 +89,22 @@ HttpResponse editor(HttpRequest req, String[] args)
     if (|m| == 0) {
         return null;
     }
-    tpl["Code.Name"] = m[0]["name"];
-    tpl["Code.Body"] = m[0]["body"].convert(to:durl);
+    String name = m[0]["name"];
+    String js = m[0]["js"];
+    String ks = m[0]["ks"];
+    String html = m[0]["html"];
+    if (name != null && name != "") {
+        tpl["Code.Name"] = name.convert(to:durl);
+    }
+    if (js != null && js != "") {
+        tpl["Code.Body.Js"] = js.convert(to:durl);
+    }
+    if (ks != null && ks != "") {
+        tpl["Code.Body.Ks"] = ks.convert(to:durl);
+    }
+    if (html != null && html != "") {
+        tpl["Code.Body.Html"] = html.convert(to:durl);
+    }
     TemplateContext ctx = new TemplateContext();
     if (req.session["id"] == args[0]) {
         ctx.parseFile("editor.cs");
@@ -121,10 +137,12 @@ HttpResponse user(HttpRequest req, String[] args)
     foreach (Map m in scripts.get("*", {"user": user})) {
         int id = m["id"];
         ERR << "id: " << id << EOL;
+        String name = m["name"];
+        String description = m["description"];
         codelist.add({
             "Id": (to String)id,
-            "Name": m["name"],
-            "Description": m["description"],
+            "Name": name.convert(to:durl),
+            "Description": description.convert(to:durl),
             "Date": m["date"]
         });
     }
@@ -234,7 +252,9 @@ HttpResponse save(HttpRequest req, String[] args)
     String user = req.params_post["user"];
     String id = req.params_post["id"];
     String name = req.params_post["name"];
-    String body = req.params_post["body"];
+    String js = req.params_post["js"];
+    String ks = req.params_post["ks"];
+    String html = req.params_post["html"];
     if (user != req.session["id"]) {
         j["error"] = true;
         j["message"] = "Parameter 'user' is invalid.";
@@ -244,10 +264,16 @@ HttpResponse save(HttpRequest req, String[] args)
     Model scripts = defineScripts();
     Map m = {};
     if (name != null) {
-        m["name"] = name;
+        m["name"] = name.convert(to:url);
     }
-    if (body != null) {
-        m["body"] = body.convert(to:url);
+    if (js != null) {
+        m["js"] = js.convert(to:url);
+    }
+    if (ks != null) {
+        m["ks"] = ks.convert(to:url);
+    }
+    if (html != null) {
+        m["html"] = html.convert(to:url);
     }
     m["date"] = (to String)new Date();
     scripts.update(m, {
@@ -278,9 +304,32 @@ HttpResponse create(HttpRequest req, String[] args)
         scripts.set({
             "user": req.session["id"],
             "id": (to int)id,
-            "name": codename,
-            "description": description,
-            "body": "",
+            "name": codename.convert(to:url),
+            "description": description.convert(to:url),
+            "js": """
+// your code goes here.
+print \"hello, world\";
+""".convert(to:url),
+            "ks": "",
+            "html": """
+<!DOCTYPE html>
+<html>
+<head>
+<title>sample</title>
+<script type="text/javascript">
+<!-- KONOHA_JS_CODE -->
+</script>
+<script type="text/javascript">
+<!--
+konoha_main();
+konoha.printOUT();
+// -->
+</script>
+</head>
+<body onload="">
+</body>
+</html>
+""".convert(to:url),
             "date": (to String)d
         });
         return redirect("../" + req.session["id"] + "/" + id);

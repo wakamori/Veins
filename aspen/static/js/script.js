@@ -68,12 +68,13 @@ $(function() {
         });
         var editor3 = CodeMirror.fromTextArea($("#editor3")[0], {
             lineNumbers: true,
-            mode: "text/x-konoha"
+            mode: "text/html"
         });
         $("#runbtn").click(function() {
             $("#sourceinput").val(editor1.getValue());
+            //$("#htmlinput").val(editor3.getValue());
             $("#window-title").text("Run result");
-            $("#codeform").children().first().val("html");
+            //$("#codeform").children().first().val("html");
             $("#codeform").submit();
         });
         $("#tab1").click(function() {
@@ -114,7 +115,9 @@ $(function() {
                     user: getUser(document.URL),
                     id: getId(document.URL),
                     name: $("#codename").text(),
-                    body: editor1.getValue()
+                    js: editor1.getValue(),
+                    ks: editor2.getValue(),
+                    html: editor3.getValue()
                 },
                 success: function(msg) {
                     var type;
