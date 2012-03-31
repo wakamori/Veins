@@ -15,10 +15,39 @@
   </div>
   <div class="row-fluid">
     <div class="span6">
-      <textarea id="editor" class="readonly"><?cs var:Code.Body ?></textarea>
+      <div class="tabbable">
+        <ul class="nav nav-tabs">
+          <li class="active"><a href="#1" data-toggle="tab" id="tab1">konoha2js</a></li>
+          <li><a href="#2" data-toggle="tab" id="tab2">konoha</a></li>
+          <li><a href="#3" data-toggle="tab" id="tab3">HTML</a></li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="1">
+            <textarea id="editor1" class="readonly"><?cs var:Code.Body ?></textarea>
+          </div>
+          <div class="tab-pane" id="2">
+            <textarea id="editor2" class="readonly"></textarea>
+          </div>
+          <div class="tab-pane" id="3">
+            <textarea id="editor3" class="readonly"></textarea>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="span6">
-      <iframe name="resultframe" id="resultframe"></iframe>
+      <div class="tabbable">
+        <ul class="nav nav-tabs">
+          <li class="active"><a href="#4" data-toggle="tab" id="tab4">Result</a></li>
+          <li><a href="#5" data-toggle="tab" id="tab5">Dummy</a></li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="4">
+            <iframe name="resultframe" id="resultframe"></iframe>
+          </div>
+          <div class="tab-pane" id="5">
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

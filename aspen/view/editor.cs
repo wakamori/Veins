@@ -15,16 +15,41 @@
     <a href="#" class="btn" data-dismiss="modal">Close</a>
   </div>
 </div>
-<ul class="breadcrumb">
-  <li>
-    <a href="<?cs var:BASE_URL ?>/<?cs var:User.Name ?>"><?cs var:User.Name ?></a> <span class="divider">/</span>
-  </li>
-  <li class="active" id="codename"><?cs var:Code.Name ?></li>
-</ul>
-<div class="btn-group">
-  <button class="btn btn-primary" data-toggle="modal" href="#resultwindow" id="runbtn">Run</button>
-  <button class="btn" id="checkbtn">Check</button>
-  <button class="btn" id="savebtn">Save</button>
+<div class="container-fluid">
+  <div class="row-fluid">
+    <div class="span2">
+      <div class="btn-group">
+        <button class="btn btn-primary" data-toggle="modal" href="#resultwindow" id="runbtn">Run</button>
+        <button class="btn" id="checkbtn">Check</button>
+        <button class="btn" id="savebtn">Save</button>
+      </div>
+    </div>
+    <div class="span10">
+      <ul class="breadcrumb">
+        <li>
+          <a href="<?cs var:BASE_URL ?>/<?cs var:User.Name ?>"><?cs var:User.Name ?></a> <span class="divider">/</span>
+        </li>
+        <li class="active" id="codename"><?cs var:Code.Name ?></li>
+      </ul>
+      <div class="tabbable">
+        <ul class="nav nav-tabs">
+          <li class="active"><a href="#1" data-toggle="tab" id="tab1">konoha2js</a></li>
+          <li><a href="#2" data-toggle="tab" id="tab2">konoha</a></li>
+          <li><a href="#3" data-toggle="tab" id="tab3">HTML</a></li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="1">
+            <textarea id="editor1"><?cs var:Code.Body ?></textarea>
+          </div>
+          <div class="tab-pane" id="2">
+            <textarea id="editor2"></textarea>
+          </div>
+          <div class="tab-pane" id="3">
+            <textarea id="editor3"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
-<textarea id="editor"><?cs var:Code.Body ?></textarea>
 <?cs include:"footer.cs" ?>

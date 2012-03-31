@@ -56,17 +56,40 @@
 })(jQuery);
 
 $(function() {
-    if ($("#editor")[0] != undefined) {
-        var editor = CodeMirror.fromTextArea($("#editor")[0], {
+    if ($("#editor1")[0] != undefined) {
+        var editor1 = CodeMirror.fromTextArea($("#editor1")[0], {
             lineNumbers: true,
             mode: "text/x-konoha",
-            readOnly: $("#editor").hasClass("readonly")
+            readOnly: $("#editor1").hasClass("readonly")
+        });
+        var editor2 = CodeMirror.fromTextArea($("#editor2")[0], {
+            lineNumbers: true,
+            mode: "text/x-konoha"
+        });
+        var editor3 = CodeMirror.fromTextArea($("#editor3")[0], {
+            lineNumbers: true,
+            mode: "text/x-konoha"
         });
         $("#runbtn").click(function() {
-            $("#sourceinput").val(editor.getValue());
+            $("#sourceinput").val(editor1.getValue());
             $("#window-title").text("Run result");
             $("#codeform").children().first().val("html");
             $("#codeform").submit();
+        });
+        $("#tab1").click(function() {
+            setTimeout(function() {
+                editor1.refresh();
+            }, 1);
+        });
+        $("#tab2").click(function() {
+            setTimeout(function() {
+                editor2.refresh();
+            }, 1);
+        });
+        $("#tab3").click(function() {
+            setTimeout(function() {
+                editor3.refresh();
+            }, 1);
         });
         function getUser(url) {
             var a = url.split("/");
@@ -82,36 +105,6 @@ $(function() {
             }
             return a[a.length - 1];
         }
-        //$("#codename").editInPlace({
-        //    callback: function(unused, enteredText) {
-        //        $.ajax({
-        //            type: "POST",
-        //            url: "/aspen/action/save",
-        //            dataType: "json",
-        //            data: {
-        //                user: getUser(document.URL),
-        //                id: getId(document.URL),
-        //                name: enteredText,
-        //                body: editor.getValue()
-        //            },
-        //            success: function(msg) {
-        //                var $box = $("<div>").addClass("alert").addClass("fade").addClass("in");
-        //                $box.append($("<a>").addClass("close").attr("data-dismiss", "alert").attr("href", "#").html("&times;"));
-        //                if (msg.error) {
-        //                    $box.addClass("alert-error");
-        //                    $box.append($("<strong>").text("Error!"));
-        //                }
-        //                else {
-        //                    $box.addClass("alert-success");
-        //                    $box.append($("<strong>").text("OK!"));
-        //                }
-        //                $box.append(" " + msg.message);
-        //                $("#alertbox").html($box);
-        //            }
-        //        });
-        //        return $.escapeHTML(enteredText);
-        //    }
-        //});
         $("#savebtn").click(function() {
             $.ajax({
                 type: "POST",
@@ -121,7 +114,7 @@ $(function() {
                     user: getUser(document.URL),
                     id: getId(document.URL),
                     name: $("#codename").text(),
-                    body: editor.getValue()
+                    body: editor1.getValue()
                 },
                 success: function(msg) {
                     var type;
@@ -149,7 +142,7 @@ $(function() {
                 dataType: "json",
                 data: {
                     requestedType: "compile",
-                    source: editor.getValue()
+                    source: editor1.getValue()
                 },
                 success: function(msg) {
                     var options = {
