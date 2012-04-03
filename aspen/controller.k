@@ -43,7 +43,7 @@ Template getDefaultTemplate(HttpRequest req)
 HttpResponse login(HttpRequest req, String[] args)
 {
     if (req.method != "POST") {
-        return redirect("../");
+        return null;
     }
     HttpResponse res = new HttpResponse();
     res["Location"] = "../";
@@ -71,7 +71,7 @@ HttpResponse login(HttpRequest req, String[] args)
 HttpResponse logout(HttpRequest req, String[] args)
 {
     if (req.method != "POST") {
-        return redirect("../");
+        return null;
     }
     req.session.remove("id");
     return redirect("../");
@@ -115,6 +115,58 @@ HttpResponse editor(HttpRequest req, String[] args)
     return new HttpResponse(tpl.render(ctx));
 }
 
+HttpResponse konoha2js(HttpRequest req, String[] args)
+{
+    if (req.method == "POST") {
+        return null;
+    }
+    String user = args[0];
+    String id = args[1];
+    String requestedType = args[2];
+    if (requestedType == null) {
+        requestedType = "js";
+    }
+    Model scripts = defineScripts();
+    Map[] m = scripts.get("js, name", {
+        "user": user,
+        "id": (to int)id,
+    });
+    if (|m| != 1) {
+        return null;
+    }
+    OutputStream script = FileStorage.newFile(user + "_" + id + "_" + m[0]["name"]);
+    if (script == null) {
+        return null;
+    }
+    String body = m[0]["js"];
+    script.println(body.convert(to:durl));
+    script.close();
+    HttpResponse res = new HttpResponse();
+    Json j = new Json();
+    String k2jspath = "/usr/local/bin/konoha2js";
+    switch (requestedType) {
+    case "js":
+        res["Access-Control-Allow-Origin"] = "http://konohascript.org";
+        res["Content-Type"] = "application/javascript";
+        String cmd = k2jspath + " -j -r -i " + script.path;
+        ERR << "cmd: " << cmd << EOL;
+        res.content = exec(cmd);
+        break;
+    case "html":
+        res["Content-Type"] = "text/html; charset=UTF-8";
+        res.content = "TODO";
+        break;
+    case "compile":
+        res["Access-Control-Allow-Origin"] = "http://konohascript.org";
+        res["Content-Type"] = "application/json; charset=UTF-8";
+        res.content = exec(k2jspath + " -c -i " + script.path);
+        break;
+    default:
+        break;
+    }
+    return res;
+}
+
 HttpResponse user(HttpRequest req, String[] args)
 {
     String user = args[0];
@@ -124,8 +176,11 @@ HttpResponse user(HttpRequest req, String[] args)
         }
         return null;
     }
-    if (|args| > 1 && |args[1]| > 0) {
+    if (|args| == 2) {
         return editor(req, args);
+    }
+    else if (|args| == 3) {
+        return konoha2js(req, args);
     }
     Template tpl = getDefaultTemplate(req);
     tpl.load(user + ".hdf");
@@ -226,7 +281,7 @@ HttpResponse signup(HttpRequest req, String[] args)
 HttpResponse check(HttpRequest req, String[] args)
 {
     if (req.method != "POST" || args[1] != "username") {
-        return redirect("../");
+        return null;
     }
     HttpResponse res = new HttpResponse();
     res["Content-Type"] = "application/json; charset=utf-8";
@@ -244,7 +299,7 @@ HttpResponse check(HttpRequest req, String[] args)
 HttpResponse save(HttpRequest req, String[] args)
 {
     if (req.method != "POST") {
-        return redirect("../");
+        return null;
     }
     HttpResponse res = new HttpResponse();
     res["Content-Type"] = "application/json; charset=utf-8";

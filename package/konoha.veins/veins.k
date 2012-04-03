@@ -56,6 +56,8 @@ include "lib:gluelink";
 @Native @Public void Date.setGmtoff(int gmtoff);
 @Native @Public String Date.toRFC1123();
 
+@Native @Public Path OutputStream.getPath();
+
 /* ======================================================================== */
 /* Utilities. */
 

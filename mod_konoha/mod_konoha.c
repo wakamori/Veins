@@ -114,6 +114,7 @@ static int util_read(request_rec *r, const char **rbuf)
 /* call Script.application() */
 static int start_application(request_rec *r, CTX ctx, int debug)
 {
+    KONOHA_BEGIN(ctx);
     extern char **environ;
     char **env_p;
     kmethodn_t mn = knh_getmn(ctx, STEXT("application"), MN_NONAME);
@@ -187,6 +188,7 @@ static int start_application(request_rec *r, CTX ctx, int debug)
     KNH_SCALL(ctx, lsfp, 0, mtd, 2);
     END_LOCAL(ctx, lsfp);
     ap_rputs(S_totext(lsfp[0].s), r);
+    KONOHA_END(ctx);
     return 0;
 }
 
