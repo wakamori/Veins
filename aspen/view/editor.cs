@@ -1,13 +1,9 @@
 <?cs include:"header.cs" ?>
-<form action="/cgi-bin/konoha2js.k" method="post" target="resultframe" id="codeform" class="hideform">
-  <input type="hidden" name="requestedType" value="html">
-  <input type="hidden" name="source" value="" id="sourceinput">
-  <input type="hidden" name="htmlDocument" value="" id="htmlinput">
-</form>
+<form action="/aspen/<?cs var:User.Name ?>/<?cs var:User.Id ?>/html" method="get" target="resultframe" id="codeform" class="hideform"></form>
 <div class="modal fade" id="resultwindow">
   <div class="modal-header">
     <a class="close" data-dismiss="modal">&times;</a>
-    <h3 id="window-title">Result</h3>
+    <h3 id="window-title">Run Result</h3>
   </div>
   <div class="modal-body" id="body">
     <iframe name="resultframe" id="resultframe"></iframe>

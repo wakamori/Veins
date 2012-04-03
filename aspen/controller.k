@@ -22,9 +22,6 @@ Model defineScripts()
         "id": int,
         "name": String,
         "description": String,
-        "js": String,
-        "ks": String,
-        "html": String,
         "date": String
     }, ["user", "id"]);
 }
@@ -39,6 +36,38 @@ Template getDefaultTemplate(HttpRequest req)
     tpl["Remember"] = req.session["remember"];
     return tpl;
 }
+
+@Public InputStream FileStorage.openJS(String user, String id)
+{
+    return FileStorage.open(user + "_" + id + "_js.k");
+}
+
+@Public InputStream FileStorage.openKS(String user, String id)
+{
+    return FileStorage.open(user + "_" + id + ".k");
+}
+
+@Public InputStream FileStorage.openHTML(String user, String id)
+{
+    return FileStorage.open(user + "_" + id + ".html");
+}
+
+@Public OutputStream FileStorage.newJS(String user, String id)
+{
+    return FileStorage.newFile(user + "_" + id + "_js.k");
+}
+
+@Public OutputStream FileStorage.newKS(String user, String id)
+{
+    return FileStorage.newFile(user + "_" + id + ".k");
+}
+
+@Public OutputStream FileStorage.newHTML(String user, String id)
+{
+    return FileStorage.newFile(user + "_" + id + ".html");
+}
+
+/* ------------------------------------------------------------------------ */
 
 HttpResponse login(HttpRequest req, String[] args)
 {
@@ -81,8 +110,9 @@ HttpResponse editor(HttpRequest req, String[] args)
 {
     Template tpl = getDefaultTemplate(req);
     tpl["User.Name"] = args[0];
+    tpl["User.Id"] = args[1];
     Model scripts = defineScripts();
-    Map[] m = scripts.get("*", {
+    Map[] m = scripts.get("name", {
         "user": args[0],
         "id": (to int)args[1]
     });
@@ -90,21 +120,15 @@ HttpResponse editor(HttpRequest req, String[] args)
         return null;
     }
     String name = m[0]["name"];
-    String js = m[0]["js"];
-    String ks = m[0]["ks"];
-    String html = m[0]["html"];
+    String js = FileStorage.openJS(args[0], args[1]).read().decode();
+    String ks = FileStorage.openKS(args[0], args[1]).read().decode();
+    String html = FileStorage.openHTML(args[0], args[1]).read().decode();
     if (name != null && name != "") {
         tpl["Code.Name"] = name.convert(to:durl);
     }
-    if (js != null && js != "") {
-        tpl["Code.Body.Js"] = js.convert(to:durl);
-    }
-    if (ks != null && ks != "") {
-        tpl["Code.Body.Ks"] = ks.convert(to:durl);
-    }
-    if (html != null && html != "") {
-        tpl["Code.Body.Html"] = html.convert(to:durl);
-    }
+    tpl["Code.Body.Js"] = js;
+    tpl["Code.Body.Ks"] = ks;
+    tpl["Code.Body.Html"] = html;
     TemplateContext ctx = new TemplateContext();
     if (req.session["id"] == args[0]) {
         ctx.parseFile("editor.cs");
@@ -127,41 +151,38 @@ HttpResponse konoha2js(HttpRequest req, String[] args)
         requestedType = "js";
     }
     Model scripts = defineScripts();
-    Map[] m = scripts.get("js, name", {
+    Map[] m = scripts.get("name", {
         "user": user,
-        "id": (to int)id,
+        "id": (to int)id
     });
     if (|m| != 1) {
         return null;
     }
-    OutputStream script = FileStorage.newFile(user + "_" + id + "_" + m[0]["name"]);
-    if (script == null) {
-        return null;
-    }
-    String body = m[0]["js"];
-    script.println(body.convert(to:durl));
-    script.close();
+    InputStream body = FileStorage.openJS(user, id);
+    String path = body.path;
+    body.close();
     HttpResponse res = new HttpResponse();
-    Json j = new Json();
     String k2jspath = "/usr/local/bin/konoha2js";
     switch (requestedType) {
     case "js":
         res["Access-Control-Allow-Origin"] = "http://konohascript.org";
         res["Content-Type"] = "application/javascript";
-        String cmd = k2jspath + " -j -r -i " + script.path;
-        ERR << "cmd: " << cmd << EOL;
-        res.content = exec(cmd);
+        res.content = exec(k2jspath + " -j -r -i " + path);
         break;
     case "html":
-        res["Content-Type"] = "text/html; charset=UTF-8";
-        res.content = "TODO";
+        String ret = exec(k2jspath + " -j -r -i " + path);
+        String replacetxt = "<!-- KONOHA_JS_CODE -->";
+        InputStream html = FileStorage.openHTML(user, id);
+        res.content = html.read().decode().replace(replacetxt, ret);
+        html.close();
         break;
     case "compile":
         res["Access-Control-Allow-Origin"] = "http://konohascript.org";
         res["Content-Type"] = "application/json; charset=UTF-8";
-        res.content = exec(k2jspath + " -c -i " + script.path);
+        res.content = exec(k2jspath + " -c -i " + path);
         break;
     default:
+        return null;
         break;
     }
     return res;
@@ -181,6 +202,9 @@ HttpResponse user(HttpRequest req, String[] args)
     }
     else if (|args| == 3) {
         return konoha2js(req, args);
+    }
+    else {
+        return null;
     }
     Template tpl = getDefaultTemplate(req);
     tpl.load(user + ".hdf");
@@ -321,15 +345,15 @@ HttpResponse save(HttpRequest req, String[] args)
     if (name != null) {
         m["name"] = name.convert(to:url);
     }
-    if (js != null) {
-        m["js"] = js.convert(to:url);
-    }
-    if (ks != null) {
-        m["ks"] = ks.convert(to:url);
-    }
-    if (html != null) {
-        m["html"] = html.convert(to:url);
-    }
+    OutputStream ous_js = FileStorage.newJS(user, id);
+    OutputStream ous_ks = FileStorage.newKS(user, id);
+    OutputStream ous_html = FileStorage.newHTML(user, id);
+    ous_js.println(js);
+    ous_ks.println(ks);
+    ous_html.println(html);
+    ous_js.close();
+    ous_ks.close();
+    ous_html.close();
     m["date"] = (to String)new Date();
     scripts.update(m, {
         "user": user,
@@ -356,17 +380,14 @@ HttpResponse create(HttpRequest req, String[] args)
         id += (to String)d.hour;
         id += (to String)d.sec;
         Model scripts = defineScripts();
-        scripts.set({
-            "user": req.session["id"],
-            "id": (to int)id,
-            "name": codename.convert(to:url),
-            "description": description.convert(to:url),
-            "js": """
+        OutputStream ous_js = FileStorage.newJS(req.session["id"], id);
+        OutputStream ous_ks = FileStorage.newKS(req.session["id"], id);
+        OutputStream ous_html = FileStorage.newHTML(req.session["id"], id);
+        ous_js.println("""
 // your code goes here.
 print \"hello, world\";
-""".convert(to:url),
-            "ks": "",
-            "html": """
+""");
+        ous_html.println("""
 <!DOCTYPE html>
 <html>
 <head>
@@ -384,7 +405,15 @@ konoha.printOUT();
 <body onload="">
 </body>
 </html>
-""".convert(to:url),
+""");
+        ous_js.close();
+        ous_ks.close();
+        ous_html.close();
+        scripts.set({
+            "user": req.session["id"],
+            "id": (to int)id,
+            "name": codename.convert(to:url),
+            "description": description.convert(to:url),
             "date": (to String)d
         });
         return redirect("../" + req.session["id"] + "/" + id);

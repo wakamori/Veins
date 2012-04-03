@@ -56,6 +56,7 @@ include "lib:gluelink";
 @Native @Public void Date.setGmtoff(int gmtoff);
 @Native @Public String Date.toRFC1123();
 
+@Native @Public Path InputStream.getPath();
 @Native @Public Path OutputStream.getPath();
 
 /* ======================================================================== */
@@ -1033,7 +1034,7 @@ String[] g_args;
         }
         Tuple<String,String>[] headers = g_res.h;
         if (not "Content-Type" in? headers) {
-            headers.add(("Content-Type", "text/html"));
+            headers.add(("Content-Type", "text/html; charset=UTF-8"));
         }
         String status = "";
         switch (g_res.status) {
@@ -1054,11 +1055,11 @@ String[] g_args;
     if (not path.endsWith("/")) {
         String redirect_url = environ["URI"] + "/";
         start_response("301 Moved Permanently", [
-            ("Content-Type", "text/html"),
+            ("Content-Type", "text/html; charset=UTF-8"),
             ("Location", redirect_url)
         ]);
         return "";
     }
-    start_response("404 Not Found", [("Content-Type", "text/html")]);
+    start_response("404 Not Found", [("Content-Type", "text/html; charset=UTF-8")]);
     return "";
 }

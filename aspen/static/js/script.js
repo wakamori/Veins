@@ -71,10 +71,6 @@ $(function() {
             mode: "text/html"
         });
         $("#runbtn").click(function() {
-            $("#sourceinput").val(editor1.getValue());
-            //$("#htmlinput").val(editor3.getValue());
-            $("#window-title").text("Run result");
-            //$("#codeform").children().first().val("html");
             $("#codeform").submit();
         });
         $("#tab1").click(function() {
@@ -140,13 +136,9 @@ $(function() {
         });
         $("#checkbtn").click(function() {
             $.ajax({
-                type: "POST",
-                url: "/cgi-bin/konoha2js.k",
+                type: "GET",
+                url: document.URL + "/compile",
                 dataType: "json",
-                data: {
-                    requestedType: "compile",
-                    source: editor1.getValue()
-                },
                 success: function(msg) {
                     var options = {
                         type: "",

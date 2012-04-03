@@ -275,6 +275,13 @@ static const knh_ConverterDPI_t SHA256Converter = {
     NULL              // setparam
 };
 
+//## @Native @Public Path InputStream.getPath();
+KMETHOD InputStream_getPath(CTX ctx, ksfp_t *sfp _RIX)
+{
+    kInputStream *in = sfp[0].in;
+    RETURN_(in->path);
+}
+
 //## @Native @Public Path OutputStream.getPath();
 KMETHOD OutputStream_getPath(CTX ctx, ksfp_t *sfp _RIX)
 {
