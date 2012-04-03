@@ -1033,7 +1033,7 @@ String[] g_args;
             eval("g_res = " + middleware + ".hookResponse(g_req, g_res);");
         }
         Tuple<String,String>[] headers = g_res.h;
-        if (not "Content-Type" in? headers) {
+        if (not "Content-Type" in? g_res.keys()) {
             headers.add(("Content-Type", "text/html; charset=UTF-8"));
         }
         String status = "";

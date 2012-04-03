@@ -112,7 +112,7 @@ static int util_read(request_rec *r, const char **rbuf)
 }
 
 /* call Script.application() */
-static int start_application(request_rec *r, CTX ctx, int debug)
+static int start_application(request_rec *r, CTX ctx, int debug, const char **content)
 {
     KONOHA_BEGIN(ctx);
     extern char **environ;
@@ -187,7 +187,7 @@ static int start_application(request_rec *r, CTX ctx, int debug)
     KNH_SETv(ctx, lsfp[K_CALLDELTA+2].fo, fo);
     KNH_SCALL(ctx, lsfp, 0, mtd, 2);
     END_LOCAL(ctx, lsfp);
-    ap_rputs(S_totext(lsfp[0].s), r);
+    *content = S_totext(lsfp[0].s);
     KONOHA_END(ctx);
     return 0;
 }
@@ -284,7 +284,8 @@ static int konoha_handler(request_rec *r)
     }
     ret = konoha_main(konoha, argc, argv);
     if (ret != 0) goto TAIL;
-    ret = start_application(r, konoha, debug);
+    const char *content = NULL;
+    ret = start_application(r, konoha, debug, &content);
     if (ret != 0) goto TAIL;
     wsgi_config_t wconf;
     ret = get_config(r, konoha, &wconf, debug);
@@ -304,6 +305,7 @@ static int konoha_handler(request_rec *r)
     }
     r->content_type = apr_pstrdup(r->pool, wconf.content_type);
     ret = set_headers(r, konoha, debug, rcode);
+    ap_rputs(content, r);
     if (ret != 0) goto TAIL;
     if (debug) {
         konoha_close(konoha);

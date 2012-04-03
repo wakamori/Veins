@@ -163,27 +163,25 @@ HttpResponse konoha2js(HttpRequest req, String[] args)
     body.close();
     HttpResponse res = new HttpResponse();
     String k2jspath = "/usr/local/bin/konoha2js";
-    switch (requestedType) {
-    case "js":
+    if (requestedType == "js") {
         res["Access-Control-Allow-Origin"] = "http://konohascript.org";
         res["Content-Type"] = "application/javascript";
         res.content = exec(k2jspath + " -j -r -i " + path);
-        break;
-    case "html":
+    }
+    else if (requestedType == "html") {
         String ret = exec(k2jspath + " -j -r -i " + path);
         String replacetxt = "<!-- KONOHA_JS_CODE -->";
         InputStream html = FileStorage.openHTML(user, id);
         res.content = html.read().decode().replace(replacetxt, ret);
         html.close();
-        break;
-    case "compile":
+    }
+    else if (requestedType == "compile") {
         res["Access-Control-Allow-Origin"] = "http://konohascript.org";
         res["Content-Type"] = "application/json; charset=UTF-8";
         res.content = exec(k2jspath + " -c -i " + path);
-        break;
-    default:
+    }
+    else {
         return null;
-        break;
     }
     return res;
 }
@@ -202,9 +200,6 @@ HttpResponse user(HttpRequest req, String[] args)
     }
     else if (|args| == 3) {
         return konoha2js(req, args);
-    }
-    else {
-        return null;
     }
     Template tpl = getDefaultTemplate(req);
     tpl.load(user + ".hdf");
@@ -348,9 +343,9 @@ HttpResponse save(HttpRequest req, String[] args)
     OutputStream ous_js = FileStorage.newJS(user, id);
     OutputStream ous_ks = FileStorage.newKS(user, id);
     OutputStream ous_html = FileStorage.newHTML(user, id);
-    ous_js.println(js);
-    ous_ks.println(ks);
-    ous_html.println(html);
+    ous_js.print(js);
+    ous_ks.print(ks);
+    ous_html.print(html);
     ous_js.close();
     ous_ks.close();
     ous_html.close();
@@ -383,11 +378,11 @@ HttpResponse create(HttpRequest req, String[] args)
         OutputStream ous_js = FileStorage.newJS(req.session["id"], id);
         OutputStream ous_ks = FileStorage.newKS(req.session["id"], id);
         OutputStream ous_html = FileStorage.newHTML(req.session["id"], id);
-        ous_js.println("""
+        ous_js.print("""
 // your code goes here.
 print \"hello, world\";
 """);
-        ous_html.println("""
+        ous_html.print("""
 <!DOCTYPE html>
 <html>
 <head>
@@ -395,14 +390,14 @@ print \"hello, world\";
 <script type="text/javascript">
 <!-- KONOHA_JS_CODE -->
 </script>
+</head>
+<body onload="">
 <script type="text/javascript">
 <!--
 konoha_main();
 konoha.printOUT();
 // -->
 </script>
-</head>
-<body onload="">
 </body>
 </html>
 """);
