@@ -3,7 +3,7 @@ Form {
     Action = "/aspen/create"
     Inputs {
         0 {
-            Label = Code Name
+            Label = Name
             ID = codename
             Input {
                 Type = text

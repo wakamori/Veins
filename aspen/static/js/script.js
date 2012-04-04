@@ -70,8 +70,47 @@ $(function() {
             lineNumbers: true,
             mode: "text/html"
         });
+        function getUser(url) {
+            var a = url.split("/");
+            if (a[a.length - 1] == "") {
+                a.pop();
+            }
+            return a[a.length - 2];
+        }
+        function getId(url) {
+            var a = url.split("/");
+            if (a[a.length - 1] == "") {
+                a.pop();
+            }
+            return a[a.length - 1];
+        }
+        function save(options) {
+            options = $.extend({
+                success: function(arg) {}
+            }, options);
+            $.ajax({
+                type: "POST",
+                url: "/aspen/action/save",
+                dataType: "json",
+                data: {
+                    user: getUser(document.URL),
+                    id: getId(document.URL),
+                    name: $("#codename").text(),
+                    js: editor1.getValue(),
+                    ks: editor2.getValue(),
+                    html: editor3.getValue()
+                },
+                success: function(arg) {
+                    options.success(arg);
+                }
+            });
+        }
         $("#runbtn").click(function() {
-            $("#codeform").submit();
+            save({
+                success: function(msg) {
+                    $("#codeform").submit();
+                }
+            });
         });
         $("#tab1").click(function() {
             setTimeout(function() {
@@ -88,33 +127,8 @@ $(function() {
                 editor3.refresh();
             }, 1);
         });
-        function getUser(url) {
-            var a = url.split("/");
-            if (a[a.length - 1] == "") {
-                a.pop();
-            }
-            return a[a.length - 2];
-        }
-        function getId(url) {
-            var a = url.split("/");
-            if (a[a.length - 1] == "") {
-                a.pop();
-            }
-            return a[a.length - 1];
-        }
         $("#savebtn").click(function() {
-            $.ajax({
-                type: "POST",
-                url: "/aspen/action/save",
-                dataType: "json",
-                data: {
-                    user: getUser(document.URL),
-                    id: getId(document.URL),
-                    name: $("#codename").text(),
-                    js: editor1.getValue(),
-                    ks: editor2.getValue(),
-                    html: editor3.getValue()
-                },
+            save({
                 success: function(msg) {
                     var type;
                     var title;
@@ -135,27 +149,31 @@ $(function() {
             });
         });
         $("#checkbtn").click(function() {
-            $.ajax({
-                type: "GET",
-                url: document.URL + "/compile",
-                dataType: "json",
-                success: function(msg) {
-                    var options = {
-                        type: "",
-                        title: "",
-                        body: ""
-                    };
-                    if (msg.error) {
-                        options.type = "alert-error";
-                        options.title = "Error!";
-                        options.body = msg.stderr;
-                    }
-                    else {
-                        options.type = "alert-success";
-                        options.title = "OK!";
-                        options.body = "Compile succeeded.";
-                    }
-                    $("#alertbox").notify(options);
+            save({
+                success: function() {
+                    $.ajax({
+                        type: "GET",
+                        url: document.URL + "/compile",
+                        dataType: "json",
+                        success: function(msg) {
+                            var options = {
+                                type: "",
+                                title: "",
+                                body: ""
+                            };
+                            if (msg.error) {
+                                options.type = "alert-error";
+                                options.title = "Error!";
+                                options.body = msg.stderr;
+                            }
+                            else {
+                                options.type = "alert-success";
+                                options.title = "OK!";
+                                options.body = "Compile succeeded.";
+                            }
+                            $("#alertbox").notify(options);
+                        }
+                    });
                 }
             });
         });
