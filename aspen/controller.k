@@ -260,6 +260,19 @@ HttpResponse signup(HttpRequest req, String[] args)
     String password = req.params_post["password"];
     String email = req.params_post["email"];
     Regex r = new Regex("^([\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4})?$");
+    Regex r2 = new Regex("^[a-zA-Z0-9_]+$");
+    if (username.search(r2) < 0) {
+        ERR << "username is invalid" << EOL;
+        Map error = {
+            "Title": "Username is invalid.",
+            "Contents": "Username can only contain letters, numbers and '_'."
+        }
+        tpl["Form.Inputs.0.Input.Value"] = username;
+        tpl["Form.Inputs.1.Input.Value"] = email;
+        tpl["Error"] = error;
+        ctx.parseFile("form.cs");
+        return new HttpResponse(tpl.render(ctx));
+    }
     if (email.search(r) < 0) {
         ERR << "email is invalid" << EOL;
         Map error = {
