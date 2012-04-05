@@ -108,7 +108,24 @@ String getDatabase(String dbname)
     if (dbs[dbname]["name"] == null) {
         throw new Script!!("$DATABASES['" + dbname + "']['name'] is null");
     }
-    return dbs[dbname]["name"];
+    String engine = dbs[dbname]["engine"];
+    if (engine == "mysql") {
+        String urn = "mysql://" + dbs[dbname]["user"] + ":" + dbs[dbname]["password"];
+        urn += "@" + dbs[dbname]["host"] + ":" + dbs[dbname]["port"] + "/";
+        urn += dbs[dbname]["name"];
+        if (isDebug()) {
+            ERR << "urn: " << urn << EOL;
+        }
+        return urn;
+    }
+    else if (engine == "sqlite3") {
+        String urn = "sqlite3:" + dbs[dbname]["name"];
+        if (isDebug()) {
+            ERR << "urn: " << urn << EOL;
+        }
+        return urn;
+    }
+    throw new Script!!("$DATABASES['" + engine + "']['engine'] is invalid.");
 }
 
 String getMediaDir()
@@ -203,10 +220,17 @@ class Model
     String db_path;
     String name;
 
+    boolean isMysql() {
+        return db_path.startsWith("mysql");
+    }
+
     Model(String name, Map<Class> scheme, String[] primary_keys) {
         name = name.escapeSql();
+        _db_path = getDatabase(name);
+        _name = name;
         String query = "create table if not exists " + name + "(";
         String[] keys = scheme.keys();
+        Map<String> types = {};
         for (int i = 0; i < |keys|; i++) {
             String key = keys[i];
             String column = key.escapeSql();
@@ -214,9 +238,11 @@ class Model
             Class c = scheme[key];
             if (c == String) {
                 type = "text";
+                types[column] = "text";
             }
             else if (c == int) {
                 type = "integer";
+                types[column] = "integer";
             }
             else {
                 throw new Script!!("scheme['" + key + "']: Unsupported type is given.");
@@ -229,11 +255,22 @@ class Model
                 if (|primary_keys| > 0) {
                     query += ", primary key(";
                     for (int j = 0; j < |primary_keys|; j++) {
+                        String primary_key = primary_keys[j].escapeSql();
                         if (j < |primary_keys| - 1) {
-                            query += primary_keys[j].escapeSql() + ", ";
+                            if (isMysql() && types[primary_key] == "text") {
+                                query += primary_key + "(128), ";
+                            }
+                            else {
+                                query += primary_key + ", ";
+                            }
                         }
                         else {
-                            query += primary_keys[j].escapeSql() + ")";
+                            if (isMysql() && types[primary_key] == "text") {
+                                query += primary_key + "(128))";
+                            }
+                            else {
+                                query += primary_key + ")";
+                            }
                         }
                     }
                 }
@@ -243,8 +280,6 @@ class Model
         if (isDebug()) {
             ERR << "model query: " << query << EOL;
         }
-        _db_path = getDatabase(name);
-        _name = name;
         Connection con = new Connection(db_path);
         con.exec(query);
         con.close();
@@ -289,7 +324,13 @@ class Model
     }
 
     void set(Map record) {
-        String query = "insert or replace into " + name + "(";
+        String query;
+        if (isMysql()) {
+            query = "insert into " + name + "(";
+        }
+        else {
+            query = "insert or replace into " + name + "(";
+        }
         String[] values = [];
         String[] keys = record.keys();
         for (int i = 0; i < |keys|; i++) {
@@ -308,6 +349,17 @@ class Model
             }
             else {
                 query += values[i] + ")";
+            }
+        }
+        if (isMysql()) {
+            query += "on duplicate key update ";
+            for (int i = 0; i < |keys|; i++) {
+                if (i < |keys| - 1) {
+                    query += keys[i] + " = " + values[i] + ", ";
+                }
+                else {
+                    query += keys[i] + " = " + values[i];
+                }
             }
         }
         if (isDebug()) {

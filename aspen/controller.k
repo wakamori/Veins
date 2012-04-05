@@ -193,7 +193,7 @@ HttpResponse user(HttpRequest req, String[] args)
         if (req.session["id"] == user) {
             req.session.remove("id");
         }
-        return null;
+        return redirect("../");
     }
     if (|args| == 2) {
         return editor(req, args);
