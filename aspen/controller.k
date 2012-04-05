@@ -294,7 +294,7 @@ HttpResponse signup(HttpRequest req, String[] args)
     usertpl["Info"] = info;
     usertpl.save(user.name + ".hdf");
     req.session["id"] = user.name;
-    return redirect("../");
+    return redirect("./");
 }
 
 HttpResponse check(HttpRequest req, String[] args)

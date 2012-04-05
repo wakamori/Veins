@@ -1,8 +1,5 @@
 <?cs include:"header.cs" ?>
-<form action="/cgi-bin/konoha2js.k" method="post" target="resultframe" id="codeform" class="hideform">
-  <input type="hidden" name="requestedType" value="html">
-  <input type="hidden" name="source" value="" id="sourceinput">
-</form>
+<form action="/aspen/<?cs var:User.Name ?>/<?cs var:User.Id ?>/html" method="get" target="resultframe" id="codeform" class="hideform"></form>
 <ul class="breadcrumb">
   <li>
     <a href="<?cs var:BASE_URL ?>/<?cs var:User.Name ?>"><?cs var:User.Name ?></a> <span class="divider">/</span>
