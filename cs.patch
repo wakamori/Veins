@@ -1,0 +1,40 @@
+--- cs/cs.h	2012-04-06 07:21:10.000000000 +0900
++++ cs/cs.h	2012-04-06 07:21:35.000000000 +0900
+@@ -111,7 +111,7 @@
+   CSTOKEN_TYPE op_type;
+   char *argexpr;
+   char *s;
+-  long int n;
++  int n;
+   int alloc;
+   struct _funct *function;
+   struct _macro *macro;
+--- cs/csparse.c	2007-07-12 11:37:34.000000000 +0900
++++ cs/csparse.c	2012-04-06 07:22:41.000000000 +0900
+@@ -4250,7 +4250,7 @@
+       {
+ 	if (node->arg1.op_type == CS_TYPE_NUM)
+ 	{
+-	  snprintf (buf, blen, "%ld ", node->arg1.n);
++	  snprintf (buf, blen, "%d ", node->arg1.n);
+ 	}
+ 	else if (node->arg1.op_type == CS_TYPE_MACRO)
+ 	{
+@@ -4267,7 +4267,7 @@
+       {
+ 	if (node->arg2.op_type == CS_TYPE_NUM)
+ 	{
+-	  snprintf (buf, blen, "%ld", node->arg2.n);
++	  snprintf (buf, blen, "%d", node->arg2.n);
+ 	}
+ 	else
+ 	{
+@@ -4284,7 +4284,7 @@
+ 	{
+ 	  if (arg->op_type == CS_TYPE_NUM)
+ 	  {
+-	    snprintf (buf, blen, "%ld ", arg->n);
++	    snprintf (buf, blen, "%d ", arg->n);
+ 	  }
+ 	  else
+ 	  {
