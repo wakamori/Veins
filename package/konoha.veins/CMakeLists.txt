@@ -7,7 +7,7 @@ if(NOT APPLE)
     find_library(HAVE_LIB_UUID uuid)
     if(NOT HAVE_LIB_UUID)
         message(FATAL_ERROR "libuuid not found. Please install uuid-dev or libuuid-devel.")
-    endif(NOT HAVE_UUID_LIB)
+    endif(NOT HAVE_LIB_UUID)
 endif(NOT APPLE)
 
 find_library(HAVE_LIB_SSL ssl)
