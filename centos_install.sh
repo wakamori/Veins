@@ -12,6 +12,7 @@ sudo yum -y install libuuid-devel
 sudo yum -y install httpd-devel
 sudo yum -y install git
 sudo yum -y install openssl-devel
+sudo yum -y install mysql-devel
 
 mkdir tmp
 cd tmp

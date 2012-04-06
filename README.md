@@ -19,6 +19,7 @@ For complie konohascript and dependent packages:
 * clearsilver
 * llvm (> = 3.0)
 * openssl-devel
+* mysql-devel
 
 For compile mod\_konoha:
 
