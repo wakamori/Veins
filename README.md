@@ -18,6 +18,7 @@ For complie konohascript and dependent packages:
 * libuuid-devel
 * clearsilver
 * llvm (> = 3.0)
+* openssl-devel
 
 For compile mod\_konoha:
 

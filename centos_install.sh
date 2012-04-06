@@ -11,6 +11,7 @@ sudo yum -y install pcre-devel
 sudo yum -y install libuuid-devel
 sudo yum -y install httpd-devel
 sudo yum -y install git
+sudo yum -y install openssl-devel
 
 mkdir tmp
 cd tmp
