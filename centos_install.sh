@@ -11,7 +11,6 @@ sudo yum -y install pcre-devel
 sudo yum -y install json-c
 sudo yum -y install libuuid-devel
 sudo yum -y install httpd-devel
-sudo yum -y install git
 
 mkdir tmp
 cd tmp
@@ -45,6 +44,7 @@ if [ ! -r /usr/local/lib/libneo_cs.a ]; then
     if [ `arch` = "x86_64" ]; then
         patch -p0 < ../../cs.patch
     fi
+    sudo yum -y install zlib-devel
     ./configure
     make
     sudo make install

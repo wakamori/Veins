@@ -5,7 +5,7 @@ Header {
     Navigation {
         0 {
             Name = About
-            URL = /about
+            URL = /about/
         }
     }
 }
