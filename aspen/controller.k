@@ -210,7 +210,6 @@ HttpResponse user(HttpRequest req, String[] args)
     Model scripts = defineScripts();
     foreach (Map m in scripts.get("*", {"user": user})) {
         int id = m["id"];
-        ERR << "id: " << id << EOL;
         String name = m["name"];
         String description = m["description"];
         codelist.add({
