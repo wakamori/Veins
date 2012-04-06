@@ -51,9 +51,8 @@ if [ ! -r /usr/local/lib/libneo_cs.a ]; then
     cd ..
 fi
 
-wget https://github.com/wakamori/konohascript/tarball/veins
-tar zxvf veins
-cd wakamori-konohascript-3827f00/build
+git clone git://github.com/wakamori/konohascript.git
+cd konohascript/build
 cmake ..
 make
 sudo make install
