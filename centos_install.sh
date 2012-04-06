@@ -8,9 +8,9 @@ sudo yum -y install gcc
 sudo yum -y install gcc-c++
 sudo yum -y install sqlite-devel
 sudo yum -y install pcre-devel
-sudo yum -y install json-c
 sudo yum -y install libuuid-devel
 sudo yum -y install httpd-devel
+sudo yum -y install git
 
 mkdir tmp
 cd tmp
@@ -45,6 +45,15 @@ if [ ! -r /usr/local/lib/libneo_cs.a ]; then
         patch -p0 < ../../cs.patch
     fi
     sudo yum -y install zlib-devel
+    ./configure
+    make
+    sudo make install
+    cd ..
+fi
+
+if [ ! -r /usr/local/lib/libjson.so ]; then
+    wget http://oss.metaparadigm.com/json-c/json-c-0.9.tar.gz
+    cd json-c-0.9
     ./configure
     make
     sudo make install
