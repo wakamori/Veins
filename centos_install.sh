@@ -16,7 +16,7 @@ mkdir tmp
 cd tmp
 
 v=`echo \`cmake --version\` | cut -c 15-17`
-if [ $v != "2.8" ]; then
+if [ "$v" != "2.8" ]; then
     wget http://www.cmake.org/files/v2.8/cmake-2.8.7.tar.gz
     tar zxvf cmake-2.8.7.tar.gz
     cd cmake-2.8.7
@@ -27,7 +27,7 @@ if [ $v != "2.8" ]; then
 fi
 
 v=`echo \`llvm-config --version\` | cut -c 1`
-if [ $v != "3" ]; then
+if [ "$v" != "3" ]; then
     wget http://llvm.org/releases/3.0/llvm-3.0.tar.gz
     tar zxvf llvm-3.0.tar.gz
     cd llvm-3.0.src
@@ -41,7 +41,7 @@ if [ ! -r /usr/local/lib/libneo_cs.a ]; then
     wget http://www.clearsilver.net/downloads/clearsilver-0.10.5.tar.gz
     tar zxvf clearsilver-0.10.5.tar.gz
     cd clearsilver-0.10.5
-    if [ `arch` = "x86_64" ]; then
+    if [ "`arch`" = "x86_64" ]; then
         patch -p0 < ../../cs.patch
     fi
     sudo yum -y install zlib-devel
