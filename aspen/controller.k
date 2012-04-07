@@ -261,7 +261,6 @@ HttpResponse signup(HttpRequest req, String[] args)
     Regex r = new Regex("^([\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4})?$");
     Regex r2 = new Regex("^[a-zA-Z0-9_]+$");
     if (username.search(r2) < 0) {
-        ERR << "username is invalid" << EOL;
         Map error = {
             "Title": "Username is invalid.",
             "Contents": "Username can only contain letters, numbers and '_'."
@@ -273,7 +272,6 @@ HttpResponse signup(HttpRequest req, String[] args)
         return new HttpResponse(tpl.render(ctx));
     }
     if (email.search(r) < 0) {
-        ERR << "email is invalid" << EOL;
         Map error = {
             "Title": "email is invalid.",
             "Contents": "Cannot create user '" + username + "'. Please retry."
@@ -286,7 +284,6 @@ HttpResponse signup(HttpRequest req, String[] args)
     }
     User user = User.addUser(username, password);
     if (user == null) {
-        ERR << "user is null" << EOL;
         Map error = {
             "Title": "Username is invalid.",
             "Contents": "Cannot create user '" + username + "'. Please retry."
@@ -297,7 +294,6 @@ HttpResponse signup(HttpRequest req, String[] args)
         ctx.parseFile("form.cs");
         return new HttpResponse(tpl.render(ctx));
     }
-    ERR << "OK" << EOL;
     Template usertpl = new Template();
     Array info = [
         {"key": "ID", "value": user.name},
@@ -379,6 +375,23 @@ HttpResponse create(HttpRequest req, String[] args)
     if (req.method == "POST") {
         String codename = req.params_post["codename"];
         String description = req.params_post["description"];
+        if (|codename| == 0 || |description| == 0) {
+            Map error = {};
+            if (|codename| == 0) {
+                error["Title"] = "Name is empty.";
+            }
+            else {
+                error["Title"] = "Description is empty.";
+            }
+            Template tpl = getDefaultTemplate(req);
+            tpl.readFile("create.hdf");
+            tpl["Form.Inputs.0.Input.Value"] = codename;
+            tpl["Form.Inputs.1.Input.Value"] = description;
+            tpl["Error"] = error;
+            TemplateContext ctx = new TemplateContext();
+            ctx.parseFile("form.cs");
+            return new HttpResponse(tpl.render(ctx));
+        }
         HttpResponse res = new HttpResponse();
         Date d = new Date();
         String id = (to String)d.year;

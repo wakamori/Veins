@@ -9,6 +9,7 @@ Form {
             Input {
                 Type = text
                 Name = username
+                Required = true
             }
         }
         1 {
@@ -17,6 +18,7 @@ Form {
             Input {
                 Type = email
                 Name = email
+                Required = true
             }
         }
         2 {
@@ -25,6 +27,7 @@ Form {
             Input {
                 Type = password
                 Name = password
+                Required = true
             }
         }
         3 {
@@ -32,6 +35,7 @@ Form {
             ID = confirm
             Input {
                 Type = password
+                Required = true
             }
         }
     }
