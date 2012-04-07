@@ -60,7 +60,10 @@ $(function() {
         var editor1 = CodeMirror.fromTextArea($("#editor1")[0], {
             lineNumbers: true,
             mode: "text/x-konoha",
-            readOnly: $("#editor1").hasClass("readonly")
+            readOnly: $("#editor1").hasClass("readonly"),
+            onCursorActivity: function() {
+                editor1.setLineClass(editor1.getCursor().line, null);
+            }
         });
         var editor2 = CodeMirror.fromTextArea($("#editor2")[0], {
             lineNumbers: true,
@@ -148,6 +151,10 @@ $(function() {
                 }
             });
         });
+        function parseErrorText(text) {
+            text.match(/\(.+_\d+_js\.k\:(\d+)\) (.+)/);
+            editor1.setLineClass(parseInt(RegExp.$1) - 1, "errorline");
+        }
         $("#checkbtn").click(function() {
             save({
                 success: function() {
@@ -155,6 +162,7 @@ $(function() {
                         type: "GET",
                         url: document.URL + "/compile",
                         dataType: "json",
+                        cache: false,
                         success: function(msg) {
                             var options = {
                                 type: "",
@@ -162,6 +170,7 @@ $(function() {
                                 body: ""
                             };
                             if (msg.error) {
+                                parseErrorText(msg.stderr[0]);
                                 options.type = "alert-error";
                                 options.title = "Error!";
                                 options.body = msg.stderr;
