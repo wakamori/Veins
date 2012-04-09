@@ -1,7 +1,7 @@
 <?cs include:"header.cs" ?>
 <h1>Search text</h1>
 <form action="<?cs var:BASE_URL ?>/action/search" class="well form-search" method="get">
-  <input type="text" name="text" class="input-xlarge search-query" value="<?cs var:Search.Text ?>">
+  <input type="text" name="text" class="input-xlarge search-query" value="<?cs var:Search.Text ?>" autofocus>
   <button type="submit" class="btn">Search</button>
 </form>
 <h1>Search result</h1>

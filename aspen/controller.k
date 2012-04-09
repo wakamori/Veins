@@ -74,9 +74,6 @@ HttpResponse login(HttpRequest req, String[] args)
     if (req.method != "POST") {
         return null;
     }
-    HttpResponse res = new HttpResponse();
-    res["Location"] = "../";
-    res.status = 301;
     String username = req.params_post["username"];
     String password = req.params_post["password"];
     String remember = req.params_post["remember"];
@@ -94,7 +91,7 @@ HttpResponse login(HttpRequest req, String[] args)
     if (user != null) {
         req.session["id"] = user.name;
     }
-    return res;
+    return new HttpResponse("OK");
 }
 
 HttpResponse logout(HttpRequest req, String[] args)
@@ -103,7 +100,7 @@ HttpResponse logout(HttpRequest req, String[] args)
         return null;
     }
     req.session.remove("id");
-    return redirect("../");
+    return new HttpResponse("OK");
 }
 
 HttpResponse editor(HttpRequest req, String[] args)

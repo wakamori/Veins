@@ -9,7 +9,7 @@ Form {
             Input {
                 Type = text
                 Name = username
-                Required = true
+                Attributes = required autofocus
             }
         }
         1 {
@@ -18,7 +18,7 @@ Form {
             Input {
                 Type = email
                 Name = email
-                Required = true
+                Attributes = required
             }
         }
         2 {
@@ -27,7 +27,7 @@ Form {
             Input {
                 Type = password
                 Name = password
-                Required = true
+                Attributes = required
             }
         }
         3 {
@@ -35,7 +35,7 @@ Form {
             ID = confirm
             Input {
                 Type = password
-                Required = true
+                Attributes = required
             }
         }
     }

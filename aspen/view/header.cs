@@ -28,7 +28,6 @@
 <!--[if lt IE 7]><p class=chromeframe>Your browser is <em>ancient!</em> <a href="http://browsehappy.com/">Upgrade to a different browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to experience this site.</p><![endif]-->
 
     <?cs if:ID ?>
-      <form name="logoutform" id="signoutform" action="<?cs var:BASE_URL ?>/action/logout" method="post" class="hideform"></form>
     <?cs else ?>
       <div class="modal fade" id="sign-in">
         <div class="modal-header">
@@ -36,14 +35,13 @@
           <h3>Sign in form</h3>
         </div>
         <div class="modal-body">
-          <form class="well" action="<?cs var:BASE_URL ?>/action/login" method="post">
-            <input name="type" type="hidden" value="login">
-            <input name="username" type="text" class="input-medium" placeholder="Username"<?cs if:Remember == "on" ?> value="<?cs var:Username ?>"<?cs /if ?>>
-            <input name="password" type="password" class="input-medium" placeholder="Password"<?cs if:Remember == "on" ?> value="<?cs var:Password ?>"<?cs /if ?>>
+          <form class="well" id="signinform">
+            <input id="input-username" name="username" type="text" class="input-medium" placeholder="Username"<?cs if:Remember == "on" ?> value="<?cs var:Username ?>"<?cs /if ?>>
+            <input id="input-password" name="password" type="password" class="input-medium" placeholder="Password"<?cs if:Remember == "on" ?> value="<?cs var:Password ?>"<?cs /if ?>>
             <label class="checkbox">
-              <input type="checkbox" name="remember" value="on"<?cs if:Remember == "on" ?> checked<?cs /if ?>> Remember me
+              <input id="input-remember" type="checkbox" name="remember" value="on"<?cs if:Remember == "on" ?> checked<?cs /if ?>> Remember me
             </label>
-            <button type="submit" class="btn">Sign in</button>
+            <a class="btn" id="signinbtn">Sign in</a>
           </form>
         </div>
       </div>

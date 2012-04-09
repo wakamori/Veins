@@ -8,7 +8,7 @@ Form {
             Input {
                 Type = text
                 Name = codename
-                Required = true
+                Attributes = required autofocus
             }
         }
         1 {
@@ -17,7 +17,7 @@ Form {
             Input {
                 Type = text
                 Name = description
-                Required = true
+                Attributes = required
             }
         }
     }

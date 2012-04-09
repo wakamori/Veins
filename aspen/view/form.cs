@@ -13,7 +13,7 @@
     <div class="control-group" id="<?cs var:item.ID?>-group">
       <label class="control-label" for="<?cs var:item.ID ?>"><?cs var:item.Label ?></label>
       <div class="controls">
-        <input type="<?cs var:item.Input.Type ?>" class="input-xlarge" id="<?cs var:item.ID ?>"<?cs if:item.Input.Name ?> name="<?cs var:item.Input.Name ?>"<?cs /if ?><?cs if:item.Input.Value ?> value="<?cs var:item.Input.Value ?>"<?cs /if ?><?cs if:item.Input.Required ?> required<?cs /if ?>>
+        <input type="<?cs var:item.Input.Type ?>" class="input-xlarge" id="<?cs var:item.ID ?>"<?cs if:item.Input.Name ?> name="<?cs var:item.Input.Name ?>"<?cs /if ?><?cs if:item.Input.Value ?> value="<?cs var:item.Input.Value ?>"<?cs /if ?><?cs var:item.Input.Attributes ?>>
         <span class="help-inline" id="<?cs var:item.ID ?>-help"></span>
       </div>
     </div>
