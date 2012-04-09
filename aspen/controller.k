@@ -26,6 +26,17 @@ Model defineScripts()
     }, ["user", "id"]);
 }
 
+Model defineInquiries()
+{
+    return new Model("inquiries", {
+        "id": AutoIncrementInt,
+        "title": String,
+        "name": String,
+        "contents": String,
+        "date": String
+    }, ["id"]);
+}
+
 Template getDefaultTemplate(HttpRequest req)
 {
     Template tpl = new Template();
@@ -65,6 +76,11 @@ Template getDefaultTemplate(HttpRequest req)
 @Public OutputStream FileStorage.newHTML(String user, String id)
 {
     return FileStorage.newFile(user + "_" + id + ".html");
+}
+
+boolean isReservedWord(String word)
+{
+    return word in? ["action", "about", "check", "contact"];
 }
 
 /* ------------------------------------------------------------------------ */
@@ -256,7 +272,18 @@ HttpResponse signup(HttpRequest req, String[] args)
     String password = req.params_post["password"];
     String email = req.params_post["email"];
     Regex r = new Regex("^([\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4})?$");
-    Regex r2 = new Regex("^[a-zA-Z0-9_]+$");
+    Regex r2 = new Regex("^[a-zA-Z0-9_]{1,20}$");
+    if (isReservedWord(username)) {
+        Map error = {
+            "Title": "Username is invalid.",
+            "Contents": "You cannot use '" + username + "' as a username."
+        }
+        tpl["Form.Inputs.0.Input.Value"] = username;
+        tpl["Form.Inputs.1.Input.Value"] = email;
+        tpl["Error"] = error;
+        ctx.parseFile("form.cs");
+        return new HttpResponse(tpl.render(ctx));
+    }
     if (username.search(r2) < 0) {
         Map error = {
             "Title": "Username is invalid.",
@@ -310,7 +337,8 @@ HttpResponse check(HttpRequest req, String[] args)
     HttpResponse res = new HttpResponse();
     res["Content-Type"] = "application/json; charset=utf-8";
     Json j = new Json();
-    if (User.hasUser(req.params_post["username"])) {
+    if (User.hasUser(req.params_post["username"]) ||
+            isReservedWord(req.params_post["username"])) {
         j["exists"] = true;
     }
     else {
@@ -503,9 +531,36 @@ HttpResponse search(HttpRequest req, String[] args)
     return new HttpResponse(tpl.render(ctx));
 }
 
+HttpResponse contact(HttpRequest req, String[] args)
+{
+    return null;
+    //Template tpl = getDefaultTemplate(req);
+    //tpl.load(user + ".hdf");
+    //Array threadlist = [];
+    //Model scripts = defineScripts();
+    //foreach (Map m in scripts.get("*", {"user": user})) {
+    //    int id = m["id"];
+    //    String name = m["name"];
+    //    String description = m["description"];
+    //    codelist.add({
+    //        "Id": (to String)id,
+    //        "Name": name.convert(to:durl),
+    //        "Description": description.convert(to:durl),
+    //        "Date": m["date"]
+    //    });
+    //}
+    //tpl["User"] = user;
+    //tpl["Code"] = codelist;
+    //TemplateContext ctx = new TemplateContext();
+    //ctx.parseFile("user.cs");
+    //return new HttpResponse(tpl.render(ctx));
+}
+
 Url.patterns = [
     (new Regex("^aspen/$"), top),
     (new Regex("^aspen/about/$"), about),
+    (new Regex("^aspen/contact/.+$"), contact),
+    (new Regex("^aspen/check/.+$"), check),
     (new Regex("^aspen/action/create$"), create),
     (new Regex("^aspen/action/delete$"), delete),
     (new Regex("^aspen/action/login$"), login),
@@ -513,6 +568,5 @@ Url.patterns = [
     (new Regex("^aspen/action/save$"), save),
     (new Regex("^aspen/action/search$"), search),
     (new Regex("^aspen/action/signup$"), signup),
-    (new Regex("^aspen/check/.+$"), check),
     (new Regex("^aspen/.+$"), user)
 ];
