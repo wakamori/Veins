@@ -510,14 +510,16 @@ HttpResponse search(HttpRequest req, String[] args)
         String[] names = User.getList();
         Model scripts = defineScripts();
         foreach (String name in names) {
+            name = name.convert(to:durl);
             if (name.indexOf(searchtext) >= 0) {
                 matched_names.add(name);
             }
         }
         Map[] records = scripts.get("user, id, name");
         foreach (Map record in records) {
-            String name = record["name"];
+            String name = record["name"].convert(to:durl);
             if (name.indexOf(searchtext) >= 0) {
+                record["name"] = name;
                 matched_scripts.add(record);
             }
         }
