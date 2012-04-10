@@ -154,6 +154,7 @@ $(function() {
         function parseErrorText(text) {
             text.match(/\(.+_\d+_js\.k\:(\d+)\) (.+)/);
             editor1.setLineClass(parseInt(RegExp.$1) - 1, "errorline");
+            return RegExp.$1 + ": " + RegExp.$2;
         }
         $("#checkbtn").click(function() {
             save({
@@ -170,10 +171,12 @@ $(function() {
                                 body: ""
                             };
                             if (msg.error) {
-                                parseErrorText(msg.stderr[0]);
                                 options.type = "alert-error";
                                 options.title = "Error!";
-                                options.body = msg.stderr;
+                                options.body = "<br>";
+                                for (i = 0; i < msg.stderr.length; i++) {
+                                    options.body += parseErrorText(msg.stderr[i]) + "<br>";
+                                }
                             }
                             else {
                                 options.type = "alert-success";

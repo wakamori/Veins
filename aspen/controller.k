@@ -193,7 +193,19 @@ HttpResponse konoha2js(HttpRequest req, String[] args)
     else if (requestedType == "compile") {
         res["Access-Control-Allow-Origin"] = "http://konohascript.org";
         res["Content-Type"] = "application/json; charset=UTF-8";
-        res.content = exec(k2jspath + " -c -i " + path);
+        String[] result = exec(k2jspath + " -c -i " + path + " 2>&1").split("\n");
+        Json j = Json.parse(result.pop());
+        String[] stderrs = [];
+        Regex r = new Regex(" - \\(\\w+\\.k\\:\\d+\\) \\(\\w+\\) .+");
+        foreach (String line in result) {
+            if (line.search(r) >= 0) {
+                if (not line.startsWith(" - (compiler.k")) {
+                    stderrs.add(line.substring(3));
+                }
+            }
+        }
+        j["stderr"] = stderrs;
+        res.content = j.stringify();
     }
     else {
         return null;
