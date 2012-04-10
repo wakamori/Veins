@@ -183,9 +183,11 @@ HttpResponse konoha2js(HttpRequest req, String[] args)
     }
     else if (requestedType == "html") {
         String ret = exec(k2jspath + " -j -r -i " + path);
-        String replacetxt = "<!-- KONOHA_JS_CODE -->";
+        ret = "<script type=\"text/javascript\">\n" + ret + "\n</script>\n</head>";
+        String replacetxt = "</head>";
         InputStream html = FileStorage.openHTML(user, id);
-        res.content = html.read().decode().replace(replacetxt, ret);
+        res.content = "<!DOCTYPE html>\n";
+        res.content += html.read().decode().replace(replacetxt, ret);
         html.close();
     }
     else if (requestedType == "compile") {
@@ -433,21 +435,17 @@ HttpResponse create(HttpRequest req, String[] args)
 print \"hello, world\";
 """);
         ous_html.print("""
-<!DOCTYPE html>
 <html>
 <head>
 <title>sample</title>
 <script type="text/javascript">
-<!-- KONOHA_JS_CODE -->
+function runmain() {
+  konoha_main();
+  konoha.printOUT();
+}
 </script>
 </head>
-<body onload="">
-<script type="text/javascript">
-<!--
-konoha_main();
-konoha.printOUT();
-// -->
-</script>
+<body onload="runmain()">
 </body>
 </html>
 """);
@@ -533,33 +531,31 @@ HttpResponse search(HttpRequest req, String[] args)
 
 HttpResponse contact(HttpRequest req, String[] args)
 {
-    return null;
-    //Template tpl = getDefaultTemplate(req);
-    //tpl.load(user + ".hdf");
-    //Array threadlist = [];
-    //Model scripts = defineScripts();
-    //foreach (Map m in scripts.get("*", {"user": user})) {
-    //    int id = m["id"];
-    //    String name = m["name"];
-    //    String description = m["description"];
-    //    codelist.add({
-    //        "Id": (to String)id,
-    //        "Name": name.convert(to:durl),
-    //        "Description": description.convert(to:durl),
-    //        "Date": m["date"]
-    //    });
-    //}
-    //tpl["User"] = user;
-    //tpl["Code"] = codelist;
-    //TemplateContext ctx = new TemplateContext();
-    //ctx.parseFile("user.cs");
-    //return new HttpResponse(tpl.render(ctx));
+    Template tpl = getDefaultTemplate(req);
+    Array threadlist = [];
+    Model inquiries = defineInquiries();
+    foreach (Map m in inquiries.get("id, title, name, date")) {
+        int id = m["id"];
+        String title = m["title"];
+        String name = m["name"];
+        String date = m["date"];
+        threadlist.add({
+            "Id": (to String)id,
+            "Title": title,
+            "Name": name,
+            "Date": date
+        });
+    }
+    tpl["Threads"] = threadlist;
+    TemplateContext ctx = new TemplateContext();
+    ctx.parseFile("contact.cs");
+    return new HttpResponse(tpl.render(ctx));
 }
 
 Url.patterns = [
     (new Regex("^aspen/$"), top),
     (new Regex("^aspen/about/$"), about),
-    (new Regex("^aspen/contact/.+$"), contact),
+    (new Regex("^aspen/contact/.*$"), contact),
     (new Regex("^aspen/check/.+$"), check),
     (new Regex("^aspen/action/create$"), create),
     (new Regex("^aspen/action/delete$"), delete),
