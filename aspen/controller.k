@@ -194,7 +194,8 @@ HttpResponse konoha2js(HttpRequest req, String[] args)
         res["Access-Control-Allow-Origin"] = "http://konohascript.org";
         res["Content-Type"] = "application/json; charset=UTF-8";
         String[] result = exec(k2jspath + " -c -i " + path + " 2>&1").split("\n");
-        Json j = Json.parse(result.pop());
+        result.pop()
+        Json j = new Json();
         String[] stderrs = [];
         Regex r = new Regex(" - \\(\\w+\\.k\\:\\d+\\) \\(\\w+\\) .+");
         foreach (String line in result) {
@@ -203,6 +204,9 @@ HttpResponse konoha2js(HttpRequest req, String[] args)
                     stderrs.add(line.substring(3));
                 }
             }
+        }
+        if (|stderrs| > 0) {
+            j["error"] = true;
         }
         j["stderr"] = stderrs;
         res.content = j.stringify();
