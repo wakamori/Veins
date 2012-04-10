@@ -71,7 +71,7 @@ typedef struct _wsgi_config {
     const char *content_type;
 } wsgi_config_t;
 
-static int konoha_initialized = 0;
+//static int konoha_initialized = 0;
 static konoha_t konoha;
 
 module AP_MODULE_DECLARE_DATA konoha_module;
@@ -294,6 +294,9 @@ static int konoha_handler(request_rec *r)
     switch (atoi(wconf.status)) {
     case 301:
         rcode = HTTP_MOVED_PERMANENTLY;
+        break;
+    case 302:
+        rcode = HTTP_MOVED_TEMPORARILY;
         break;
     case 404:
         rcode = HTTP_NOT_FOUND;

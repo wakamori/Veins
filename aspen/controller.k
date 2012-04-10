@@ -11,7 +11,7 @@ HttpResponse redirect(String location)
 {
     HttpResponse res = new HttpResponse();
     res["Location"] = location;
-    res.status = 301;
+    res.status = 302;
     return res;
 }
 
