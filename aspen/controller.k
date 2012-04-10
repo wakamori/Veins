@@ -19,7 +19,7 @@ Model defineScripts()
 {
     return new Model("scripts", {
         "user": String,
-        "id": int,
+        "id": String,
         "name": String,
         "description": String,
         "date": String
@@ -127,7 +127,7 @@ HttpResponse editor(HttpRequest req, String[] args)
     Model scripts = defineScripts();
     Map[] m = scripts.get("name", {
         "user": args[0],
-        "id": (to int)args[1]
+        "id": args[1]
     });
     if (|m| == 0) {
         return null;
@@ -166,7 +166,7 @@ HttpResponse konoha2js(HttpRequest req, String[] args)
     Model scripts = defineScripts();
     Map[] m = scripts.get("name", {
         "user": user,
-        "id": (to int)id
+        "id": id
     });
     if (|m| != 1) {
         return null;
@@ -224,11 +224,11 @@ HttpResponse user(HttpRequest req, String[] args)
     Array codelist = [];
     Model scripts = defineScripts();
     foreach (Map m in scripts.get("*", {"user": user})) {
-        int id = m["id"];
+        String id = m["id"];
         String name = m["name"];
         String description = m["description"];
         codelist.add({
-            "Id": (to String)id,
+            "Id": id,
             "Name": name.convert(to:durl),
             "Description": description.convert(to:durl),
             "Date": m["date"]
@@ -387,7 +387,7 @@ HttpResponse save(HttpRequest req, String[] args)
     m["date"] = (to String)new Date();
     scripts.update(m, {
         "user": user,
-        "id": (to int)id
+        "id": id
     });
     j["message"] = "Script saved successfully.";
     res.content = j.stringify();
@@ -454,7 +454,7 @@ function runmain() {
         ous_html.close();
         scripts.set({
             "user": req.session["id"],
-            "id": (to int)id,
+            "id": id,
             "name": codename.convert(to:url),
             "description": description.convert(to:url),
             "date": (to String)d
@@ -477,8 +477,8 @@ HttpResponse delete(HttpRequest req, String[] args)
     res["Content-Type"] = "application/json; charset=utf-8";
     Json j = new Json();
     if (req.method == "POST") {
-        int id = (to int)req.params_post["id"];
-        if (id == 0 || req.session["id"] == null) {
+        String id = req.params_post["id"];
+        if (id == "" || id == null) {
             j["error"] = true;
             j["message"] = "Invalid id or user.";
             res.content = j.stringify();
