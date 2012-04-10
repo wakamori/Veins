@@ -15,8 +15,9 @@
     </div>
     <div class="span10">
       <?cs if:Myself ?>
+      <p>
         <a href="<?cs var:BASE_URL ?>/action/create" class="btn"><i class="icon-edit"></i> Create code</a>
-      </form>
+      </p>
       <?cs /if ?>
       <h1>Code</h1>
       <table class="table">

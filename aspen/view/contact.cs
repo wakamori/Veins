@@ -1,6 +1,6 @@
 <?cs include:"header.cs" ?>
 <p>
-  <a href="" class="btn"><i class="icon-pencil"></i> </a>
+  <a class="btn"><i class="icon-pencil"></i> Post</a>
 </p>
 <h1>All Contacts</h1>
 <table class="table">
