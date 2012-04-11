@@ -219,13 +219,7 @@ $(function() {
         });
     });
     $("#signoutbtn").click(function() {
-        $.ajax({
-            type: "POST",
-            url: "/aspen/action/logout",
-            success: function(msg) {
-                location.reload();
-            }
-        });
+        $("#signoutform").submit();
     });
     $("#signinbtn").click(function() {
         $.ajax({

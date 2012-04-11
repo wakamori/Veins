@@ -116,7 +116,7 @@ HttpResponse logout(HttpRequest req, String[] args)
         return null;
     }
     req.session.remove("id");
-    return new HttpResponse("OK");
+    return redirect("../../");
 }
 
 HttpResponse editor(HttpRequest req, String[] args)
