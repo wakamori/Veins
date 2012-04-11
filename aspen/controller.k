@@ -547,11 +547,54 @@ HttpResponse search(HttpRequest req, String[] args)
     return new HttpResponse(tpl.render(ctx));
 }
 
+HttpResponse inquire(HttpRequest req, String[] args)
+{
+    if (req.session["id"] == null) {
+        return redirect("./");
+    }
+    Template tpl = getDefaultTemplate(req);
+    if (req.method != "POST") {
+        TemplateContext ctx = new TemplateContext();
+        ctx.parseFile("inquire.cs");
+        return new HttpResponse(tpl.render(ctx));
+    }
+    Model inquiries = defineInquiries();
+    inquiries.set({
+        "title": req.params_post["title"],
+        "name": req.session["id"],
+        "contents": req.params_post["contents"],
+        "date": (to String)new Date()
+    });
+    return redirect("./" + inquiries.id);
+}
+
 HttpResponse contact(HttpRequest req, String[] args)
 {
+    if (args[1] == "new") {
+        return inquire(req, args);
+    }
     Template tpl = getDefaultTemplate(req);
-    Array threadlist = [];
     Model inquiries = defineInquiries();
+    if ((to int)args[1] != 0) {
+        Map[] m = inquiries.get("*", {
+            "id": (to int)args[1]
+        });
+        if (|m| == 1) {
+            Map topic = {};
+            topic["Title"] = m[0]["title"];
+            topic["Name"] = m[0]["name"];
+            topic["Contents"] = m[0]["contents"];
+            topic["Date"] = m[0]["date"];
+            tpl["Topic"] = topic;
+            TemplateContext ctx = new TemplateContext();
+            ctx.parseFile("topic.cs");
+            return new HttpResponse(tpl.render(ctx));
+        }
+        else {
+            return null;
+        }
+    }
+    Array threadlist = [];
     foreach (Map m in inquiries.get("id, title, name, date")) {
         int id = m["id"];
         String title = m["title"];
