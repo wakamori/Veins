@@ -457,6 +457,7 @@ print \"hello, world\";
 <script type="text/javascript">
 function runmain() {
   konoha_main();
+  konoha.printERR();
   konoha.printOUT();
 }
 </script>
