@@ -11,6 +11,10 @@ Header {
             Name = Contact
             URL = /contact/
         }
+        2 {
+            Name = Demo
+            URL = /demo
+        }
     }
 }
 Copyright = copyright &copy; 2012 Konoha Project
