@@ -10,6 +10,9 @@
   <p>
   <div class="btn-group">
     <button class="btn btn-primary" data-toggle="modal" href="#resultwindow" id="runbtn">Run</button>
+    <?cs if:Myself ?>
+    <a class="btn" href="<?cs var:BASE_URL ?>/<?cs var:User.Name ?>/<?cs var:User.Id ?>/edit">Edit</a>
+    <?cs /if ?>
   </div>
   </p>
   <div class="row-fluid">
@@ -50,7 +53,6 @@
     </div>
   </div>
   <div class="well">
-    <!-- Twitter -->
     <a href="https://twitter.com/share" class="twitter-share-button" data-text="<?cs var:User.Name ?> / <?cs var:Code.Name ?>" data-hashtags="aspen">Tweet</a>
     <div class="fb-like" data-href="<?cs var:BASE_URL ?>/<?cs var:User.Name ?>/<?cs var:User.Id ?>" data-send="false" data-layout="button_count" data-width="110" data-show-faces="false"></div>
     <div class="g-plusone" data-size="medium"></div>

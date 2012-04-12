@@ -27,68 +27,68 @@
 <body>
 <!--[if lt IE 7]><p class=chromeframe>Your browser is <em>ancient!</em> <a href="http://browsehappy.com/">Upgrade to a different browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to experience this site.</p><![endif]-->
   <div id="fb-root"></div>
-    <?cs if:ID ?>
-    <?cs else ?>
-      <div class="modal fade" id="sign-in">
-        <div class="modal-header">
-          <a class="close" data-dismiss="modal">&times;</a>
-          <h3>Sign in form</h3>
-        </div>
-        <div class="modal-body">
-          <form class="well" id="signinform">
-            <input id="input-username" name="username" type="text" class="input-medium" placeholder="Username"<?cs if:Remember == "on" ?> value="<?cs var:Username ?>"<?cs /if ?>>
-            <input id="input-password" name="password" type="password" class="input-medium" placeholder="Password"<?cs if:Remember == "on" ?> value="<?cs var:Password ?>"<?cs /if ?>>
-            <label class="checkbox">
-              <input id="input-remember" type="checkbox" name="remember" value="on"<?cs if:Remember == "on" ?> checked<?cs /if ?>> Remember me
-            </label>
-            <a class="btn" id="signinbtn">Sign in</a>
+  <div class="hidden" id="user-name"><?cs var:User.Name ?></div>
+  <div class="hidden" id="user-id"><?cs var:User.Id ?></div>
+  <?cs if:ID ?>
+  <?cs else ?>
+  <div class="modal fade" id="sign-in">
+    <div class="modal-header">
+      <a class="close" data-dismiss="modal">&times;</a>
+      <h3>Sign in form</h3>
+    </div>
+    <div class="modal-body">
+      <form class="well" id="signinform">
+        <input id="input-username" name="username" type="text" class="input-medium" placeholder="Username"<?cs if:Remember == "on" ?> value="<?cs var:Username ?>"<?cs /if ?>>
+        <input id="input-password" name="password" type="password" class="input-medium" placeholder="Password"<?cs if:Remember == "on" ?> value="<?cs var:Password ?>"<?cs /if ?>>
+        <label class="checkbox">
+          <input id="input-remember" type="checkbox" name="remember" value="on"<?cs if:Remember == "on" ?> checked<?cs /if ?>> Remember me
+        </label>
+        <a class="btn" id="signinbtn">Sign in</a>
+      </form>
+    </div>
+  </div>
+  <?cs /if ?>
+  <div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container">
+        <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </a>
+        <a class="brand" href="<?cs var:BASE_URL ?>/"><?cs var:Header.Title ?></a>
+        <div class="nav-collapse">
+          <ul class="nav">
+            <?cs each:item = Header.Navigation ?>
+            <li>
+              <a href="<?cs var:BASE_URL ?><?cs var:item.URL ?>"><?cs var:item.Name ?></a>
+            </li>
+            <?cs /each ?>
+          </ul>
+          <form class="navbar-search" action="<?cs var:BASE_URL ?>/action/search" method="get">
+            <input type="search" name="text" class="search-query" placeholder="Search">
           </form>
-        </div>
-      </div>
-    <?cs /if ?>
-    <div class="navbar navbar-fixed-top">
-      <div class="navbar-inner">
-        <div class="container">
-          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </a>
-          <a class="brand" href="<?cs var:BASE_URL ?>/"><?cs var:Header.Title ?></a>
-          <div class="nav-collapse">
-            <ul class="nav">
-              <?cs each:item = Header.Navigation ?>
-              <li>
-                <a href="<?cs var:BASE_URL ?><?cs var:item.URL ?>">
-                  <?cs var:item.Name ?>
-                </a>
-              </li>
-              <?cs /each ?>
-            </ul>
-            <form class="navbar-search" action="<?cs var:BASE_URL ?>/action/search" method="get">
-              <input type="search" name="text" class="search-query" placeholder="Search">
-            </form>
-            <form action="<?cs var:BASE_URL ?>/action/logout" method="post" class="hideform" id="signoutform"></form>
-            <ul class="nav pull-right">
-              <?cs if:ID ?>
-              <li id="fat-menu" class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-user icon-white"></i> <?cs var:ID ?><b class="caret"></b></a>
-                <ul class="dropdown-menu">
-                  <li><a href="<?cs var:BASE_URL ?>/<?cs var:ID ?>"><i class="icon-home"></i> Home</a></li>
-                  <li><a href="#" id="signoutbtn">Sign out</a></li>
-                </ul>
-              </li>
-              <?cs else ?>
-              <li>
-                <a data-toggle="modal" href="#sign-in">Sign in</a>
-              </li>
-              <?cs /if ?>
-            </ul>
-          </div><!--/.nav-collapse -->
-        </div>
+          <form action="<?cs var:BASE_URL ?>/action/logout" method="post" class="hideform" id="signoutform"></form>
+          <ul class="nav pull-right">
+            <?cs if:ID ?>
+            <li id="fat-menu" class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-user icon-white"></i> <?cs var:ID ?><b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="<?cs var:BASE_URL ?>/<?cs var:ID ?>"><i class="icon-home"></i> Home</a></li>
+                <li><a href="#" id="signoutbtn">Sign out</a></li>
+              </ul>
+            </li>
+            <?cs else ?>
+            <li>
+              <a data-toggle="modal" href="#sign-in">Sign in</a>
+            </li>
+            <?cs /if ?>
+          </ul>
+        </div><!--/.nav-collapse -->
       </div>
     </div>
+  </div>
 
-    <div class="container">
-      <div id="confirmDiv"></div>
-      <div id="alertbox"></div>
+  <div class="container">
+    <div id="confirmDiv"></div>
+    <div id="alertbox"></div>

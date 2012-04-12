@@ -78,6 +78,21 @@ Template getDefaultTemplate(HttpRequest req)
     return FileStorage.newFile(user + "_" + id + ".html");
 }
 
+@Public String Array.join(String separator)
+{
+    if (separator == null) {
+        separator = ",";
+    }
+    String ret = "";
+    for (int i = 0; i < this.size - 1; i++) {
+        ret += (to String)this[i] + separator;
+    }
+    if (this.size > 0) {
+        ret += this[this.size - 1];
+    }
+    return ret;
+}
+
 boolean isReservedWord(String word)
 {
     return word in? ["action", "about", "check", "contact"];
@@ -119,7 +134,7 @@ HttpResponse logout(HttpRequest req, String[] args)
     return redirect("../../");
 }
 
-HttpResponse editor(HttpRequest req, String[] args)
+HttpResponse viewer(HttpRequest req, String[] args)
 {
     Template tpl = getDefaultTemplate(req);
     tpl["User.Name"] = args[0];
@@ -144,11 +159,19 @@ HttpResponse editor(HttpRequest req, String[] args)
     tpl["Code.Body.Html"] = html;
     TemplateContext ctx = new TemplateContext();
     if (req.session["id"] == args[0]) {
-        ctx.parseFile("editor.cs");
+        if (|args| == 3) {
+            ctx.parseFile("editor.cs");
+            return new HttpResponse(tpl.render(ctx));
+        }
+        tpl["Myself"] = 1;
     }
     else {
-        ctx.parseFile("viewer.cs");
+        if (|args| == 3) {
+            args.pop()
+            return redirect("/aspen/" + args.join("/"));
+        }
     }
+    ctx.parseFile("viewer.cs");
     return new HttpResponse(tpl.render(ctx));
 }
 
@@ -212,7 +235,8 @@ HttpResponse konoha2js(HttpRequest req, String[] args)
         res.content = j.stringify();
     }
     else {
-        return null;
+        args.pop()
+        return redirect("/aspen/" + args.join("/"));
     }
     return res;
 }
@@ -227,9 +251,12 @@ HttpResponse user(HttpRequest req, String[] args)
         return redirect("../");
     }
     if (|args| == 2) {
-        return editor(req, args);
+        return viewer(req, args);
     }
     else if (|args| == 3) {
+        if (args[2] == "edit") {
+            return viewer(req, args);
+        }
         return konoha2js(req, args);
     }
     Template tpl = getDefaultTemplate(req);

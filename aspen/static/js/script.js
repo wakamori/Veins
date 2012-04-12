@@ -92,20 +92,6 @@ $(function() {
             lineNumbers: true,
             mode: "text/html"
         });
-        function getUser(url) {
-            var a = url.split("/");
-            if (a[a.length - 1] == "") {
-                a.pop();
-            }
-            return a[a.length - 2];
-        }
-        function getId(url) {
-            var a = url.split("/");
-            if (a[a.length - 1] == "") {
-                a.pop();
-            }
-            return a[a.length - 1];
-        }
         function save(options) {
             options = $.extend({
                 success: function(arg) {}
@@ -115,8 +101,8 @@ $(function() {
                 url: "/aspen/action/save",
                 dataType: "json",
                 data: {
-                    user: getUser(document.URL),
-                    id: getId(document.URL),
+                    user: $("#user-name").text(),
+                    id: $("#user-id").text(),
                     name: $("#codename").text(),
                     js: editor1.getValue(),
                     ks: editor2.getValue(),
@@ -180,7 +166,7 @@ $(function() {
                 success: function() {
                     $.ajax({
                         type: "GET",
-                        url: document.URL + "/compile",
+                        url: "/aspen/" + $("#user-name").text() + "/" + $("#user-id").text() + "/compile",
                         dataType: "json",
                         cache: false,
                         success: function(msg) {
