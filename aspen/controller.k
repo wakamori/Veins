@@ -462,7 +462,7 @@ function runmain() {
 }
 </script>
 </head>
-<body onload="runmain()">
+<body onload="runmain();">
 </body>
 </html>
 """);
