@@ -31,7 +31,7 @@
       <div class="tabbable">
         <ul class="nav nav-tabs">
           <li class="active"><a href="#1" data-toggle="tab" id="tab1">konoha2js</a></li>
-          <li><a href="#2" data-toggle="tab" id="tab2">konoha</a></li>
+          <li class="hidden"><a href="#2" data-toggle="tab" id="tab2">konoha</a></li>
           <li><a href="#3" data-toggle="tab" id="tab3">HTML</a></li>
         </ul>
         <div class="tab-content">

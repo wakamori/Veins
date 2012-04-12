@@ -9,7 +9,7 @@
   </ul>
   <p>
   <div class="btn-group">
-    <button class="btn btn-primary" data-toggle="modal" href="#resultwindow" id="runbtn">Run</button>
+    <button class="btn btn-primary" data-toggle="modal" href="#resultwindow" id="runbtn-nosave">Run</button>
     <?cs if:Myself ?>
     <a class="btn" href="<?cs var:BASE_URL ?>/<?cs var:User.Name ?>/<?cs var:User.Id ?>/edit">Edit</a>
     <?cs /if ?>
@@ -20,7 +20,7 @@
       <div class="tabbable">
         <ul class="nav nav-tabs">
           <li class="active"><a href="#1" data-toggle="tab" id="tab1">konoha2js</a></li>
-          <li><a href="#2" data-toggle="tab" id="tab2">konoha</a></li>
+          <li class="hidden"><a href="#2" data-toggle="tab" id="tab2">konoha</a></li>
           <li><a href="#3" data-toggle="tab" id="tab3">HTML</a></li>
         </ul>
         <div class="tab-content">
@@ -40,7 +40,6 @@
       <div class="tabbable">
         <ul class="nav nav-tabs">
           <li class="active"><a href="#4" data-toggle="tab" id="tab4">Result</a></li>
-          <li><a href="#5" data-toggle="tab" id="tab5">Dummy</a></li>
         </ul>
         <div class="tab-content">
           <div class="tab-pane active" id="4">

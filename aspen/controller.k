@@ -366,7 +366,7 @@ HttpResponse signup(HttpRequest req, String[] args)
     Template usertpl = new Template();
     Array info = [
         {"key": "ID", "value": user.name},
-        {"key": "email", "value": email},
+        {"key": "email", "value": email}
     ];
     usertpl["Info"] = info;
     usertpl.save(user.name + ".hdf");
@@ -403,7 +403,6 @@ HttpResponse save(HttpRequest req, String[] args)
     Json j = new Json();
     String user = req.params_post["user"];
     String id = req.params_post["id"];
-    String name = req.params_post["name"];
     String js = req.params_post["js"];
     String ks = req.params_post["ks"];
     String html = req.params_post["html"];
@@ -415,9 +414,6 @@ HttpResponse save(HttpRequest req, String[] args)
     }
     Model scripts = defineScripts();
     Map m = {};
-    if (name != null) {
-        m["name"] = name.convert(to:url);
-    }
     OutputStream ous_js = FileStorage.newJS(user, id);
     OutputStream ous_ks = FileStorage.newKS(user, id);
     OutputStream ous_html = FileStorage.newHTML(user, id);
@@ -503,7 +499,7 @@ function runmain() {
             "description": description.convert(to:url),
             "date": (to String)d
         });
-        return redirect("../" + req.session["id"] + "/" + id);
+        return redirect("../" + req.session["id"] + "/" + id + "/edit");
     }
     Template tpl = getDefaultTemplate(req);
     tpl.readFile("create.hdf");

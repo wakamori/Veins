@@ -103,7 +103,6 @@ $(function() {
                 data: {
                     user: $("#user-name").text(),
                     id: $("#user-id").text(),
-                    name: $("#codename").text(),
                     js: editor1.getValue(),
                     ks: editor2.getValue(),
                     html: editor3.getValue()
@@ -119,7 +118,10 @@ $(function() {
                     $("#codeform").submit();
                 }
             });
-        });
+        })
+        $("#runbtn-nosave").click(function() {
+            $("#codeform").submit();
+        });;
         $("#tab1").click(function() {
             setTimeout(function() {
                 editor1.refresh();

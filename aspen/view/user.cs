@@ -29,7 +29,7 @@
           <tr id="<?cs var:item.Id ?>">
             <td><a href="<?cs var:BASE_URL ?>/<?cs var:User ?>/<?cs var:item.Id ?>"><?cs var:item.Name ?></a></td>
             <td><?cs var:item.Description ?></td>
-            <?cs if:Myself ?><td><a href="<?cs var:BASE_URL ?>/<?cs var:User ?>/<?cs var:item.Id ?>" class="btn btn-mini">Edit</a> <button class="btn btn-mini btn-danger confirm">Delete</button></td><?cs /if ?>
+            <?cs if:Myself ?><td><a href="<?cs var:BASE_URL ?>/<?cs var:User ?>/<?cs var:item.Id ?>/edit" class="btn btn-mini">Edit</a> <button class="btn btn-mini btn-danger confirm">Delete</button></td><?cs /if ?>
             <td><?cs var:item.Date ?></td>
           </tr>
           <?cs /each ?>
