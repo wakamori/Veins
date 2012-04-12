@@ -2,7 +2,7 @@
 <!-- Main hero unit for a primary marketing message or call to action -->
 <div class="hero-unit">
   <h1>Aspen</h1>
-  <p>Aspen is an online Konoha development environment. You can edit, run and debug your Konoha code on your browser.</p>
+  <p>Aspen is an online Konoha development environment.<br>You can edit, run and debug your Konoha code on your browser.</p>
   <p>
     <a class="btn btn-primary btn-large" data-toggle="modal" href="#sign-in">Try now</a>
     <a class="btn btn-large" href="<?cs var:BASE_URL ?>/action/signup">Sign up</a>
