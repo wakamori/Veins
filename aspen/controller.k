@@ -648,6 +648,6 @@ Url.patterns = [
     (new Regex("^aspen/action/logout$"), logout),
     (new Regex("^aspen/action/save$"), save),
     (new Regex("^aspen/action/search$"), search),
-    (new Regex("^aspen/action/signup$"), signup),
+    //(new Regex("^aspen/action/signup$"), signup),
     (new Regex("^aspen/.+$"), user)
 ];
