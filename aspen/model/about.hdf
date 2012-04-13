@@ -1,13 +1,17 @@
 Links {
     0 {
+        Name = 2012 class wiki
+        URL = http://www.ubicg.ynu.ac.jp/class2012/
+    }
+    1 {
         Name = Konoha Project Page
         URL = http://konohascript.org
     }
-    1 {
+    2 {
         Name = Konoha Download Page
         URL = http://code.google.com/p/konoha/
     }
-    2 {
+    3 {
         Name = Kuramitsu lab.
         URL = http://www.ubicg.ynu.ac.jp/lab/
     }
