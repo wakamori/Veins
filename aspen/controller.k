@@ -479,7 +479,11 @@ print \"hello, world\";
 <title>sample</title>
 <script type="text/javascript">
 function runmain() {
-  konoha_main();
+  try {
+    konoha_main();
+  } catch (e) {
+    konoha.ERR = e;
+  }
   konoha.printERR();
   konoha.printOUT();
 }
@@ -648,6 +652,6 @@ Url.patterns = [
     (new Regex("^aspen/action/logout$"), logout),
     (new Regex("^aspen/action/save$"), save),
     (new Regex("^aspen/action/search$"), search),
-    //(new Regex("^aspen/action/signup$"), signup),
+    (new Regex("^aspen/action/signup$"), signup),
     (new Regex("^aspen/.+$"), user)
 ];
