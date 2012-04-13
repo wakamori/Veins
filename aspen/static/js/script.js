@@ -86,10 +86,12 @@ $(function() {
         });
         var editor2 = CodeMirror.fromTextArea($("#editor2")[0], {
             lineNumbers: true,
+            readOnly: $("#editor2").hasClass("readonly"),
             mode: "text/x-konoha"
         });
         var editor3 = CodeMirror.fromTextArea($("#editor3")[0], {
             lineNumbers: true,
+            readOnly: $("#editor3").hasClass("readonly"),
             mode: "text/html"
         });
         function save(options) {
