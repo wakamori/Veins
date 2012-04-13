@@ -205,12 +205,12 @@ HttpResponse konoha2js(HttpRequest req, String[] args)
         res.content = exec(k2jspath + " -j -r -i " + path);
     }
     else if (requestedType == "html") {
-        String ret = exec(k2jspath + " -j -r -i " + path);
-        ret = "<script type=\"text/javascript\">\n" + ret + "\n</script>\n</head>";
-        String replacetxt = "</head>";
+        //String ret = exec(k2jspath + " -j -r -i " + path);
+        //ret = "<script type=\"text/javascript\">\n" + ret + "\n</script>\n</head>";
+        //String replacetxt = "</head>";
         InputStream html = FileStorage.openHTML(user, id);
-        res.content = "<!DOCTYPE html>\n";
-        res.content += html.read().decode().replace(replacetxt, ret);
+        //res.content += html.read().decode().replace(replacetxt, ret);
+        res.content += html.read().decode();
         html.close();
     }
     else if (requestedType == "compile") {
@@ -474,9 +474,12 @@ HttpResponse create(HttpRequest req, String[] args)
 print \"hello, world\";
 """);
         ous_html.print("""
+<!DOCTYPE html>
 <html>
 <head>
 <title>sample</title>
+<!-- konoha2js code goes here -->
+<script src="%src%"></script>
 <script type="text/javascript">
 function runmain() {
   try {
@@ -492,7 +495,7 @@ function runmain() {
 <body onload="runmain();">
 </body>
 </html>
-""");
+""".replace("%src%", "/aspen/" + req.session["id"] + "/" + id + "/js"));
         ous_js.close();
         ous_ks.close();
         ous_html.close();
