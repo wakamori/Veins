@@ -506,7 +506,6 @@ print \"hello, world\";
 <!-- konoha2js code goes here -->
 <script src="%src%"></script>
 <!-- include this if you use js.jquery package -->
-<script src="%jquery%"></script>
 <script src="/aspen/static/js/libs/jquery-1.7.1.min.js"></script>
 <script>
 function runmain() {
