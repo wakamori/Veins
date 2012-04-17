@@ -505,7 +505,10 @@ print \"hello, world\";
 <title>sample</title>
 <!-- konoha2js code goes here -->
 <script src="%src%"></script>
-<script type="text/javascript">
+<!-- include this if you use js.jquery package -->
+<script src="%jquery%"></script>
+<script src="/aspen/static/js/libs/jquery-1.7.1.min.js"></script>
+<script>
 function runmain() {
   try {
     konoha_main();
