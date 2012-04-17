@@ -97,12 +97,14 @@ $(function() {
             lineWrapping: true,
             mode: "text/html"
         });
-        $(editor1.getScrollerElement()).height($(window).height() - 250);
-        $(editor2.getScrollerElement()).height($(window).height() - 250);
-        $(editor3.getScrollerElement()).height($(window).height() - 250);
-        editor1.refresh();
-        editor2.refresh();
-        editor3.refresh();
+        if ($(window).height() > 300) {
+            $(editor1.getScrollerElement()).height($(window).height() - 224);
+            $(editor2.getScrollerElement()).height($(window).height() - 224);
+            $(editor3.getScrollerElement()).height($(window).height() - 224);
+            editor1.refresh();
+            editor2.refresh();
+            editor3.refresh();
+        }
         function save(options) {
             options = $.extend({
                 success: function(arg) {}
