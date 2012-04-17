@@ -97,10 +97,10 @@ $(function() {
             lineWrapping: true,
             mode: "text/html"
         });
-        if ($(window).height() > 300) {
-            $(editor1.getScrollerElement()).height($(window).height() - 224);
-            $(editor2.getScrollerElement()).height($(window).height() - 224);
-            $(editor3.getScrollerElement()).height($(window).height() - 224);
+        if ($(window).height() > 300 && document.URL.match("edit$")) {
+            $(editor1.getScrollerElement()).height($(window).height() - 230);
+            $(editor2.getScrollerElement()).height($(window).height() - 230);
+            $(editor3.getScrollerElement()).height($(window).height() - 230);
             editor1.refresh();
             editor2.refresh();
             editor3.refresh();
