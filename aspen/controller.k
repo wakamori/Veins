@@ -260,7 +260,8 @@ HttpResponse user(HttpRequest req, String[] args)
         return konoha2js(req, args);
     }
     Template tpl = getDefaultTemplate(req);
-    tpl.load(user + ".hdf");
+    tpl["Info.0.key"] = "ID";
+    tpl["Info.0.value"] = user;
     if (req.session["id"] == user) {
         tpl["Myself"] = 1;
     }
