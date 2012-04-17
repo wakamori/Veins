@@ -376,18 +376,43 @@ HttpResponse signup(HttpRequest req, String[] args)
 
 HttpResponse check(HttpRequest req, String[] args)
 {
-    if (req.method != "POST" || args[1] != "username") {
+    if (req.method == "POST") {
         return null;
     }
     HttpResponse res = new HttpResponse();
     res["Content-Type"] = "application/json; charset=utf-8";
     Json j = new Json();
-    if (User.hasUser(req.params_post["username"]) ||
-            isReservedWord(req.params_post["username"])) {
-        j["exists"] = true;
-    }
-    else {
-        j["exists"] = false;
+    switch (args[1]) {
+    case "username":
+        Regex r = new Regex("^[a-zA-Z0-9_]{1,20}$");
+        String username = req.params_get["username"];
+        if (User.hasUser(username) ||
+                isReservedWord(username)) {
+            j["exists"] = true;
+        }
+        else {
+            j["exists"] = false;
+        }
+        if (username.search(r) < 0) {
+            j["error"] = true;
+        }
+        else {
+            j["error"] = false;
+        }
+        break;
+    case "email":
+        Regex r = new Regex("^([\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4})?$");
+        String email = req.params_get["email"];
+        if (email.search(r) < 0) {
+            j["error"] = true;
+        }
+        else {
+            j["error"] = false;
+        }
+        break;
+    default:
+        return null;
+        break;
     }
     res.content = j.stringify();
     return res;

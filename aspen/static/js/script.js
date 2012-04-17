@@ -250,7 +250,7 @@ $(function() {
             return;
         }
         $.ajax({
-            type: "POST",
+            type: "GET",
             url: "/aspen/check/username",
             dataType: "json",
             data: {
@@ -261,7 +261,10 @@ $(function() {
                     $("#username-group").removeClass("success").addClass("error");
                     $("#username-help").text("Username is already taken.");
                 }
-                else {
+                else if (msg.error) {
+                    $("#username-group").removeClass("success").addClass("error");
+                    $("#username-help").text("Username is invalid.");
+                } else {
                     $("#username-group").removeClass("error").addClass("success");
                     $("#username-help").text("OK.");
                 }
@@ -271,6 +274,33 @@ $(function() {
     $("input#username").focus(function() {
         $("#username-group").removeClass("error").removeClass("success");
         $("#username-help").text("");
+    });
+    $("input#email").blur(function() {
+        if (!this.value) {
+            return;
+        }
+        $.ajax({
+            type: "GET",
+            url: "/aspen/check/email",
+            dataType: "json",
+            data: {
+                email: this.value
+            },
+            success: function(msg) {
+                if (msg.error) {
+                    $("#email-group").removeClass("success").addClass("error");
+                    $("#email-help").text("email is invalid.");
+                }
+                else {
+                    $("#email-group").removeClass("error").addClass("success");
+                    $("#email-help").text("OK.");
+                }
+            }
+        });
+    });
+    $("input#email").focus(function() {
+        $("#email-group").removeClass("error").removeClass("success");
+        $("#email-help").text("");
     });
 });
 
