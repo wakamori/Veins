@@ -484,7 +484,7 @@ print \"hello, world\";
 function runmain() {
   try {
     konoha_main();
-  } catch (e) {
+  } catch (e if e instanceof string) {
     konoha.ERR = e;
   }
   konoha.printERR();
