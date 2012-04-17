@@ -485,7 +485,7 @@ function runmain() {
   try {
     konoha_main();
   } catch (e) {
-    if (typeof(e) == string) {
+    if (typeof(e) == "string") {
       konoha.ERR = e;
     }
     else {
