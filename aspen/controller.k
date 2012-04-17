@@ -131,7 +131,7 @@ HttpResponse logout(HttpRequest req, String[] args)
         return null;
     }
     req.session.remove("id");
-    return redirect("../../");
+    return redirect("/aspen/");
 }
 
 HttpResponse viewer(HttpRequest req, String[] args)
@@ -248,7 +248,7 @@ HttpResponse user(HttpRequest req, String[] args)
         if (req.session["id"] == user) {
             req.session.remove("id");
         }
-        return redirect("../");
+        return redirect("/aspen/");
     }
     if (|args| == 2) {
         return viewer(req, args);
@@ -288,7 +288,7 @@ HttpResponse user(HttpRequest req, String[] args)
 HttpResponse top(HttpRequest req, String[] args)
 {
     if (req.session["id"] != null) {
-        return redirect("./" + req.session["id"]);
+        return redirect("/aspen/" + req.session["id"]);
     }
     Template tpl = getDefaultTemplate(req);
     TemplateContext ctx = new TemplateContext();
@@ -372,7 +372,7 @@ HttpResponse signup(HttpRequest req, String[] args)
     usertpl["Info"] = info;
     usertpl.save(user.name + ".hdf");
     req.session["id"] = user.name;
-    return redirect("./");
+    return redirect("/aspen/");
 }
 
 HttpResponse check(HttpRequest req, String[] args)
@@ -462,7 +462,7 @@ HttpResponse save(HttpRequest req, String[] args)
 HttpResponse create(HttpRequest req, String[] args)
 {
     if (req.session["id"] == null) {
-        return redirect("../");
+        return null;
     }
     if (req.method == "POST") {
         String codename = req.params_post["codename"];
@@ -539,7 +539,7 @@ function runmain() {
             "description": description.convert(to:url),
             "date": (to String)d
         });
-        return redirect("../" + req.session["id"] + "/" + id + "/edit");
+        return redirect("/aspen/" + req.session["id"] + "/" + id + "/edit");
     }
     Template tpl = getDefaultTemplate(req);
     tpl.readFile("create.hdf");
@@ -550,36 +550,33 @@ function runmain() {
 
 HttpResponse delete(HttpRequest req, String[] args)
 {
-    if (req.session["id"] == null) {
-        return redirect("../");
+    if (req.session["id"] == null || req.method == "GET") {
+        return null;
     }
     HttpResponse res = new HttpResponse();
     res["Content-Type"] = "application/json; charset=utf-8";
     Json j = new Json();
-    if (req.method == "POST") {
-        String id = req.params_post["id"];
-        if (id == "" || id == null) {
-            j["error"] = true;
-            j["message"] = "Invalid id or user.";
-            res.content = j.stringify();
-            return res;
-        }
-        Model scripts = defineScripts();
-        scripts.remove({
-            "user": req.session["id"],
-            "id": id
-        });
-        j["message"] = "Script deleted successfully.";
+    String id = req.params_post["id"];
+    if (id == "" || id == null) {
+        j["error"] = true;
+        j["message"] = "Invalid id or user.";
         res.content = j.stringify();
         return res;
     }
-    return redirect("../");
+    Model scripts = defineScripts();
+    scripts.remove({
+        "user": req.session["id"],
+        "id": id
+    });
+    j["message"] = "Script deleted successfully.";
+    res.content = j.stringify();
+    return res;
 }
 
 HttpResponse search(HttpRequest req, String[] args)
 {
     if (req.method == "POST") {
-        return redirect("../");
+        return null;
     }
     Template tpl = getDefaultTemplate(req);
     String searchtext = req.params_get["text"];
@@ -614,7 +611,7 @@ HttpResponse search(HttpRequest req, String[] args)
 HttpResponse inquire(HttpRequest req, String[] args)
 {
     if (req.session["id"] == null) {
-        return redirect("./");
+        return redirect("/aspen/");
     }
     Template tpl = getDefaultTemplate(req);
     if (req.method != "POST") {
@@ -629,7 +626,7 @@ HttpResponse inquire(HttpRequest req, String[] args)
         "contents": req.params_post["contents"],
         "date": (to String)new Date()
     });
-    return redirect("./" + inquiries.id);
+    return redirect("/aspen/contact/" + inquiries.id);
 }
 
 HttpResponse contact(HttpRequest req, String[] args)
