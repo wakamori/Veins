@@ -484,8 +484,13 @@ print \"hello, world\";
 function runmain() {
   try {
     konoha_main();
-  } catch (e if e instanceof string) {
-    konoha.ERR = e;
+  } catch (e) {
+    if (typeof(e) == string) {
+      konoha.ERR = e;
+    }
+    else {
+      throw e;
+    }
   }
   konoha.printERR();
   konoha.printOUT();
