@@ -80,6 +80,7 @@ $(function() {
             lineNumbers: true,
             mode: "text/x-konoha",
             readOnly: $("#editor1").hasClass("readonly"),
+            lineWrapping: true,
             onCursorActivity: function() {
                 editor1.setLineClass(editor1.getCursor().line, null);
             }
@@ -87,11 +88,13 @@ $(function() {
         var editor2 = CodeMirror.fromTextArea($("#editor2")[0], {
             lineNumbers: true,
             readOnly: $("#editor2").hasClass("readonly"),
+            lineWrapping: true,
             mode: "text/x-konoha"
         });
         var editor3 = CodeMirror.fromTextArea($("#editor3")[0], {
             lineNumbers: true,
             readOnly: $("#editor3").hasClass("readonly"),
+            lineWrapping: true,
             mode: "text/html"
         });
         function save(options) {
