@@ -50,13 +50,13 @@
     <div class="span6">
       <div class="tabbable">
         <ul class="nav nav-tabs">
-          <li class="active"><a href="#4" data-toggle="tab" id="tab4">Result</a></li>
+          <li class="active"><a href="#5" data-toggle="tab" id="tab5">Result</a></li>
         </ul>
         <div class="tab-content">
-          <div class="tab-pane active" id="4">
+          <div class="tab-pane active" id="5">
             <iframe name="resultframe" id="resultframe"></iframe>
           </div>
-          <div class="tab-pane" id="5">
+          <div class="tab-pane" id="6">
           </div>
         </div>
       </div>
