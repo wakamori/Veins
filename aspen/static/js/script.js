@@ -77,23 +77,28 @@
 $(function() {
     if ($("#editor1")[0] != undefined) {
         var editor1 = CodeMirror.fromTextArea($("#editor1")[0], {
-            lineNumbers: true,
-            mode: "text/x-konoha",
+            mode: "text/plain",
             readOnly: $("#editor1").hasClass("readonly"),
-            lineWrapping: true,
-            onCursorActivity: function() {
-                editor1.setLineClass(editor1.getCursor().line, null);
-            }
+            lineWrapping: true
         });
         var editor2 = CodeMirror.fromTextArea($("#editor2")[0], {
             lineNumbers: true,
+            mode: "text/x-konoha",
             readOnly: $("#editor2").hasClass("readonly"),
             lineWrapping: true,
-            mode: "text/x-konoha"
+            onCursorActivity: function() {
+                editor2.setLineClass(editor2.getCursor().line, null);
+            }
         });
         var editor3 = CodeMirror.fromTextArea($("#editor3")[0], {
             lineNumbers: true,
             readOnly: $("#editor3").hasClass("readonly"),
+            lineWrapping: true,
+            mode: "text/x-konoha"
+        });
+        var editor4 = CodeMirror.fromTextArea($("#editor4")[0], {
+            lineNumbers: true,
+            readOnly: $("#editor4").hasClass("readonly"),
             lineWrapping: true,
             mode: "text/html"
         });
@@ -101,9 +106,11 @@ $(function() {
             $(editor1.getScrollerElement()).height($(window).height() - 230);
             $(editor2.getScrollerElement()).height($(window).height() - 230);
             $(editor3.getScrollerElement()).height($(window).height() - 230);
+            $(editor4.getScrollerElement()).height($(window).height() - 230);
             editor1.refresh();
             editor2.refresh();
             editor3.refresh();
+            editor4.refresh();
         }
         function save(options) {
             options = $.extend({
@@ -116,9 +123,10 @@ $(function() {
                 data: {
                     user: $("#user-name").text(),
                     id: $("#user-id").text(),
-                    js: editor1.getValue(),
-                    ks: editor2.getValue(),
-                    html: editor3.getValue()
+                    readme: editor1.getValue(),
+                    js: editor2.getValue(),
+                    ks: editor3.getValue(),
+                    html: editor4.getValue()
                 },
                 success: function(arg) {
                     options.success(arg);
@@ -150,6 +158,11 @@ $(function() {
                 editor3.refresh();
             }, 1);
         });
+        $("#tab4").click(function() {
+            setTimeout(function() {
+                editor4.refresh();
+            }, 1);
+        });
         $("#savebtn").click(function() {
             save({
                 success: function(msg) {
@@ -172,8 +185,8 @@ $(function() {
             });
         });
         function parseErrorText(text) {
-            text.match(/\(.+_\d+_js\.k\:(\d+)\) (.+)/);
-            editor1.setLineClass(parseInt(RegExp.$1) - 1, "errorline");
+            text.match(/\(js\.k\:(\d+)\) (.+)/);
+            editor2.setLineClass(parseInt(RegExp.$1) - 1, "errorline");
             return RegExp.$1 + ": " + RegExp.$2;
         }
         $("#checkbtn").click(function() {

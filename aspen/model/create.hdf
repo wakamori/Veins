@@ -11,15 +11,6 @@ Form {
                 Attributes = required autofocus
             }
         }
-        1 {
-            Label = Description
-            ID = description
-            Input {
-                Type = text
-                Name = description
-                Attributes = required
-            }
-        }
     }
     Buttons {
         0 {

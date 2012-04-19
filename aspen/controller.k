@@ -21,7 +21,10 @@ Model defineScripts()
         "user": String,
         "id": String,
         "name": String,
-        "description": String,
+        "readme": String,
+        "js": String,
+        "ks": String,
+        "html": String,
         "date": String
     }, ["user", "id"]);
 }
@@ -56,34 +59,44 @@ Template getDefaultTemplate(HttpRequest req)
     return tpl;
 }
 
+@Public InputStream FileStorage.openReadme(String user, String id)
+{
+    return FileStorage.open(user + "/" + id + "/readme.txt");
+}
+
 @Public InputStream FileStorage.openJS(String user, String id)
 {
-    return FileStorage.open(user + "_" + id + "_js.k");
+    return FileStorage.open(user + "/" + id + "/k2js.k");
 }
 
 @Public InputStream FileStorage.openKS(String user, String id)
 {
-    return FileStorage.open(user + "_" + id + ".k");
+    return FileStorage.open(user + "/" + id + "/ks.k");
 }
 
 @Public InputStream FileStorage.openHTML(String user, String id)
 {
-    return FileStorage.open(user + "_" + id + ".html");
+    return FileStorage.open(user + "/" + id + "/index.html");
+}
+
+@Public OutputStream FileStorage.newReadme(String user, String id)
+{
+    return FileStorage.newFile(user + "/" + id + "/readme.txt");
 }
 
 @Public OutputStream FileStorage.newJS(String user, String id)
 {
-    return FileStorage.newFile(user + "_" + id + "_js.k");
+    return FileStorage.newFile(user + "/" + id + "/k2js.k");
 }
 
 @Public OutputStream FileStorage.newKS(String user, String id)
 {
-    return FileStorage.newFile(user + "_" + id + ".k");
+    return FileStorage.newFile(user + "/" + id + "/ks.k");
 }
 
 @Public OutputStream FileStorage.newHTML(String user, String id)
 {
-    return FileStorage.newFile(user + "_" + id + ".html");
+    return FileStorage.newFile(user + "/" + id + "/index.html");
 }
 
 @Public String Array.join(String separator)
@@ -204,6 +217,7 @@ HttpResponse konoha2js(HttpRequest req, String[] args)
     }
     InputStream body = FileStorage.openJS(user, id);
     String path = body.path;
+    ERR << "path" << path << EOL << EOL;
     body.close();
     HttpResponse res = new HttpResponse();
     String k2jspath = "/usr/local/bin/konoha2js";
@@ -278,11 +292,9 @@ HttpResponse user(HttpRequest req, String[] args)
     foreach (Map m in scripts.get("*", {"user": user})) {
         String id = m["id"];
         String name = m["name"];
-        String description = m["description"];
         codelist.add({
             "Id": id,
             "Name": name.convert(to:durl),
-            "Description": description.convert(to:durl),
             "Date": m["date"]
         });
     }
@@ -373,10 +385,11 @@ HttpResponse signup(HttpRequest req, String[] args)
         return new HttpResponse(tpl.render(ctx));
     }
     Model userinfo = defineUserinfo();
-    userinfo.set({
+    userinfo.add({
         "id": user.id,
         "email": email
     });
+    FileStorage.mkdir(username);
     req.session["id"] = user.name;
     return redirect("/aspen/");
 }
@@ -435,6 +448,7 @@ HttpResponse save(HttpRequest req, String[] args)
     Json j = new Json();
     String user = req.params_post["user"];
     String id = req.params_post["id"];
+    String readme = req.params_post["readme"];
     String js = req.params_post["js"];
     String ks = req.params_post["ks"];
     String html = req.params_post["html"];
@@ -446,12 +460,15 @@ HttpResponse save(HttpRequest req, String[] args)
     }
     Model scripts = defineScripts();
     Map m = {};
+    OutputStream ous_readme = FileStorage.newReadme(user, id);
     OutputStream ous_js = FileStorage.newJS(user, id);
     OutputStream ous_ks = FileStorage.newKS(user, id);
     OutputStream ous_html = FileStorage.newHTML(user, id);
+    ous_readme.print(readme);
     ous_js.print(js);
     ous_ks.print(ks);
     ous_html.print(html);
+    ous_readme.close();
     ous_js.close();
     ous_ks.close();
     ous_html.close();
@@ -467,45 +484,8 @@ HttpResponse save(HttpRequest req, String[] args)
 
 HttpResponse create(HttpRequest req, String[] args)
 {
-    if (req.session["id"] == null) {
-        return null;
-    }
-    if (req.method == "POST") {
-        String codename = req.params_post["codename"];
-        String description = req.params_post["description"];
-        if (|codename| == 0 || |description| == 0) {
-            Map error = {};
-            if (|codename| == 0) {
-                error["Title"] = "Name is empty.";
-            }
-            else {
-                error["Title"] = "Description is empty.";
-            }
-            Template tpl = getDefaultTemplate(req);
-            tpl.readFile("create.hdf");
-            tpl["Form.Inputs.0.Input.Value"] = codename;
-            tpl["Form.Inputs.1.Input.Value"] = description;
-            tpl["Error"] = error;
-            TemplateContext ctx = new TemplateContext();
-            ctx.parseFile("form.cs");
-            return new HttpResponse(tpl.render(ctx));
-        }
-        HttpResponse res = new HttpResponse();
-        Date d = new Date();
-        String id = (to String)d.year;
-        id += (to String)d.month;
-        id += (to String)d.day;
-        id += (to String)d.hour;
-        id += (to String)d.sec;
-        Model scripts = defineScripts();
-        OutputStream ous_js = FileStorage.newJS(req.session["id"], id);
-        OutputStream ous_ks = FileStorage.newKS(req.session["id"], id);
-        OutputStream ous_html = FileStorage.newHTML(req.session["id"], id);
-        ous_js.print("""
-// your code goes here.
-print \"hello, world\";
-""");
-        ous_html.print("""
+    String js_tpl = "// your code goes here.";
+    String html_tpl = """
 <!DOCTYPE html>
 <html>
 <head>
@@ -534,18 +514,53 @@ function runmain() {
 <body onload="runmain();">
 </body>
 </html>
-""".replace("%src%", "/aspen/" + req.session["id"] + "/" + id + "/js"));
+""";
+    if (req.session["id"] == null) {
+        return null;
+    }
+    if (req.method == "POST") {
+        String codename = req.params_post["codename"];
+        if (|codename| == 0) {
+            Map error = {};
+            error["Title"] = "Name is empty.";
+            Template tpl = getDefaultTemplate(req);
+            tpl.readFile("create.hdf");
+            tpl["Form.Inputs.0.Input.Value"] = codename;
+            tpl["Error"] = error;
+            TemplateContext ctx = new TemplateContext();
+            ctx.parseFile("form.cs");
+            return new HttpResponse(tpl.render(ctx));
+        }
+        HttpResponse res = new HttpResponse();
+        Date d = new Date();
+        String id = (to String)d.year;
+        id += (to String)d.month;
+        id += (to String)d.day;
+        id += (to String)d.hour;
+        id += (to String)d.sec;
+        Model scripts = defineScripts();
+        String sessionid = req.session["id"];
+        FileStorage.mkdir(sessionid + "/" + id, 0755);
+        OutputStream ous_readme = FileStorage.newReadme(sessionid, id);
+        OutputStream ous_js = FileStorage.newJS(sessionid, id);
+        OutputStream ous_ks = FileStorage.newKS(sessionid, id);
+        OutputStream ous_html = FileStorage.newHTML(sessionid, id);
+        html_tpl = html_tpl.replace("%src%", "/aspen/" + sessionid + "/" + id + "/js");
+        ous_js.print(js_tpl);
+        ous_html.print(html_tpl);
+        ous_readme.close();
         ous_js.close();
         ous_ks.close();
         ous_html.close();
         scripts.set({
-            "user": req.session["id"],
+            "user": sessionid,
             "id": id,
             "name": codename.convert(to:url),
-            "description": description.convert(to:url),
+            "js": js_tpl.convert(to:url),
+            "html": html_tpl.convert(to:url),
             "date": (to String)d
         });
-        return redirect("/aspen/" + req.session["id"] + "/" + id + "/edit");
+        return redirect("/aspen/" + sessionid + "/" + id + "/edit");
     }
     Template tpl = getDefaultTemplate(req);
     tpl.readFile("create.hdf");
@@ -627,9 +642,9 @@ HttpResponse inquire(HttpRequest req, String[] args)
     }
     Model inquiries = defineInquiries();
     inquiries.set({
-        "title": req.params_post["title"],
+        "title": req.params_post["title"].convert(to:url),
         "name": req.session["id"],
-        "contents": req.params_post["contents"],
+        "contents": req.params_post["contents"].convert(to:url),
         "date": (to String)new Date()
     });
     return redirect("/aspen/contact/" + inquiries.id);

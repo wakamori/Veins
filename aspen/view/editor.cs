@@ -32,19 +32,23 @@
       </ul>
       <div class="tabbable">
         <ul class="nav nav-tabs">
-          <li class="active"><a href="#1" data-toggle="tab" id="tab1">konoha</a></li>
-          <li class="hidden"><a href="#2" data-toggle="tab" id="tab2">konoha</a></li>
-          <li><a href="#3" data-toggle="tab" id="tab3">HTML</a></li>
+          <li><a href="#1" data-toggle="tab" id="tab1">Readme</a></li>
+          <li class="active"><a href="#2" data-toggle="tab" id="tab2">konoha</a></li>
+          <li class="hidden"><a href="#3" data-toggle="tab" id="tab3">konoha</a></li>
+          <li><a href="#4" data-toggle="tab" id="tab4">HTML</a></li>
         </ul>
         <div class="tab-content">
-          <div class="tab-pane active" id="1">
-            <textarea id="editor1"><?cs var:Code.Body.Js ?></textarea>
+          <div class="tab-pane" id="1">
+            <textarea id="editor1"><?cs var:Code.Body.Readme ?></textarea>
           </div>
-          <div class="tab-pane" id="2">
-            <textarea id="editor2"><?cs var:Code.Body.Ks ?></textarea>
+          <div class="tab-pane active" id="2">
+            <textarea id="editor2"><?cs var:Code.Body.Js ?></textarea>
           </div>
           <div class="tab-pane" id="3">
-            <textarea id="editor3"><?cs var:Code.Body.Html ?></textarea>
+            <textarea id="editor3"><?cs var:Code.Body.Ks ?></textarea>
+          </div>
+          <div class="tab-pane" id="4">
+            <textarea id="editor4"><?cs var:Code.Body.Html ?></textarea>
           </div>
         </div>
       </div>
