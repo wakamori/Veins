@@ -248,7 +248,6 @@ HttpResponse konoha2js(HttpRequest req, String[] args)
     }
     InputStream body = FileStorage.openJS(user, id);
     String path = body.path;
-    ERR << "path" << path << EOL << EOL;
     body.close();
     HttpResponse res = new HttpResponse();
     String k2jspath = "/usr/local/bin/konoha2js";

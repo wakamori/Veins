@@ -142,7 +142,7 @@ $(function() {
         })
         $("#runbtn-nosave").click(function() {
             $("#codeform").submit();
-        });;
+        });
         $("#tab1").click(function() {
             setTimeout(function() {
                 editor1.refresh();

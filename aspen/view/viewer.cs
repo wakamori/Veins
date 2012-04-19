@@ -8,34 +8,34 @@
     <li class="active"><?cs var:Code.Name ?></li>
   </ul>
   <div class="row-fluid">
-  <div class="span6">
-  <?cs if:Myself ?>
-    <a class="btn btn-info" href="<?cs var:BASE_URL ?>/<?cs var:User.Name ?>/<?cs var:User.Id ?>/edit">Edit</a>
-  <?cs else ?>
-    &nbsp;
-  <?cs /if ?>
-  </div>
-  <div class="span6">
-  <p>
-    <button class="btn btn-primary" data-toggle="modal" href="#resultwindow" id="runbtn-nosave"><i class="icon-play icon-white"></i> Run</button>
-    <a class="btn" href="<?cs var:BASE_URL ?>/<?cs var:User.Name ?>/<?cs var:User.Id ?>/html" target="_blank"><i class="icon-resize-full"></i> Fullscreen</a>
-  </p>
-  </div>
+    <div class="span6">
+    <?cs if:Myself ?>
+      <a class="btn btn-info" href="<?cs var:BASE_URL ?>/<?cs var:User.Name ?>/<?cs var:User.Id ?>/edit">Edit</a>
+    <?cs else ?>
+      &nbsp;
+    <?cs /if ?>
+    </div>
+    <div class="span6">
+      <p>
+        <button class="btn btn-primary" data-toggle="modal" href="#resultwindow" id="runbtn-nosave"><i class="icon-play icon-white"></i> Run</button>
+        <a class="btn" href="<?cs var:BASE_URL ?>/<?cs var:User.Name ?>/<?cs var:User.Id ?>/html" target="_blank"><i class="icon-resize-full"></i> Fullscreen</a>
+      </p>
+    </div>
   </div>
   <div class="row-fluid">
     <div class="span6">
       <div class="tabbable">
         <ul class="nav nav-tabs">
-          <li class="active"><a href="#1" data-toggle="tab" id="tab1">Readme</a></li>
-          <li><a href="#2" data-toggle="tab" id="tab2">konoha</a></li>
+          <li><a href="#1" data-toggle="tab" id="tab1">Readme</a></li>
+          <li class="active"><a href="#2" data-toggle="tab" id="tab2">konoha</a></li>
           <li class="hidden"><a href="#3" data-toggle="tab" id="tab3">konoha</a></li>
           <li><a href="#4" data-toggle="tab" id="tab4">HTML</a></li>
         </ul>
         <div class="tab-content">
-          <div class="tab-pane active" id="1">
+          <div class="tab-pane" id="1">
             <textarea id="editor1" class="readonly"><?cs var:Code.Body.Readme ?></textarea>
           </div>
-          <div class="tab-pane" id="2">
+          <div class="tab-pane active" id="2">
             <textarea id="editor2" class="readonly"><?cs var:Code.Body.Js ?></textarea>
           </div>
           <div class="tab-pane" id="3">
