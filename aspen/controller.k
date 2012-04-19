@@ -200,7 +200,7 @@ HttpResponse konoha2js(HttpRequest req, String[] args)
     HttpResponse res = new HttpResponse();
     String k2jspath = "/usr/local/bin/konoha2js";
     if (requestedType == "js") {
-        res["Access-Control-Allow-Origin"] = "http://konohascript.org";
+        //res["Access-Control-Allow-Origin"] = "http://konohascript.org";
         res["Content-Type"] = "application/javascript";
         res.content = exec(k2jspath + " -j -r -i " + path);
     }
@@ -214,7 +214,7 @@ HttpResponse konoha2js(HttpRequest req, String[] args)
         html.close();
     }
     else if (requestedType == "compile") {
-        res["Access-Control-Allow-Origin"] = "http://konohascript.org";
+        //res["Access-Control-Allow-Origin"] = "http://konohascript.org";
         res["Content-Type"] = "application/json; charset=UTF-8";
         String[] result = exec(k2jspath + " -c -i " + path + " 2>&1").split("\n");
         result.pop()
