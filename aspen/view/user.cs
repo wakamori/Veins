@@ -16,7 +16,7 @@
     <div class="span10">
       <?cs if:Myself ?>
       <p>
-        <a href="<?cs var:BASE_URL ?>/action/create" class="btn"><i class="icon-edit"></i> Create code</a>
+        <a href="<?cs var:BASE_URL ?>/action/create" class="btn"><i class="icon-edit"></i> Create a new project</a>
       </p>
       <?cs /if ?>
       <h1>Code</h1>
