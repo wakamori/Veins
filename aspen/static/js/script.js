@@ -185,7 +185,7 @@ $(function() {
             });
         });
         function parseErrorText(text) {
-            text.match(/\(js\.k\:(\d+)\) (.+)/);
+            text.match(/\(k2js\.k\:(\d+)\) (.+)/);
             editor2.setLineClass(parseInt(RegExp.$1) - 1, "errorline");
             return RegExp.$1 + ": " + RegExp.$2;
         }
