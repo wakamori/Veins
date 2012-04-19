@@ -122,7 +122,7 @@ HttpResponse login(HttpRequest req, String[] args)
     if (user != null) {
         req.session["id"] = user.name;
     }
-    return new HttpResponse("OK");
+    return redirect("/aspen/");
 }
 
 HttpResponse logout(HttpRequest req, String[] args)

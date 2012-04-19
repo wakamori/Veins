@@ -241,21 +241,6 @@ $(function() {
     $("#signoutbtn").click(function() {
         $("#signoutform").submit();
     });
-    $("#signinbtn").click(function() {
-        $.ajax({
-            type: "POST",
-            url: "/aspen/action/login",
-            data: {
-                type: "login",
-                username: $("#input-username").val(),
-                password: $("#input-password").val(),
-                remember: $("#input-remember").val()
-            },
-            success: function(msg) {
-                location.reload();
-            }
-        });
-    });
     $("input#username").blur(function() {
         if (!this.value) {
             return;
