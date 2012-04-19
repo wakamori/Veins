@@ -37,6 +37,14 @@ Model defineInquiries()
     }, ["id"]);
 }
 
+Model defineUserinfo()
+{
+    return new Model("userinfo", {
+        "id": int,
+        "email": String
+    }, ["id"]);
+}
+
 Template getDefaultTemplate(HttpRequest req)
 {
     Template tpl = new Template();
@@ -364,13 +372,11 @@ HttpResponse signup(HttpRequest req, String[] args)
         ctx.parseFile("form.cs");
         return new HttpResponse(tpl.render(ctx));
     }
-    Template usertpl = new Template();
-    Array info = [
-        {"key": "ID", "value": user.name},
-        {"key": "email", "value": email}
-    ];
-    usertpl["Info"] = info;
-    usertpl.save(user.name + ".hdf");
+    Model userinfo = defineUserinfo();
+    userinfo.set({
+        "id": user.id,
+        "email": email
+    });
     req.session["id"] = user.name;
     return redirect("/aspen/");
 }
