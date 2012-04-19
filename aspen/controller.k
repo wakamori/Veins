@@ -169,12 +169,14 @@ HttpResponse viewer(HttpRequest req, String[] args)
         return null;
     }
     String name = m[0]["name"];
+    String readme = FileStorage.openReadme(args[0], args[1]).read().decode();
     String js = FileStorage.openJS(args[0], args[1]).read().decode();
     String ks = FileStorage.openKS(args[0], args[1]).read().decode();
     String html = FileStorage.openHTML(args[0], args[1]).read().decode();
     if (name != null && name != "") {
         tpl["Code.Name"] = name.convert(to:durl);
     }
+    tpl["Code.Body.Readme"] = readme;
     tpl["Code.Body.Js"] = js;
     tpl["Code.Body.Ks"] = ks;
     tpl["Code.Body.Html"] = html;
@@ -472,6 +474,18 @@ HttpResponse save(HttpRequest req, String[] args)
     ous_js.close();
     ous_ks.close();
     ous_html.close();
+    if (readme != "" && readme != null) {
+        m["readme"] = readme.convert(to:url);
+    }
+    if (js != "" && js != null) {
+        m["js"] = js.convert(to:url);
+    }
+    if (ks != "" && ks != null) {
+        m["ks"] = ks.convert(to:url);
+    }
+    if (html != "" && html != null) {
+        m["html"] = html.convert(to:url);
+    }
     m["date"] = (to String)new Date();
     scripts.update(m, {
         "user": user,
