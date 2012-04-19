@@ -7,6 +7,35 @@ include "/Users/chen_ji/Devel/git/Veins/aspen/settings.k";
 
 using konoha.veins.*;
 
+class Git
+{
+    String bin;
+    String path;
+    String cmd;
+
+    Git(String path) {
+        _bin = exec("which git").trim();
+        _path = path;
+        _cmd = "cd " + path + " && " + bin;
+    }
+
+    void init() {
+        exec(cmd + " init");
+    }
+
+    void add(String file) {
+        exec(cmd + " add " + file);
+    }
+
+    void commit(String msg) {
+        exec(cmd + " commit -m '" + msg + "'");
+    }
+
+    void commitAll(String msg) {
+        exec(cmd + " commit -a -m '" + msg + "'");
+    }
+}
+
 HttpResponse redirect(String location)
 {
     HttpResponse res = new HttpResponse();
@@ -466,6 +495,9 @@ HttpResponse save(HttpRequest req, String[] args)
     OutputStream ous_js = FileStorage.newJS(user, id);
     OutputStream ous_ks = FileStorage.newKS(user, id);
     OutputStream ous_html = FileStorage.newHTML(user, id);
+    String git_path = (to String)ous_readme.path;
+    git_path = git_path.substring(0, git_path.lastIndexOf("/"));
+    Git g = new Git(git_path);
     ous_readme.print(readme);
     ous_js.print(js);
     ous_ks.print(ks);
@@ -474,6 +506,7 @@ HttpResponse save(HttpRequest req, String[] args)
     ous_js.close();
     ous_ks.close();
     ous_html.close();
+    g.commitAll("save commit");
     if (readme != "" && readme != null) {
         m["readme"] = readme.convert(to:url);
     }
@@ -559,6 +592,9 @@ function runmain() {
         OutputStream ous_js = FileStorage.newJS(sessionid, id);
         OutputStream ous_ks = FileStorage.newKS(sessionid, id);
         OutputStream ous_html = FileStorage.newHTML(sessionid, id);
+        String git_path = (to String)ous_readme.path;
+        git_path = git_path.substring(0, git_path.lastIndexOf("/"));
+        Git g = new Git(git_path);
         html_tpl = html_tpl.replace("%src%", "/aspen/" + sessionid + "/" + id + "/js");
         ous_js.print(js_tpl);
         ous_html.print(html_tpl);
@@ -566,6 +602,9 @@ function runmain() {
         ous_js.close();
         ous_ks.close();
         ous_html.close();
+        g.init();
+        g.add("*");
+        g.commit("initial commit");
         scripts.set({
             "user": sessionid,
             "id": id,
