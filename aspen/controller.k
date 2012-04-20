@@ -419,7 +419,7 @@ HttpResponse signup(HttpRequest req, String[] args)
         "id": user.id,
         "email": email
     });
-    FileStorage.mkdir(username);
+    FileStorage.mkdir(username, 0755);
     req.session["id"] = user.name;
     return redirect("/aspen/");
 }
