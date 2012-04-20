@@ -668,7 +668,7 @@ HttpResponse search(HttpRequest req, String[] args)
         }
         Map[] records = scripts.get("user, id, name, js");
         foreach (Map record in records) {
-            String name = record["name"].convert(to:durl);
+            record["name"] = record["name"].convert(to:durl);
             String content = "";
             if (record["js"] != null) {
                 content = record["js"].convert(to:durl);
@@ -683,8 +683,7 @@ HttpResponse search(HttpRequest req, String[] args)
                     matched_contents.add(record);
                 }
             }
-            if (name.indexOf(searchtext) >= 0) {
-                record["name"] = name;
+            if (record["name"].indexOf(searchtext) >= 0) {
                 record.remove("js");
                 matched_scripts.add(record);
             }
