@@ -29,4 +29,22 @@
     </table>
   </div>
 </div>
+<div class="row-fluid">
+  <div class="span12">
+    <h2>Contents</h2>
+    <table class="table table-bordered table-stripped">
+      <thead>
+        <tr><th>Title</th><th>Source Code</th></tr>
+      </thead>
+      <tbody>
+        <?cs each:item = Result.Contents ?>
+        <tr>
+          <td><a href="<?cs var:BASE_URL ?>/<?cs var:item.user ?>/<?cs var:item.id ?>"><?cs var:item.user ?>/<?cs var:item.name ?></a></td>
+          <td><pre><p><?cs var:item.js ?></p></pre></td>
+        </tr>
+        <?cs /each ?>
+      </tbody>
+    </table>
+  </div>
+</div>
 <?cs include:"footer.cs" ?>

@@ -656,6 +656,7 @@ HttpResponse search(HttpRequest req, String[] args)
     tpl["Search.Text"] = searchtext;
     Array matched_names = [];
     Array matched_scripts = [];
+    Array matched_contents = [];
     if (searchtext != null && searchtext != "") {
         String[] names = User.getList();
         Model scripts = defineScripts();
@@ -665,17 +666,33 @@ HttpResponse search(HttpRequest req, String[] args)
                 matched_names.add(name);
             }
         }
-        Map[] records = scripts.get("user, id, name");
+        Map[] records = scripts.get("user, id, name, js");
         foreach (Map record in records) {
             String name = record["name"].convert(to:durl);
+            String content = "";
+            if (record["js"] != null) {
+                content = record["js"].convert(to:durl);
+                int index = content.indexOf(searchtext);
+                if (index >= 0) {
+                    if (index <= 30) {
+                        record["js"] = content.substring(0, 120) + " ...";
+                    }
+                    else {
+                        record["js"] = "... " + content.substring(index - 30, 120) + " ...";
+                    }
+                    matched_contents.add(record);
+                }
+            }
             if (name.indexOf(searchtext) >= 0) {
                 record["name"] = name;
+                record.remove("js");
                 matched_scripts.add(record);
             }
         }
     }
     tpl["Result.Users"] = matched_names;
     tpl["Result.Codes"] = matched_scripts;
+    tpl["Result.Contents"] = matched_contents;
     TemplateContext ctx = new TemplateContext();
     ctx.parseFile("search.cs");
     return new HttpResponse(tpl.render(ctx));
