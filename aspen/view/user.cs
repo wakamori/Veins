@@ -5,7 +5,7 @@
 </p>
 <?cs /if ?>
 <h1><?cs var:User ?>&#39;s Code</h1>
-<table class="table">
+<table class="table" id="sortable-table">
   <thead>
     <tr><th>Name</th><?cs if:Myself ?><th>Actions</th><?cs /if ?><th>Date</th></tr>
   </thead>

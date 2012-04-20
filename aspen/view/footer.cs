@@ -6,6 +6,7 @@
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
     <script>window.jQuery || document.write('<script src="<?cs var:STATIC_URL ?>/js/libs/jquery-1.7.1.min.js"><\/script>')</script>
     <script src="<?cs var:STATIC_URL ?>/js/libs/jquery.editinplace.js"></script>
+    <script src="<?cs var:STATIC_URL ?>/js/libs/jquery.dataTables.min.js"></script>
 
     <script src="<?cs var:STATIC_URL ?>/js/libs/bootstrap/bootstrap-collapse.js"></script>
     <script src="<?cs var:STATIC_URL ?>/js/libs/bootstrap/bootstrap-dropdown.js"></script>
