@@ -16,10 +16,10 @@
     <div class="span10">
       <?cs if:Myself ?>
       <p>
-        <a href="<?cs var:BASE_URL ?>/action/create" class="btn"><i class="icon-edit"></i> Create a new project</a>
+        <a href="<?cs var:BASE_URL ?>/action/create" class="btn"><i class="icon-edit"></i> Create</a>
       </p>
       <?cs /if ?>
-      <h1>Code</h1>
+      <h1>My Code</h1>
       <table class="table">
         <thead>
           <tr><th>Name</th><?cs if:Myself ?><th>Actions</th><?cs /if ?><th>Date</th></tr>

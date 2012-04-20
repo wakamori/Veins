@@ -88,6 +88,13 @@ $(function() {
             lineWrapping: true,
             onCursorActivity: function() {
                 editor2.setLineClass(editor2.getCursor().line, null);
+            },
+            onChange: function(editor, e) {
+                var txt = ("" + e.text);
+                if (txt.length >= 2) {
+                    // text is copied
+                    sessionStorage.setItem("copy" + sessionStorage.length, txt);
+                }
             }
         });
         var editor3 = CodeMirror.fromTextArea($("#editor3")[0], {
@@ -112,6 +119,14 @@ $(function() {
             editor3.refresh();
             editor4.refresh();
         }
+        function flushHistory() {
+            var ret = [];
+            for (var i = 0; i < sessionStorage.length; i++) {
+                ret.push(sessionStorage.getItem("copy" + i));
+            }
+            sessionStorage.clear();
+            return ret;
+        }
         function save(options) {
             options = $.extend({
                 success: function(arg) {}
@@ -126,7 +141,8 @@ $(function() {
                     readme: editor1.getValue(),
                     js: editor2.getValue(),
                     ks: editor3.getValue(),
-                    html: editor4.getValue()
+                    html: editor4.getValue(),
+                    history: flushHistory()
                 },
                 success: function(arg) {
                     options.success(arg);
