@@ -145,7 +145,7 @@ Template getDefaultTemplate(HttpRequest req)
 
 boolean isReservedWord(String word)
 {
-    return word in? ["action", "about", "check", "contact"];
+    return word in? ["action", "about", "check", "contact", "BUGS"];
 }
 
 /* ------------------------------------------------------------------------ */
@@ -227,6 +227,19 @@ HttpResponse viewer(HttpRequest req, String[] args)
     return new HttpResponse(tpl.render(ctx));
 }
 
+void reportBug(String user, String id) {
+    FileStorage.mkdir("BUGS", 0755);
+    Date d = new Date();
+    String fname = (to String)d.year + (to String)d.month + (to String)d.day;
+    fname += (to String)d.hour + (to String)d.min + (to String)d.sec;
+    fname += "_" + user + "_" + id + ".k";
+    OutputStream ous = FileStorage.newFile("BUGS/" + fname);
+    InputStream ins = FileStorage.openJS(user, id);
+    ous.write(ins.read());
+    ous.close();
+    ins.close();
+}
+
 HttpResponse konoha2js(HttpRequest req, String[] args)
 {
     if (req.method == "POST") {
@@ -255,6 +268,10 @@ HttpResponse konoha2js(HttpRequest req, String[] args)
         //res["Access-Control-Allow-Origin"] = "http://konohascript.org";
         res["Content-Type"] = "application/javascript";
         res.content = exec(k2jspath + " -j -r -i " + path);
+        if (res.content == "") {
+            // a SEGV may occurred on konoha2js
+            reportBug(user, id);
+        }
     }
     else if (requestedType == "html") {
         //String ret = exec(k2jspath + " -j -r -i " + path);
