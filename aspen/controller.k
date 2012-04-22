@@ -271,6 +271,24 @@ HttpResponse konoha2js(HttpRequest req, String[] args)
         if (res.content == "") {
             // a SEGV may occurred on konoha2js
             reportBug(user, id);
+            res.content = """
+function konoha() {
+    this.ERR = "";
+    this.printOUT = function() {};
+    this.printERR = function() {
+        if (this.ERR == "") return;
+        var strings = this.ERR.split("\\n");
+        var body = document.getElementsByTagName('body').item(0);
+        for (var i = 0; i < strings.length; i++) {
+            body.appendChild(document.createTextNode(strings[i]));
+            body.appendChild(document.createElement('br'));
+        }
+    };
+}
+konoha = new konoha();
+function konoha_main() {
+    throw("Compile Error!!: Your script is reported as a reproducible code. Sorry.");
+}""";
         }
     }
     else if (requestedType == "html") {
