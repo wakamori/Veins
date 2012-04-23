@@ -44,7 +44,7 @@
             $box.addClass(options.type);
             $box.append($("<strong>").text(options.title));
             $box.append(" " + options.body);
-            $(this).html($box);
+            $(this).append($box);
             return this;
         }
     });
@@ -333,10 +333,9 @@ $(function() {
                 }
             });
         });
-        function parseErrorText(text) {
-            text.match(/\(k2js\.k\:(\d+)\) (.+)/);
-            editor2.setLineClass(parseInt(RegExp.$1) - 1, "errorline");
-            return RegExp.$1 + ": " + RegExp.$2;
+        function parseCompileMessage(msg, cls) {
+            editor2.setLineClass(parseInt(msg.line) - 1, cls);
+            return msg.line + ": " + msg.message;
         }
         $("#checkbtn").click(function() {
             save({
@@ -347,25 +346,49 @@ $(function() {
                         dataType: "json",
                         cache: false,
                         success: function(msg) {
+                            $("#alertbox").html("");
                             var options = {
                                 type: "",
                                 title: "",
                                 body: ""
                             };
+                            var messaged = false;
                             if (msg.error) {
+                                messaged = true;
                                 options.type = "alert-error";
                                 options.title = "Error!";
                                 options.body = "<br>";
-                                for (i = 0; i < msg.stderr.length; i++) {
-                                    options.body += parseErrorText(msg.stderr[i]) + "<br>";
+                                for (i = 0; i < msg.errormsg.length; i++) {
+                                    options.body += parseCompileMessage(msg.errormsg[i], "errorline") + "<br>";
                                 }
+                                $("#alertbox").notify(options);
                             }
-                            else {
+                            if (msg.warning) {
+                                messaged = true;
+                                options.type = "alert-block";
+                                options.title = "Warning!";
+                                options.body = "<br>";
+                                for (i = 0; i < msg.warningmsg.length; i++) {
+                                    options.body += parseCompileMessage(msg.warningmsg[i], "warningline") + "<br>";
+                                }
+                                $("#alertbox").notify(options);
+                            }
+                            if (msg.info) {
+                                messaged = true;
+                                options.type = "alert-info";
+                                options.title = "Information";
+                                options.body = "<br>";
+                                for (i = 0; i < msg.infomsg.length; i++) {
+                                    options.body += parseCompileMessage(msg.infomsg[i], "infoline") + "<br>";
+                                }
+                                $("#alertbox").notify(options);
+                            }
+                            if (!messaged) {
                                 options.type = "alert-success";
                                 options.title = "OK!";
                                 options.body = "Compile succeeded.";
+                                $("#alertbox").notify(options);
                             }
-                            $("#alertbox").notify(options);
                         }
                     });
                 }

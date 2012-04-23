@@ -308,19 +308,43 @@ function konoha_main() {
         String[] result = exec(k2jspath + " -c -i " + path + " 2>&1").split("\n");
         result.pop()
         Json j = new Json();
-        String[] stderrs = [];
-        Regex r = new Regex(" - \\(\\w+\\.k\\:\\d+\\) \\(\\w+\\) .+");
+        Json[] errs = [];
+        Json[] infos = [];
+        Json[] warns = [];
+        Regex r = new Regex(" - \\((\\w+\\.k)\\:(\\d+)\\) \\((\\w+)\\) (.+)");
         foreach (String line in result) {
-            if (line.search(r) >= 0) {
-                if (not line.startsWith(" - (compiler.k")) {
-                    stderrs.add(line.substring(3));
+            String[] reg = line.match(r);
+            if (|reg| >= 0) {
+                Json j2 = new Json();
+                j2["line"] = reg[2];
+                j2["message"] = reg[4];
+                if (not reg[1] == "compiler.k") {
+                    switch (reg[3]) {
+                    case "error":
+                        errs.add(j2);
+                        break;
+                    case "warning":
+                        warns.add(j2);
+                        break;
+                    case "info":
+                        infos.add(j2);
+                        break;
+                    }
                 }
             }
         }
-        if (|stderrs| > 0) {
+        if (|errs| > 0) {
             j["error"] = true;
+            j["errormsg"] = errs;
         }
-        j["stderr"] = stderrs;
+        if (|infos| > 0) {
+            j["info"] = true;
+            j["infomsg"] = infos;
+        }
+        if (|warns| > 0) {
+            j["warning"] = true;
+            j["warningmsg"] = warns;
+        }
         res.content = j.stringify();
     }
     else if (requestedType == "ks") {
