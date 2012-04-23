@@ -525,7 +525,6 @@ HttpResponse save(HttpRequest req, String[] args)
     String ks = req.params_post["ks"];
     String html = req.params_post["html"];
     String history = req.params_post["history"];
-    ERR << "history: " << history << EOL;
     if (user != req.session["id"]) {
         j["error"] = true;
         j["message"] = "Parameter 'user' is invalid.";
