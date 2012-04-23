@@ -228,10 +228,10 @@ $(function() {
                 var key = sessionStorage.key(i);
                 if (key.indexOf("copy") == 0) {
                     ret.push(sessionStorage.getItem(key));
-                    sessionStorage.removeItem(key)
+                    sessionStorage.removeItem(key);
                 }
             }
-            return ret;
+            return JSON.stringify(ret);
         }
         function isTextChanged() {
             var changed = false;
