@@ -5,7 +5,7 @@
 </p>
 <?cs /if ?>
 <h1>All Contacts</h1>
-<table class="table">
+<table class="table sortable-table">
   <thead>
     <tr><th>Title</th><th>Name</th><th>Date</th></tr>
   </thead>
