@@ -261,10 +261,10 @@ HttpResponse konoha2js(HttpRequest req, String[] args)
     }
     InputStream body = FileStorage.openJS(user, id);
     String path = body.path;
-    body.close();
     HttpResponse res = new HttpResponse();
     String k2jspath = "/usr/local/bin/konoha2js";
     if (requestedType == "js") {
+        body.close();
         //res["Access-Control-Allow-Origin"] = "http://konohascript.org";
         res["Content-Type"] = "application/javascript";
         res.content = exec(k2jspath + " -j -r -i " + path);
@@ -292,6 +292,7 @@ function konoha_main() {
         }
     }
     else if (requestedType == "html") {
+        body.close();
         //String ret = exec(k2jspath + " -j -r -i " + path);
         //ret = "<script type=\"text/javascript\">\n" + ret + "\n</script>\n</head>";
         //String replacetxt = "</head>";
@@ -301,6 +302,7 @@ function konoha_main() {
         html.close();
     }
     else if (requestedType == "compile") {
+        body.close();
         //res["Access-Control-Allow-Origin"] = "http://konohascript.org";
         res["Content-Type"] = "application/json; charset=UTF-8";
         String[] result = exec(k2jspath + " -c -i " + path + " 2>&1").split("\n");
@@ -321,8 +323,13 @@ function konoha_main() {
         j["stderr"] = stderrs;
         res.content = j.stringify();
     }
+    else if (requestedType == "ks") {
+        res["Content-Type"] = "text/plain; charset=UTF-8";
+        res.content = body.read().decode();
+        body.close();
+    }
     else {
-        args.pop()
+        args.pop();
         return redirect("/aspen/" + args.join("/"));
     }
     return res;
@@ -517,6 +524,8 @@ HttpResponse save(HttpRequest req, String[] args)
     String js = req.params_post["js"];
     String ks = req.params_post["ks"];
     String html = req.params_post["html"];
+    String history = req.params_post["history"];
+    ERR << "history: " << history << EOL;
     if (user != req.session["id"]) {
         j["error"] = true;
         j["message"] = "Parameter 'user' is invalid.";
