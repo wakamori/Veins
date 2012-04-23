@@ -580,7 +580,8 @@ HttpResponse save(HttpRequest req, String[] args)
     ous_ks.close();
     ous_html.close();
     ous_history.close();
-    g.commitAll("save commit");
+    g.add("*");
+    g.commit("save commit");
     if (readme != "" && readme != null) {
         m["readme"] = readme.convert(to:url);
     }
