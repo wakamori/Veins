@@ -128,6 +128,11 @@ Template getDefaultTemplate(HttpRequest req)
     return FileStorage.newFile(user + "/" + id + "/index.html");
 }
 
+@Public OutputStream FileStorage.newHistory(String user, String id)
+{
+    return FileStorage.newFile(user + "/" + id + "/history.txt");
+}
+
 @Public String Array.join(String separator)
 {
     if (separator == null) {
@@ -561,6 +566,7 @@ HttpResponse save(HttpRequest req, String[] args)
     OutputStream ous_js = FileStorage.newJS(user, id);
     OutputStream ous_ks = FileStorage.newKS(user, id);
     OutputStream ous_html = FileStorage.newHTML(user, id);
+    OutputStream ous_history = FileStorage.newHistory(user, id);
     String git_path = (to String)ous_readme.path;
     git_path = git_path.substring(0, git_path.lastIndexOf("/"));
     Git g = new Git(git_path);
@@ -568,10 +574,12 @@ HttpResponse save(HttpRequest req, String[] args)
     ous_js.print(js);
     ous_ks.print(ks);
     ous_html.print(html);
+    ous_history.print(history);
     ous_readme.close();
     ous_js.close();
     ous_ks.close();
     ous_html.close();
+    ous_history.close();
     g.commitAll("save commit");
     if (readme != "" && readme != null) {
         m["readme"] = readme.convert(to:url);
