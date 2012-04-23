@@ -225,32 +225,62 @@ $(function() {
         function flushHistory() {
             var ret = [];
             for (var i = 0; i < sessionStorage.length; i++) {
-                ret.push(sessionStorage.getItem("copy" + i));
+                var key = sessionStorage.key(i);
+                if (key.indexOf("copy") == 0) {
+                    ret.push(sessionStorage.getItem(key));
+                    sessionStorage.removeItem(key)
+                }
             }
-            sessionStorage.clear();
             return ret;
+        }
+        function isTextChanged() {
+            var changed = false;
+            if (editor1.getValue() != sessionStorage.getItem("readme")) {
+                changed = true;
+                sessionStorage.setItem("readme", editor1.getValue());
+            }
+            if (editor2.getValue() != sessionStorage.getItem("js")) {
+                changed = true;
+                sessionStorage.setItem("js", editor2.getValue());
+            }
+            if (editor3.getValue() != sessionStorage.getItem("ks")) {
+                changed = true;
+                sessionStorage.setItem("ks", editor3.getValue());
+            }
+            if (editor4.getValue() != sessionStorage.getItem("html")) {
+                changed = true;
+                sessionStorage.setItem("html", editor4.getValue());
+            }
+            return changed;
         }
         function save(options) {
             options = $.extend({
                 success: function(arg) {}
             }, options);
-            $.ajax({
-                type: "POST",
-                url: "/aspen/action/save",
-                dataType: "json",
-                data: {
-                    user: $("#user-name").text(),
-                    id: $("#user-id").text(),
-                    readme: editor1.getValue(),
-                    js: editor2.getValue(),
-                    ks: editor3.getValue(),
-                    html: editor4.getValue(),
-                    history: flushHistory()
-                },
-                success: function(arg) {
-                    options.success(arg);
-                }
-            });
+            if (isTextChanged()) {
+                $.ajax({
+                    type: "POST",
+                    url: "/aspen/action/save",
+                    dataType: "json",
+                    data: {
+                        user: $("#user-name").text(),
+                        id: $("#user-id").text(),
+                        readme: editor1.getValue(),
+                        js: editor2.getValue(),
+                        ks: editor3.getValue(),
+                        html: editor4.getValue(),
+                        history: flushHistory()
+                    },
+                    success: function(arg) {
+                        options.success(arg);
+                    }
+                });
+            }
+            else {
+                options.success({
+                    message: "Script is not changed."
+                });
+            }
         }
         $("#runbtn").click(function() {
             save({
