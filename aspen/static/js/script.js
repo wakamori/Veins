@@ -325,6 +325,7 @@ $(function() {
                         type = "alert-success";
                         title = "OK!";
                     }
+                    $("#alertbox").html("");
                     $("#alertbox").notify({
                         type: type,
                         title: title,
