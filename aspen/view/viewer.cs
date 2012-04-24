@@ -1,12 +1,23 @@
 <?cs include:"header.cs" ?>
 <form action="/aspen/<?cs var:User.Name ?>/<?cs var:User.Id ?>/html" method="get" target="resultframe" id="codeform" class="hideform"></form>
 <div class="container-fluid">
-  <ul class="breadcrumb">
-    <li>
-      <a href="<?cs var:BASE_URL ?>/<?cs var:User.Name ?>"><?cs var:User.Name ?></a> <span class="divider">/</span>
-    </li>
-    <li class="active"><?cs var:Code.Name ?></li>
-  </ul>
+  <div class="row-fluid">
+    <div class="span6">
+      <ul class="breadcrumb">
+        <li>
+          <a href="<?cs var:BASE_URL ?>/<?cs var:User.Name ?>"><?cs var:User.Name ?></a> <span class="divider">/</span>
+        </li>
+        <li class="active"><?cs var:Code.Name ?></li>
+      </ul>
+    </div>
+  <div class="span6">
+    <table class="table table-bordered">
+      <tbody>
+        <tr><th>View</th><td><?cs var:Code.Viewcount ?></td></tr>
+      </tbody>
+    </table>
+  </div>
+  </div>
   <div class="row-fluid">
     <div class="span6">
     <?cs if:Myself ?>

@@ -55,6 +55,7 @@ fi
 
 if [ ! -r /usr/local/lib/libjson.so ]; then
     wget http://oss.metaparadigm.com/json-c/json-c-0.9.tar.gz
+    tar cvzf json-c-0.9.tar.gz
     cd json-c-0.9
     ./configure
     make

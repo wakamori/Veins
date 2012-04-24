@@ -77,6 +77,14 @@ Model defineUserinfo()
     }, ["id"]);
 }
 
+Model defineCounter()
+{
+    return new Model("counter", {
+        "page": String,
+        "count": int
+    }, ["page"]);
+}
+
 Template getDefaultTemplate(HttpRequest req)
 {
     Template tpl = new Template();
@@ -214,6 +222,25 @@ HttpResponse viewer(HttpRequest req, String[] args)
     tpl["Code.Body.Js"] = js;
     tpl["Code.Body.Ks"] = ks;
     tpl["Code.Body.Html"] = html;
+    Model counter = defineCounter();
+    String page = args[0] + "/" + args[1];
+    m = counter.get("count", {
+        "page": page
+    });
+    int count = 0;
+    if (|m| == 0) {
+        counter.set({
+            "page": page,
+            "count": 0
+        });
+    }
+    else {
+        count = m[0]["count"];
+        counter.update({
+            "count": count + 1
+        }, {"page": page});
+    }
+    tpl["Code.Viewcount"] = count;
     TemplateContext ctx = new TemplateContext();
     if (req.session["id"] == args[0]) {
         if (|args| == 3) {
@@ -560,7 +587,6 @@ HttpResponse save(HttpRequest req, String[] args)
         res.content = j.stringify();
         return res;
     }
-    Model scripts = defineScripts();
     Map m = {};
     OutputStream ous_readme = FileStorage.newReadme(user, id);
     OutputStream ous_js = FileStorage.newJS(user, id);
@@ -595,10 +621,6 @@ HttpResponse save(HttpRequest req, String[] args)
         m["html"] = html.convert(to:url);
     }
     m["date"] = (to String)new Date();
-    scripts.update(m, {
-        "user": user,
-        "id": id
-    });
     j["message"] = "Script saved successfully.";
     res.content = j.stringify();
     return res;
@@ -687,6 +709,11 @@ function runmain() {
             "js": js_tpl.convert(to:url),
             "html": html_tpl.convert(to:url),
             "date": (to String)d
+        });
+        Model counter = defineCounter();
+        counter.set({
+            "page": sessionid + "/" + id,
+            "count": 0
         });
         return redirect("/aspen/" + sessionid + "/" + id + "/edit");
     }
