@@ -181,14 +181,12 @@ $(function() {
     if ($("#editor1")[0] != undefined) {
         var editor1 = CodeMirror.fromTextArea($("#editor1")[0], {
             mode: "text/plain",
-            readOnly: $("#editor1").hasClass("readonly"),
-            lineWrapping: true
+            readOnly: $("#editor1").hasClass("readonly")//,
         });
         var editor2 = CodeMirror.fromTextArea($("#editor2")[0], {
             lineNumbers: true,
             mode: "text/x-konoha",
             readOnly: $("#editor2").hasClass("readonly"),
-            lineWrapping: true,
             onCursorActivity: function() {
                 editor2.setLineClass(editor2.getCursor().line, null);
             },
@@ -203,25 +201,23 @@ $(function() {
         var editor3 = CodeMirror.fromTextArea($("#editor3")[0], {
             lineNumbers: true,
             readOnly: $("#editor3").hasClass("readonly"),
-            lineWrapping: true,
             mode: "text/x-konoha"
         });
         var editor4 = CodeMirror.fromTextArea($("#editor4")[0], {
             lineNumbers: true,
             readOnly: $("#editor4").hasClass("readonly"),
-            lineWrapping: true,
             mode: "text/html"
         });
+        var editors = [editor1, editor2, editor3, editor4];
         if ($(window).height() > 300 && document.URL.match("edit$")) {
-            $(editor1.getScrollerElement()).height($(window).height() - 230);
-            $(editor2.getScrollerElement()).height($(window).height() - 230);
-            $(editor3.getScrollerElement()).height($(window).height() - 230);
-            $(editor4.getScrollerElement()).height($(window).height() - 230);
-            editor1.refresh();
-            editor2.refresh();
-            editor3.refresh();
-            editor4.refresh();
+            $.each(editors, function() {
+                $(this.getScrollerElement()).height($(window).height() - 230);
+                this.refresh();
+            });
         }
+        $.each(editors, function() {
+            this.setOption("lineWrapping", true);
+        });
         function flushHistory() {
             var ret = [];
             for (var i = 0; i < sessionStorage.length; i++) {
