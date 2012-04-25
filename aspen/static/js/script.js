@@ -211,7 +211,7 @@ $(function() {
         var editors = [editor1, editor2, editor3, editor4];
         if ($(window).height() > 300 && document.URL.match("edit$")) {
             $.each(editors, function() {
-                $(this.getScrollerElement()).height($(window).height() - 230);
+                $(this.getScrollerElement()).height($(window).height() - 280);
                 this.refresh();
             });
         }
