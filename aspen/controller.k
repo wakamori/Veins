@@ -388,7 +388,7 @@ function konoha_main() {
             "id": id
         });
         if (|m| == 1) {
-            scriptname = m[0]["name"].convert(to:durl);
+            scriptname = m[0]["name"];
         }
         else {
             return null;
