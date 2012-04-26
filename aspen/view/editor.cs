@@ -23,6 +23,7 @@
 <div class="btn-toolbar">
   <button class="btn btn-primary" data-toggle="modal" href="#resultwindow" id="runbtn">Run</button>
   <button class="btn btn-warning" id="checkbtn">Check</button>
+  <button class="btn btn-warning" id="jcheckbtn">Java Check</button>
   <button class="btn btn-success" id="savebtn">Save</button>
 </div>
 <div class="tabbable">

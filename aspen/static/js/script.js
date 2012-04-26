@@ -391,6 +391,40 @@ $(function() {
                 }
             });
         });
+        $("#jcheckbtn").click(function() {
+            save({
+                success: function() {
+                    $.ajax({
+                        type: "GET",
+                        url: "/aspen/" + $("#user-name").text() + "/" + $("#user-id").text() + "/javac",
+                        dataType: "json",
+                        cache: false,
+                        success: function(msg) {
+                            $("#alertbox").html("");
+                            var options = {
+                                type: "",
+                                title: "",
+                                body: ""
+                            };
+                            if (msg.error) {
+                                messaged = true;
+                                options.type = "alert-error";
+                                options.title = "Error!";
+                                options.body = "<br>";
+                                options.body += msg.errormsg.replace(/\n/g, "<br>");
+                                $("#alertbox").notify(options);
+                            }
+                            else {
+                                options.type = "alert-success";
+                                options.title = "OK!";
+                                options.body = "Compile succeeded.";
+                                $("#alertbox").notify(options);
+                            }
+                        }
+                    });
+                }
+            });
+        });
     }
     $(".confirm").click(function () {
         var action = $.trim($(this).text()).toLowerCase();

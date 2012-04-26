@@ -292,14 +292,14 @@ HttpResponse konoha2js(HttpRequest req, String[] args)
         return null;
     }
     InputStream body = FileStorage.openJS(user, id);
-    String path = body.path;
+    String scriptpath = body.path;
     HttpResponse res = new HttpResponse();
     String k2jspath = "/usr/local/bin/konoha2js";
     if (requestedType == "js") {
         body.close();
         //res["Access-Control-Allow-Origin"] = "http://konohascript.org";
         res["Content-Type"] = "application/javascript";
-        res.content = exec(k2jspath + " -j -r -i " + path);
+        res.content = exec(k2jspath + " -j -r -i " + scriptpath);
         if (res.content == "") {
             // a SEGV may occurred on konoha2js
             reportBug(user, id);
@@ -337,7 +337,7 @@ function konoha_main() {
         body.close();
         //res["Access-Control-Allow-Origin"] = "http://konohascript.org";
         res["Content-Type"] = "application/json; charset=UTF-8";
-        String[] result = exec(k2jspath + " -c -i " + path + " 2>&1").split("\n");
+        String[] result = exec(k2jspath + " -c -i " + scriptpath + " 2>&1").split("\n");
         result.pop()
         Json j = new Json();
         Json[] errs = [];
@@ -376,6 +376,38 @@ function konoha_main() {
         if (|warns| > 0) {
             j["warning"] = true;
             j["warningmsg"] = warns;
+        }
+        res.content = j.stringify();
+    }
+    else if (requestedType == "javac") {
+        body.close();
+        Model scripts = defineScripts();
+        String scriptname;
+        Map[] m = scripts.get("name", {
+            "user": user,
+            "id": id
+        });
+        if (|m| == 1) {
+            scriptname = m[0]["name"].convert(to:durl);
+        }
+        else {
+            return null;
+        }
+        String javacpath = "/usr/bin/javac";
+        res["Content-Type"] = "application/json; charset=UTF-8";
+        if (System.stat(FileStorage.root + user + "/javac") == null) {
+            FileStorage.mkdir(user + "/javac", 0755);
+        }
+        if (System.stat(FileStorage.root + user + "/javac" + id) == null) {
+            FileStorage.mkdir(user + "/javac/" + id, 0755);
+        }
+        String javapath = FileStorage.root + user + "/javac/" + id + "/" + scriptname;
+        System.symlink(scriptpath, javapath);
+        String result = exec(javacpath + " -d " + $TMP_DIR + " " + javapath + " 2>&1");
+        Json j = new Json();
+        if (result != "") {
+            j["error"] = true;
+            j["errormsg"] = result.replace(javapath, scriptname);
         }
         res.content = j.stringify();
     }
