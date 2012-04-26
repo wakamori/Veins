@@ -867,9 +867,9 @@ HttpResponse contact(HttpRequest req, String[] args)
         });
         if (|m| == 1) {
             Map topic = {};
-            topic["Title"] = m[0]["title"];
+            topic["Title"] = m[0]["title"].convert(to:durl);
             topic["Name"] = m[0]["name"];
-            topic["Contents"] = m[0]["contents"];
+            topic["Contents"] = m[0]["contents"].convert(to:durl);
             topic["Date"] = m[0]["date"];
             tpl["Topic"] = topic;
             TemplateContext ctx = new TemplateContext();
@@ -883,7 +883,7 @@ HttpResponse contact(HttpRequest req, String[] args)
     Array threadlist = [];
     foreach (Map m in inquiries.get("id, title, name, date")) {
         int id = m["id"];
-        String title = m["title"];
+        String title = m["title"].convert(to:durl);
         String name = m["name"];
         String date = m["date"];
         threadlist.add({
