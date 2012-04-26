@@ -93,7 +93,7 @@ Template getDefaultTemplate(HttpRequest req)
     tpl["Username"] = req.session["username"];
     tpl["Password"] = req.session["password"];
     tpl["Remember"] = req.session["remember"];
-    tpl["Practice"] = "on";
+    //tpl["Practice"] = "on";
     return tpl;
 }
 
