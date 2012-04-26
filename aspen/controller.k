@@ -394,7 +394,7 @@ function konoha_main() {
         else {
             return null;
         }
-        String javacpath = "/usr/bin/javac";
+        String javacpath = "/usr/bin/javac -encoding UTF8";
         res["Content-Type"] = "application/json; charset=UTF-8";
         if (System.stat(FileStorage.root + user + "/javac") == null) {
             FileStorage.mkdir(user + "/javac", 0755);
@@ -499,7 +499,7 @@ HttpResponse signup(HttpRequest req, String[] args)
     String password = req.params_post["password"];
     String email = req.params_post["email"];
     Regex r = new Regex("^([\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4})?$");
-    Regex r2 = new Regex("^[a-zA-Z0-9_]{1,20}$");
+    Regex r2 = new Regex("^[a-zA-Z0-9_]{1,25}$");
     if (isReservedWord(username)) {
         Map error = {
             "Title": "Username is invalid.",
