@@ -78,9 +78,12 @@
             </li>
             <?cs /each ?>
           </ul>
+          <?cs if:Practice ?>
+          <?cs else ?>
           <form class="navbar-search" action="<?cs var:BASE_URL ?>/action/search" method="get">
             <input type="search" name="text" class="search-query" placeholder="Search">
           </form>
+          <?cs /if ?>
           <form action="<?cs var:BASE_URL ?>/action/logout" method="post" class="hideform" id="signoutform"></form>
           <ul class="nav pull-right">
             <?cs if:ID ?>
