@@ -56,7 +56,8 @@ $STATIC_URL = "http://localhost/~chen_ji/aspen";
 
 /* Middleware classes. */
 $MIDDLEWARES = [
-    "SessionMiddleware"
+    "SessionMiddleware",
+    "LoggingMiddleware"
 ];
 
 /* ------------------------------------------------------------------------ */

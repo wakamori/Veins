@@ -268,10 +268,7 @@ static int konoha_handler(request_rec *r)
     }
 
     /* call konoha main */
-    int argc = 2;
-    if (debug) {
-        argc = 3;
-    }
+    int argc = 3;
     const char *argv[] = {
         "/usr/local/bin/konoha",
         handler,
