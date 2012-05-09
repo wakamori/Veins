@@ -50,12 +50,9 @@
       <h3>Sign in form</h3>
     </div>
     <div class="modal-body">
-      <form method="post" class="well" id="signinform" action="<?cs var:BASE_URL ?>/action/login">
+      <form method="post" class="well form-inline" id="signinform" action="<?cs var:BASE_URL ?>/action/login">
         <input id="input-username" name="username" type="text" class="input-medium" placeholder="Username"<?cs if:Remember == "on" ?> value="<?cs var:Username ?>"<?cs /if ?>>
         <input id="input-password" name="password" type="password" class="input-medium" placeholder="Password"<?cs if:Remember == "on" ?> value="<?cs var:Password ?>"<?cs /if ?>>
-        <label class="checkbox">
-          <input id="input-remember" type="checkbox" name="remember" value="on"<?cs if:Remember == "on" ?> checked<?cs /if ?>> Remember me
-        </label>
         <button class="btn" type="submit">Sign in</button>
       </form>
     </div>

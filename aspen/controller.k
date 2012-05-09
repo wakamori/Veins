@@ -90,9 +90,9 @@ Template getDefaultTemplate(HttpRequest req)
     Template tpl = new Template();
     tpl.readFile("top.hdf");
     tpl["ID"] = req.session["id"];
-    tpl["Username"] = req.session["username"];
-    tpl["Password"] = req.session["password"];
-    tpl["Remember"] = req.session["remember"];
+    //tpl["Username"] = req.session["username"];
+    //tpl["Password"] = req.session["password"];
+    //tpl["Remember"] = req.session["remember"];
     //tpl["Practice"] = "on";
     return tpl;
 }
@@ -709,7 +709,7 @@ function runmain() {
             error["Title"] = "Name is empty.";
         }
         else {
-            error["Title"] = "Name is too long.";
+            error["Title"] = "Name is too long (should be no longer than 128).";
         }
         Template tpl = getDefaultTemplate(req);
         tpl.readFile("create.hdf");
