@@ -225,12 +225,16 @@ $(function() {
             $.each(editors, function() {
                 $(this.getScrollerElement()).height($(window).height() - 280);
                 $("#resultframe").height($(window).height() - 280);
-                this.refresh();
             });
         }
         $.each(editors, function() {
             this.setOption("lineWrapping", true);
         });
+        // TODO: for Firefox
+        setTimeout(function() {
+            editor2.refresh();
+            editor2.refresh();
+        }, 1);
         function flushHistory() {
             var ret = [];
             for (var i = 0; i < sessionStorage.length; i++) {
