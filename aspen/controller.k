@@ -7,6 +7,8 @@ include "/Users/chen_ji/Devel/git/Veins/aspen/settings.k";
 
 using konoha.veins.*;
 
+TRACE_USER = true;
+
 class Git
 {
     String bin;
@@ -185,6 +187,11 @@ HttpResponse login(HttpRequest req, String[] args)
     User user = User.authenticate(username, password);
     if (user != null) {
         req.session["id"] = user.name;
+        if (TRACE_USER) {
+            Map m = {};
+            m["id"] = user.name;
+            System.ntraceNotice("Aspen:SignIn", m);
+        }
     }
     return redirect("/aspen/");
 }
@@ -193,6 +200,11 @@ HttpResponse logout(HttpRequest req, String[] args)
 {
     if (req.method != "POST") {
         return null;
+    }
+    if (TRACE_USER) {
+        Map m = {};
+        m["id"] = req.session["id"];
+        System.ntraceNotice("Aspen:SignOut", m);
     }
     req.session.remove("id");
     return redirect("/aspen/");
@@ -244,10 +256,6 @@ HttpResponse viewer(HttpRequest req, String[] args)
     tpl["Code.Viewcount"] = count;
     TemplateContext ctx = new TemplateContext();
     if (req.session["id"] == args[0]) {
-        //if (|args| == 3) {
-        //    ctx.parseFile("editor.cs");
-        //    return new HttpResponse(tpl.render(ctx));
-        //}
         tpl["Myself"] = 1;
     }
     else {
@@ -257,6 +265,12 @@ HttpResponse viewer(HttpRequest req, String[] args)
         }
     }
     ctx.parseFile("viewer.cs");
+    if (TRACE_USER) {
+        Map m = {};
+        m["id"] = req.session["id"];
+        m["watching"] = args[0];
+        System.ntraceNotice("Aspen:Viewer", m);
+    }
     return new HttpResponse(tpl.render(ctx));
 }
 
@@ -333,6 +347,12 @@ function konoha_main() {
         //res.content += html.read().decode().replace(replacetxt, ret);
         res.content += html.read().decode();
         html.close();
+        if (TRACE_USER) {
+            Map m = {};
+            m["id"] = user;
+            m["running"] = id;
+            System.ntraceNotice("Aspen:Konoha2JS", m);
+        }
     }
     else if (requestedType == "compile") {
         body.close();
@@ -379,6 +399,12 @@ function konoha_main() {
             j["warningmsg"] = warns;
         }
         res.content = j.stringify();
+        if (TRACE_USER) {
+            Map m = {};
+            m["id"] = user;
+            m["compiling"] = id;
+            System.ntraceNotice("Aspen:Konoha2JS", m);
+        }
     }
     else if (requestedType == "javac") {
         body.close();
@@ -411,6 +437,12 @@ function konoha_main() {
             j["errormsg"] = result.replace(javapath, scriptname);
         }
         res.content = j.stringify();
+        if (TRACE_USER) {
+            Map m = {};
+            m["id"] = user;
+            m["javacompiling"] = id;
+            System.ntraceNotice("Aspen:Konoha2JS", m);
+        }
     }
     else if (requestedType == "ks") {
         res["Content-Type"] = "text/plain; charset=UTF-8";
@@ -460,6 +492,12 @@ HttpResponse user(HttpRequest req, String[] args)
     tpl["Code"] = codelist;
     TemplateContext ctx = new TemplateContext();
     ctx.parseFile("user.cs");
+    if (TRACE_USER) {
+        Map m = {};
+        m["id"] = req.session["id"];
+        m["watching"] = user;
+        System.ntraceNotice("Aspen:User", m);
+    }
     return new HttpResponse(tpl.render(ctx));
 }
 
@@ -506,6 +544,12 @@ HttpResponse signup(HttpRequest req, String[] args)
         tpl["Form.Inputs.1.Input.Value"] = email;
         tpl["Error"] = error;
         ctx.parseFile("form.cs");
+        if (TRACE_USER) {
+            Map m = {}
+            m["username"] = username;
+            m["email"] = email;
+            System.ntraceFailed("Aspen:SignUp", m);
+        }
         return new HttpResponse(tpl.render(ctx));
     }
     if (username.search(r2) < 0) {
@@ -517,6 +561,12 @@ HttpResponse signup(HttpRequest req, String[] args)
         tpl["Form.Inputs.1.Input.Value"] = email;
         tpl["Error"] = error;
         ctx.parseFile("form.cs");
+        if (TRACE_USER) {
+            Map m = {}
+            m["username"] = username;
+            m["email"] = email;
+            System.ntraceFailed("Aspen:SignUp", m);
+        }
         return new HttpResponse(tpl.render(ctx));
     }
     if (email.search(r) < 0) {
@@ -528,6 +578,12 @@ HttpResponse signup(HttpRequest req, String[] args)
         tpl["Form.Inputs.1.Input.Value"] = email;
         tpl["Error"] = error;
         ctx.parseFile("form.cs");
+        if (TRACE_USER) {
+            Map m = {}
+            m["username"] = username;
+            m["email"] = email;
+            System.ntraceFailed("Aspen:SignUp", m);
+        }
         return new HttpResponse(tpl.render(ctx));
     }
     User user = User.addUser(username, password);
@@ -540,6 +596,12 @@ HttpResponse signup(HttpRequest req, String[] args)
         tpl["Form.Inputs.1.Input.Value"] = email;
         tpl["Error"] = error;
         ctx.parseFile("form.cs");
+        if (TRACE_USER) {
+            Map m = {}
+            m["username"] = username;
+            m["email"] = email;
+            System.ntraceFailed("Aspen:SignUp", m);
+        }
         return new HttpResponse(tpl.render(ctx));
     }
     Model userinfo = defineUserinfo();
@@ -549,6 +611,12 @@ HttpResponse signup(HttpRequest req, String[] args)
     });
     FileStorage.mkdir(username, 0755);
     req.session["id"] = user.name;
+    if (TRACE_USER) {
+        Map m = {}
+        m["newid"] = user.name;
+        m["email"] = email;
+        System.ntraceNotice("Aspen:SignUp", m);
+    }
     return redirect("/aspen/");
 }
 
@@ -615,6 +683,13 @@ HttpResponse save(HttpRequest req, String[] args)
         j["error"] = true;
         j["message"] = "Parameter 'user' is invalid.";
         res.content = j.stringify();
+        if (TRACE_USER) {
+            Map m = {}
+            m["id"] = req.session["id"];
+            m["target"] = user;
+            m["saving"] = id;
+            System.ntraceFailed("Aspen:Save", m);
+        }
         return res;
     }
     Map m = {};
@@ -653,6 +728,12 @@ HttpResponse save(HttpRequest req, String[] args)
     m["date"] = (to String)new Date();
     j["message"] = "Script saved successfully.";
     res.content = j.stringify();
+    if (TRACE_USER) {
+        Map m = {}
+        m["id"] = req.session["id"];
+        m["saving"] = id;
+        System.ntraceNotice("Aspen:Save", m);
+    }
     return res;
 }
 
@@ -714,6 +795,12 @@ function runmain() {
         tpl["Error"] = error;
         TemplateContext ctx = new TemplateContext();
         ctx.parseFile("form.cs");
+        if (TRACE_USER) {
+            Map m = {};
+            m["id"] = req.session["id"];
+            m["creating"] = codename;
+            System.ntraceFailed("Aspen:Create", m);
+        }
         return new HttpResponse(tpl.render(ctx));
     }
     HttpResponse res = new HttpResponse();
@@ -725,6 +812,12 @@ function runmain() {
     id += (to String)d.sec;
     String sessionid = req.session["id"];
     if (!FileStorage.mkdir(sessionid + "/" + id, 0755)) {
+        if (TRACE_USER) {
+            Map m = {};
+            m["id"] = req.session["id"];
+            m["creating"] = codename;
+            System.ntraceFailed("Aspen:Create", m);
+        }
         return redirect("/aspen/");
     }
     Model scripts = defineScripts();
@@ -758,6 +851,12 @@ function runmain() {
         "page": sessionid + "/" + id,
         "count": 0
     });
+    if (TRACE_USER) {
+        Map m = {};
+        m["id"] = req.session["id"];
+        m["creating"] = codename;
+        System.ntraceNotice("Aspen:Create", m);
+    }
     return redirect("/aspen/" + sessionid + "/" + id);
 }
 
@@ -783,6 +882,12 @@ HttpResponse delete(HttpRequest req, String[] args)
     });
     j["message"] = "Script deleted successfully.";
     res.content = j.stringify();
+    if (TRACE_USER) {
+        Map m = {};
+        m["id"] = req.session["id"];
+        m["deleting"] = id;
+        System.ntraceFailed("Aspen:Delete", m);
+    }
     return res;
 }
 
@@ -834,6 +939,12 @@ HttpResponse search(HttpRequest req, String[] args)
     tpl["Result.Contents"] = matched_contents;
     TemplateContext ctx = new TemplateContext();
     ctx.parseFile("search.cs");
+    if (TRACE_USER) {
+        Map m = {};
+        m["id"] = req.session["id"];
+        m["searching"] = searchtext;
+        System.ntraceFailed("Aspen:Search", m);
+    }
     return new HttpResponse(tpl.render(ctx));
 }
 
