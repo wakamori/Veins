@@ -437,9 +437,6 @@ HttpResponse user(HttpRequest req, String[] args)
         return viewer(req, args);
     }
     else if (|args| == 3) {
-        if (args[2] == "edit") {
-            return viewer(req, args);
-        }
         return konoha2js(req, args);
     }
     Template tpl = getDefaultTemplate(req);
@@ -761,7 +758,7 @@ function runmain() {
         "page": sessionid + "/" + id,
         "count": 0
     });
-    return redirect("/aspen/" + sessionid + "/" + id + "/edit");
+    return redirect("/aspen/" + sessionid + "/" + id);
 }
 
 HttpResponse delete(HttpRequest req, String[] args)
