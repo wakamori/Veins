@@ -695,66 +695,68 @@ function runmain() {
     if (req.session["id"] == null) {
         return null;
     }
-    if (req.method == "POST") {
-        String codename = req.params_post["codename"];
-        if (|codename| == 0) {
-            Map error = {};
-            error["Title"] = "Name is empty.";
-            Template tpl = getDefaultTemplate(req);
-            tpl.readFile("create.hdf");
-            tpl["Form.Inputs.0.Input.Value"] = codename;
-            tpl["Error"] = error;
-            TemplateContext ctx = new TemplateContext();
-            ctx.parseFile("form.cs");
-            return new HttpResponse(tpl.render(ctx));
-        }
-        HttpResponse res = new HttpResponse();
-        Date d = new Date();
-        String id = (to String)d.year;
-        id += (to String)d.month;
-        id += (to String)d.day;
-        id += (to String)d.hour;
-        id += (to String)d.sec;
-        Model scripts = defineScripts();
-        String sessionid = req.session["id"];
-        FileStorage.mkdir(sessionid + "/" + id, 0755);
-        OutputStream ous_readme = FileStorage.newReadme(sessionid, id);
-        OutputStream ous_js = FileStorage.newJS(sessionid, id);
-        OutputStream ous_ks = FileStorage.newKS(sessionid, id);
-        OutputStream ous_html = FileStorage.newHTML(sessionid, id);
-        String git_path = (to String)ous_readme.path;
-        git_path = git_path.substring(0, git_path.lastIndexOf("/"));
-        Git g = new Git(git_path);
-        html_tpl = html_tpl.replace("%src%", "/aspen/" + sessionid + "/" + id + "/js");
-        ous_js.print(js_tpl);
-        ous_html.print(html_tpl);
-        ous_readme.close();
-        ous_js.close();
-        ous_ks.close();
-        ous_html.close();
-        g.init();
-        g.add("*");
-        g.commit("initial commit");
-        scripts.set({
-            "user": sessionid,
-            "id": id,
-            "name": codename.convert(to:url),
-            "js": js_tpl.convert(to:url),
-            "html": html_tpl.convert(to:url),
-            "date": (to String)d
-        });
-        Model counter = defineCounter();
-        counter.set({
-            "page": sessionid + "/" + id,
-            "count": 0
-        });
-        return redirect("/aspen/" + sessionid + "/" + id + "/edit");
+    if (req.method == "GET") {
+        Template tpl = getDefaultTemplate(req);
+        tpl.readFile("create.hdf");
+        TemplateContext ctx = new TemplateContext();
+        ctx.parseFile("form.cs");
+        return new HttpResponse(tpl.render(ctx));
     }
-    Template tpl = getDefaultTemplate(req);
-    tpl.readFile("create.hdf");
-    TemplateContext ctx = new TemplateContext();
-    ctx.parseFile("form.cs");
-    return new HttpResponse(tpl.render(ctx));
+    String codename = req.params_post["codename"];
+    if (|codename| == 0) {
+        Map error = {};
+        error["Title"] = "Name is empty.";
+        Template tpl = getDefaultTemplate(req);
+        tpl.readFile("create.hdf");
+        tpl["Form.Inputs.0.Input.Value"] = codename;
+        tpl["Error"] = error;
+        TemplateContext ctx = new TemplateContext();
+        ctx.parseFile("form.cs");
+        return new HttpResponse(tpl.render(ctx));
+    }
+    HttpResponse res = new HttpResponse();
+    Date d = new Date();
+    String id = (to String)d.year;
+    id += (to String)d.month;
+    id += (to String)d.day;
+    id += (to String)d.hour;
+    id += (to String)d.sec;
+    String sessionid = req.session["id"];
+    if (!FileStorage.mkdir(sessionid + "/" + id, 0755)) {
+        return redirect("/aspen/");
+    }
+    Model scripts = defineScripts();
+    OutputStream ous_readme = FileStorage.newReadme(sessionid, id);
+    OutputStream ous_js = FileStorage.newJS(sessionid, id);
+    OutputStream ous_ks = FileStorage.newKS(sessionid, id);
+    OutputStream ous_html = FileStorage.newHTML(sessionid, id);
+    String git_path = (to String)ous_readme.path;
+    git_path = git_path.substring(0, git_path.lastIndexOf("/"));
+    Git g = new Git(git_path);
+    html_tpl = html_tpl.replace("%src%", "/aspen/" + sessionid + "/" + id + "/js");
+    ous_js.print(js_tpl);
+    ous_html.print(html_tpl);
+    ous_readme.close();
+    ous_js.close();
+    ous_ks.close();
+    ous_html.close();
+    g.init();
+    g.add("*");
+    g.commit("initial commit");
+    scripts.set({
+        "user": sessionid,
+        "id": id,
+        "name": codename.convert(to:url),
+        "js": js_tpl.convert(to:url),
+        "html": html_tpl.convert(to:url),
+        "date": (to String)d
+    });
+    Model counter = defineCounter();
+    counter.set({
+        "page": sessionid + "/" + id,
+        "count": 0
+    });
+    return redirect("/aspen/" + sessionid + "/" + id + "/edit");
 }
 
 HttpResponse delete(HttpRequest req, String[] args)
