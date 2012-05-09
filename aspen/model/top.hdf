@@ -8,12 +8,16 @@ Header {
             URL = /about/
         }
         1 {
-            Name = Contact
-            URL = /contact/
-        }
-        2 {
             Name = Demo
             URL = /demo
+        }
+        2 {
+            Name = Kimio
+            URL = /kimio
+        }
+        3 {
+            Name = Doly
+            URL = /0001_Midori_Sugaya
         }
     }
 }

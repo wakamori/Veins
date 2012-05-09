@@ -4,7 +4,9 @@
   <a href="<?cs var:BASE_URL ?>/action/create" class="btn"><i class="icon-edit"></i> Create</a>
 </p>
 <?cs /if ?>
-<h1><?cs var:User ?>&#39;s Code</h1>
+<div class="page-header">
+  <h1><?cs var:User ?>&#39;s code</h1>
+</div>
 <table class="table sortable-table">
   <thead>
     <tr><th>Name</th><?cs if:Myself ?><th>Actions</th><?cs /if ?><th>Date</th></tr>

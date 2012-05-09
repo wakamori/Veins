@@ -244,10 +244,10 @@ HttpResponse viewer(HttpRequest req, String[] args)
     tpl["Code.Viewcount"] = count;
     TemplateContext ctx = new TemplateContext();
     if (req.session["id"] == args[0]) {
-        if (|args| == 3) {
-            ctx.parseFile("editor.cs");
-            return new HttpResponse(tpl.render(ctx));
-        }
+        //if (|args| == 3) {
+        //    ctx.parseFile("editor.cs");
+        //    return new HttpResponse(tpl.render(ctx));
+        //}
         tpl["Myself"] = 1;
     }
     else {
@@ -703,9 +703,14 @@ function runmain() {
         return new HttpResponse(tpl.render(ctx));
     }
     String codename = req.params_post["codename"];
-    if (|codename| == 0) {
+    if (|codename.trim()| == 0 || |codename| >= 128) {
         Map error = {};
-        error["Title"] = "Name is empty.";
+        if (|codename| == 0) {
+            error["Title"] = "Name is empty.";
+        }
+        else {
+            error["Title"] = "Name is too long.";
+        }
         Template tpl = getDefaultTemplate(req);
         tpl.readFile("create.hdf");
         tpl["Form.Inputs.0.Input.Value"] = codename;

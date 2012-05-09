@@ -23,15 +23,14 @@
 <div class="btn-toolbar">
   <button class="btn btn-primary" data-toggle="modal" href="#resultwindow" id="runbtn">Run</button>
   <button class="btn btn-warning" id="checkbtn">Check</button>
-  <button class="btn btn-warning" id="jcheckbtn">Java Check</button>
   <button class="btn btn-success" id="savebtn">Save</button>
 </div>
 <div class="tabbable">
   <ul class="nav nav-tabs">
-    <li><a href="#1" data-toggle="tab" id="tab1">Readme</a></li>
-    <li class="active"><a href="#2" data-toggle="tab" id="tab2">konoha</a></li>
-    <li class="hidden"><a href="#3" data-toggle="tab" id="tab3">konoha</a></li>
-    <li><a href="#4" data-toggle="tab" id="tab4">HTML</a></li>
+    <li class="hidden"><a href="#1" data-toggle="tab" id="tab1">Readme</a></li>
+    <li class="active"><a href="#2" data-toggle="tab" id="tab2">Source</a></li>
+    <li class="hidden"><a href="#3" data-toggle="tab" id="tab3">Source</a></li>
+    <li class="hidden"><a href="#4" data-toggle="tab" id="tab4">HTML</a></li>
   </ul>
   <div class="tab-content">
     <div class="tab-pane" id="1">
