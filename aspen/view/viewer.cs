@@ -2,7 +2,7 @@
 <form action="/aspen/<?cs var:User.Name ?>/<?cs var:User.Id ?>/html" method="get" target="resultframe" id="codeform" class="hideform"></form>
 <div class="container-fluid">
   <div class="row-fluid">
-    <div class="span4">
+    <div class="span6">
       <h3>
         <a href="<?cs var:BASE_URL ?>/<?cs var:User.Name ?>"><?cs var:User.Name ?></a> <span class="divider">/</span>
         <?cs var:Code.Name ?>
@@ -11,7 +11,7 @@
         </small>
       </h3>
     </div>
-    <div class="span8">
+    <div class="span6">
       <ul class="nav nav-pills">
         <li><a href="<?cs var:BASE_URL ?>/<?cs var:User.Name ?>"><i class="icon-home"></i> Home</a></li>
       </ul>
