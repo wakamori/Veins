@@ -296,14 +296,22 @@ $(function() {
             }
         }
         $("#runbtn").click(function() {
+            $(this).attr("disabled", "disabled");
             save({
                 success: function(msg) {
                     $("#codeform").submit();
                 }
             });
+            setTimeout(function() {
+                $("#runbtn").removeAttr("disabled");
+            }, 3000);
         })
         $("#runbtn-nosave").click(function() {
+            $(this).attr("disabled", "disabled");
             $("#codeform").submit();
+            setTimeout(function() {
+                $("#runbtn-nosave").removeAttr("disabled");
+            }, 3000);
         });
         $("#tab1").click(function() {
             setTimeout(function() {
@@ -352,6 +360,7 @@ $(function() {
             return msg.line + ": " + msg.message;
         }
         $("#checkbtn").click(function() {
+            $(this).attr("disabled", "disabled");
             save({
                 success: function() {
                     $.ajax({
@@ -407,6 +416,9 @@ $(function() {
                     });
                 }
             });
+            setTimeout(function() {
+                $("#checkbtn").removeAttr("disabled");
+            }, 3000);
         });
         //$("#jcheckbtn").click(function() {
         //    save({

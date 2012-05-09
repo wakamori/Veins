@@ -20,6 +20,7 @@
     <script src="<?cs var:STATIC_URL ?>/js/libs/bootstrap/bootstrap-modal.js"></script>
     <script src="<?cs var:STATIC_URL ?>/js/libs/bootstrap/bootstrap-transition.js"></script>
     <script src="<?cs var:STATIC_URL ?>/js/libs/bootstrap/bootstrap-tab.js"></script>
+    <script src="<?cs var:STATIC_URL ?>/js/libs/bootstrap/bootstrap-button.js"></script>
 
     <script src="<?cs var:STATIC_URL ?>/js/script.js"></script>
     <script>
