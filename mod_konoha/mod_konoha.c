@@ -272,7 +272,7 @@ static int konoha_handler(request_rec *r)
     const char *argv[] = {
         "/usr/local/bin/konoha",
         handler,
-        "-a2"
+        "-a"
     };
     //if (!konoha_initialized) {
     //    konoha_initialized = 1;

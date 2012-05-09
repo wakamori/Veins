@@ -804,10 +804,10 @@ HttpResponse search(HttpRequest req, String[] args)
         }
         Map[] records = scripts.get("user, id, name, js");
         foreach (Map record in records) {
-            record["name"] = record["name"].convert(to:durl);
+            record["name"] = ((to String)record["name"]).convert(to:durl);
             String content = "";
             if (record["js"] != null) {
-                content = record["js"].convert(to:durl);
+                content = ((to String)record["js"]).convert(to:durl);
                 int index = content.indexOf(searchtext);
                 if (index >= 0) {
                     if (index <= 30) {
@@ -867,9 +867,9 @@ HttpResponse contact(HttpRequest req, String[] args)
         });
         if (|m| == 1) {
             Map topic = {};
-            topic["Title"] = m[0]["title"].convert(to:durl);
+            topic["Title"] = ((to String)m[0]["title"]).convert(to:durl);
             topic["Name"] = m[0]["name"];
-            topic["Contents"] = m[0]["contents"].convert(to:durl);
+            topic["Contents"] = ((to String)m[0]["contents"]).convert(to:durl);
             topic["Date"] = m[0]["date"];
             tpl["Topic"] = topic;
             TemplateContext ctx = new TemplateContext();
@@ -883,7 +883,7 @@ HttpResponse contact(HttpRequest req, String[] args)
     Array threadlist = [];
     foreach (Map m in inquiries.get("id, title, name, date")) {
         int id = m["id"];
-        String title = m["title"].convert(to:durl);
+        String title = ((to String)m["title"]).convert(to:durl);
         String name = m["name"];
         String date = m["date"];
         threadlist.add({
