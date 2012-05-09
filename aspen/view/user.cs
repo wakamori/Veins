@@ -1,11 +1,13 @@
 <?cs include:"header.cs" ?>
-<?cs if:Myself ?>
-<p>
-  <a href="<?cs var:BASE_URL ?>/action/create" class="btn"><i class="icon-edit"></i> Create</a>
-</p>
-<?cs /if ?>
 <div class="page-header">
-  <h1><?cs var:User ?>&#39;s code</h1>
+  <h1>
+  <?cs var:User ?>&#39;s code
+  <?cs if:Myself ?>
+  <small>
+    <a href="<?cs var:BASE_URL ?>/action/create" class="btn"><i class="icon-edit"></i> Create</a>
+  </small>
+  <?cs /if ?>
+  </h1>
 </div>
 <table class="table sortable-table">
   <thead>

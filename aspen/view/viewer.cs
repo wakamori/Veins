@@ -2,8 +2,7 @@
 <form action="/aspen/<?cs var:User.Name ?>/<?cs var:User.Id ?>/html" method="get" target="resultframe" id="codeform" class="hideform"></form>
 <div class="container-fluid">
   <div class="row-fluid">
-    <div class="span12">
-      <div class="page-header">
+    <div class="span4">
       <h3>
         <a href="<?cs var:BASE_URL ?>/<?cs var:User.Name ?>"><?cs var:User.Name ?></a> <span class="divider">/</span>
         <?cs var:Code.Name ?>
@@ -11,9 +10,14 @@
           View: <span class="badge"><?cs var:Code.Viewcount ?></span>
         </small>
       </h3>
-      </div>
+    </div>
+    <div class="span8">
+      <ul class="nav nav-pills">
+        <li><a href="<?cs var:BASE_URL ?>/<?cs var:User.Name ?>"><i class="icon-home"></i> Home</a></li>
+      </ul>
     </div>
   </div>
+  <hr class="slim-top">
   <div class="row-fluid">
     <div class="span6">
     <?cs if:Myself ?>
