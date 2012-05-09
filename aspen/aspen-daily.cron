@@ -37,7 +37,6 @@ void update_mysql()
             if (html != "" && html != null) {
                 m["html"] = html.convert(to:url);
             }
-            m["date"] = (to String)new Date();
             scripts.update(m, {
                 "user": userdir,
                 "id": scriptdir

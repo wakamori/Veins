@@ -31,7 +31,7 @@
     </div>
     <div class="span6">
       <p>
-        <button class="btn btn-primary" data-toggle="modal" href="#resultwindow" id="runbtn-nosave"><i class="icon-play icon-white"></i> Run</button>
+        <button class="btn btn-primary" data-toggle="modal" href="#resultwindow" id=<?cs if:Myself ?>"runbtn"<?cs else ?>"runbtn-nosave"<?cs /if ?>><i class="icon-play icon-white"></i> Run</button>
         <a class="btn" href="<?cs var:BASE_URL ?>/<?cs var:User.Name ?>/<?cs var:User.Id ?>/html" target="_blank"><i class="icon-resize-full"></i> Fullscreen</a>
       </p>
     </div>

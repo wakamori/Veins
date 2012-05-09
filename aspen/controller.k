@@ -783,7 +783,7 @@ function runmain() {
     String codename = req.params_post["codename"];
     if (|codename.trim()| == 0 || |codename| >= 128) {
         Map error = {};
-        if (|codename| == 0) {
+        if (|codename.trim()| == 0) {
             error["Title"] = "Name is empty.";
         }
         else {
