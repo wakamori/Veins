@@ -171,13 +171,6 @@ $.extend($.fn.dataTableExt.oPagination, {
 });
 
 $(function() {
-    $('.sortable-table').dataTable({
-        "sDom": "<'row'<'span6'l><'span6'f>r>t<'row'<'span6'i><'span6'p>>",
-        "sPaginationType": "bootstrap",
-        "oLanguage": {
-            "sLengthMenu": "_MENU_ records per page"
-        }
-    });
     if ($("#editor1")[0] != undefined) {
         var editor1 = CodeMirror(function(elt) {
             $("#editor1").replaceWith(elt);
@@ -542,6 +535,13 @@ $(function() {
     $("input#email").focus(function() {
         $("#email-group").removeClass("error").removeClass("success");
         $("#email-help").text("");
+    });
+    $('.sortable-table').dataTable({
+        "sDom": "<'row'<'span6'l><'span6'f>r>t<'row'<'span6'i><'span6'p>>",
+        "sPaginationType": "bootstrap",
+        "oLanguage": {
+            "sLengthMenu": "_MENU_ records per page"
+        }
     });
 });
 
