@@ -179,11 +179,17 @@ $(function() {
         }
     });
     if ($("#editor1")[0] != undefined) {
-        var editor1 = CodeMirror.fromTextArea($("#editor1")[0], {
+        var editor1 = CodeMirror(function(elt) {
+            $("#editor1").replaceWith(elt);
+        }, {
+            value: $("#editor1").text(),
             mode: "text/plain",
-            readOnly: $("#editor1").hasClass("readonly")//,
+            readOnly: $("#editor1").hasClass("readonly")
         });
-        var editor2 = CodeMirror.fromTextArea($("#editor2")[0], {
+        var editor2 = CodeMirror(function(elt) {
+            $("#editor2").replaceWith(elt);
+        }, {
+            value: $("#editor2").text(),
             lineNumbers: true,
             mode: "text/x-konoha",
             readOnly: $("#editor2").hasClass("readonly"),
@@ -198,12 +204,18 @@ $(function() {
                 }
             }
         });
-        var editor3 = CodeMirror.fromTextArea($("#editor3")[0], {
+        var editor3 = CodeMirror(function(elt) {
+            $("#editor3").replaceWith(elt);
+        }, {
+            value: $("#editor3").text(),
             lineNumbers: true,
             readOnly: $("#editor3").hasClass("readonly"),
             mode: "text/x-konoha"
         });
-        var editor4 = CodeMirror.fromTextArea($("#editor4")[0], {
+        var editor4 = CodeMirror(function(elt) {
+            $("#editor4").replaceWith(elt);
+        }, {
+            value: $("#editor4").text(),
             lineNumbers: true,
             readOnly: $("#editor4").hasClass("readonly"),
             mode: "text/html"
