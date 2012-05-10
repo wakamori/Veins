@@ -29,6 +29,7 @@
     </table>
   </div>
 </div>
+<?cs if:Contents ?>
 <div class="row-fluid">
   <div class="span12">
     <h2>Contents</h2>
@@ -47,4 +48,5 @@
     </table>
   </div>
 </div>
+<?cs /if ?>
 <?cs include:"footer.cs" ?>
