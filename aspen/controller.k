@@ -952,6 +952,8 @@ HttpResponse search(HttpRequest req, String[] args)
         Map m = {};
         m["id"] = req.session["id"];
         m["searching"] = searchtext;
+        m["UserNum"] = |matched_names|;
+        m["CodeNum"] = |matched_scripts|;
         System.ntraceFailed("Aspen:Search", m);
     }
     return new HttpResponse(tpl.render(ctx));
