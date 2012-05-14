@@ -28,7 +28,7 @@ new TWTR.Widget({
     live: true,
     behavior: 'default'
   }
-}).render().setUser('ynualgo2012').start();
+}).render().setUser('aspen_konoha').start();
 </script>
 <h1>Links</h1>
 <dl>
