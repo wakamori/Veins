@@ -543,8 +543,8 @@ $(function() {
         url: "/aspen/action/update",
         params: "script_id=" + getScriptID(document.URL),
         value_required: true,
-        show_buttons: true,
         success: function() {
+            $("#alertbox").html("");
             $("#alertbox").notify({
                 type: "alert-success",
                 title: "OK!",
