@@ -1025,6 +1025,26 @@ HttpResponse contact(HttpRequest req, String[] args)
     return new HttpResponse(tpl.render(ctx));
 }
 
+HttpResponse update(HttpRequest req, String[] args)
+{
+    if (req.method != "POST" || req.session["id"] == null) {
+        return null;
+    }
+    String update_value = req.params_post["update_value"];
+    String script_id = req.params_post["script_id"];
+    Model scripts = defineScripts();
+    scripts.update({"name": update_value.convert(to:url)}, {"user": req.session["id"], "id": script_id});
+    if (TRACE_USER) {
+        Map m = {};
+        m["id"] = req.session["id"];
+        m["script"] = script_id;
+        m["oldname"] = req.params_post["original_value"];
+        m["newname"] = update_value;
+        System.ntraceNotice("Aspen:Update", m);
+    }
+    return new HttpResponse(update_value);
+}
+
 Url.patterns = [
     (new Regex("^aspen/$"), top),
     (new Regex("^aspen/about/$"), about),
@@ -1037,5 +1057,6 @@ Url.patterns = [
     (new Regex("^aspen/action/save$"), save),
     (new Regex("^aspen/action/search$"), search),
     (new Regex("^aspen/action/signup$"), signup),
+    (new Regex("^aspen/action/update$"), update),
     (new Regex("^aspen/.+$"), user)
 ];

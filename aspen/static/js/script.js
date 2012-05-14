@@ -536,6 +536,25 @@ $(function() {
         $("#email-group").removeClass("error").removeClass("success");
         $("#email-help").text("");
     });
+    function getScriptID(url) {
+        return url.substring(url.lastIndexOf("/") + 1);
+    }
+    $("#editable-codename").editInPlace({
+        url: "/aspen/action/update",
+        params: "script_id=" + getScriptID(document.URL),
+        value_required: true,
+        show_buttons: true,
+        success: function() {
+            $("#alertbox").notify({
+                type: "alert-success",
+                title: "OK!",
+                body: "Name changed successfully."
+            });
+        }
+    });
+    $("#invoke-editable").click(function() {
+        $("#editable-codename").click();
+    });
     $('.sortable-table').dataTable({
         "sDom": "<'row'<'span6'l><'span6'f>r>t<'row'<'span6'i><'span6'p>>",
         "sPaginationType": "bootstrap",

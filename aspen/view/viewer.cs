@@ -5,7 +5,13 @@
     <div class="span6">
       <h3>
         <a href="<?cs var:BASE_URL ?>/<?cs var:User.Name ?>"><?cs var:User.Name ?></a> <span class="divider">/</span>
+        <?cs if:Myself ?>
+        <span id="editable-codename">
+        <?cs /if ?>
         <?cs var:Code.Name ?>
+        <?cs if:Myself ?>
+        </span>
+        <?cs /if ?>
         <small>
           View: <span class="badge"><?cs var:Code.Viewcount ?></span>
         </small>
@@ -14,6 +20,7 @@
     <div class="span6">
       <ul class="nav nav-pills">
         <li><a href="<?cs var:BASE_URL ?>/<?cs var:User.Name ?>"><i class="icon-home"></i> Home</a></li>
+        <li><a href="#" id="invoke-editable"><i class="icon-pencil"></i> Change Name</a></li>
       </ul>
     </div>
   </div>
