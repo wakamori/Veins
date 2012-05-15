@@ -20,7 +20,9 @@
     <div class="span6">
       <ul class="nav nav-pills">
         <li><a href="<?cs var:BASE_URL ?>/<?cs var:User.Name ?>"><i class="icon-home"></i> Home</a></li>
+        <?cs if:Myself ?>
         <li><a href="#" id="invoke-editable"><i class="icon-pencil"></i> Change Name</a></li>
+        <?cs /if ?>
       </ul>
     </div>
   </div>

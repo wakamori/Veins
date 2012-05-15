@@ -543,13 +543,26 @@ $(function() {
         url: "/aspen/action/update",
         params: "script_id=" + getScriptID(document.URL),
         value_required: true,
-        success: function() {
-            $("#alertbox").html("");
-            $("#alertbox").notify({
-                type: "alert-success",
-                title: "OK!",
-                body: "Name changed successfully."
-            });
+        success: function(res) {
+            var msg = JSON.parse(res);
+            if (msg.error) {
+                $(this).text(msg.value);
+                $("#alertbox").html("");
+                $("#alertbox").notify({
+                    type: "alert-error",
+                    title: "Error!",
+                    body: msg.errormsg
+                });
+            }
+            else {
+                $(this).text(msg.value);
+                $("#alertbox").html("");
+                $("#alertbox").notify({
+                    type: "alert-success",
+                    title: "OK!",
+                    body: "Name changed successfully."
+                });
+            }
         }
     });
     $("#invoke-editable").click(function() {

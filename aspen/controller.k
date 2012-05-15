@@ -1032,18 +1032,48 @@ HttpResponse update(HttpRequest req, String[] args)
     }
     String update_value = req.params_post["update_value"];
     String script_id = req.params_post["script_id"];
+    String original_value = req.params_post["original_value"];
+    Json j = new Json();
+    if (|update_value.trim()| == 0) {
+        j["error"] = true;
+        j["errormsg"] = "Name is empty.";
+        j["value"] = original_value;
+        return new HttpResponse(j.stringify());
+    }
+    else if (|update_value| >= 128) {
+        j["error"] = true;
+        j["errormsg"] = "Name is too long (should be no longer than 128).";
+        j["value"] = original_value;
+        return new HttpResponse(j.stringify());
+    }
     Model scripts = defineScripts();
     scripts.update({"name": update_value.convert(to:url)}, {"user": req.session["id"], "id": script_id});
     if (TRACE_USER) {
         Map m = {};
         m["id"] = req.session["id"];
         m["script"] = script_id;
-        m["oldname"] = req.params_post["original_value"];
+        m["oldname"] = original_value;
         m["newname"] = update_value;
         System.ntraceNotice("Aspen:Update", m);
     }
-    return new HttpResponse(update_value);
+    j["value"] = update_value;
+    return new HttpResponse(j.stringify());
 }
+
+//HttpResponse preference(HttpRequest req, String[] args)
+//{
+//    Template tpl = getDefaultTemplate(req);
+//    Model userinfo = defineUserinfo();
+//    String userid = req.session["id"];
+//    int id = User.getUserId(userid);
+//    Map[] m = userinfo.get("email", {"id": id});
+//    String email = m[0]["email"];
+//    tpl.readFile("setting.hdf");
+//    tpl["Form.Inputs.0.Input.Value"] = email;
+//    TemplateContext ctx = new TemplateContext();
+//    ctx.parseFile("form.cs");
+//    return new HttpResponse(tpl.render(ctx));
+//}
 
 Url.patterns = [
     (new Regex("^aspen/$"), top),
@@ -1058,5 +1088,6 @@ Url.patterns = [
     (new Regex("^aspen/action/search$"), search),
     (new Regex("^aspen/action/signup$"), signup),
     (new Regex("^aspen/action/update$"), update),
+    //(new Regex("^aspen/action/setting$"), preference),
     (new Regex("^aspen/.+$"), user)
 ];
