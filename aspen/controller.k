@@ -268,7 +268,8 @@ HttpResponse viewer(HttpRequest req, String[] args)
     if (TRACE_USER) {
         Map m = {};
         m["id"] = req.session["id"];
-        m["watching"] = args[0];
+        m["target"] = args[0];
+        m["watching"] = args[1];
         System.ntraceNotice("Aspen:Viewer", m);
     }
     return new HttpResponse(tpl.render(ctx));
@@ -349,7 +350,8 @@ function konoha_main() {
         html.close();
         if (TRACE_USER) {
             Map m = {};
-            m["id"] = user;
+            m["id"] = req.session["id"];
+            m["target"] = user;
             m["running"] = id;
             System.ntraceNotice("Aspen:Konoha2JS", m);
         }
@@ -401,7 +403,8 @@ function konoha_main() {
         res.content = j.stringify();
         if (TRACE_USER) {
             Map m = {};
-            m["id"] = user;
+            m["id"] = req.session["id"];
+            m["target"] = user;
             m["compiling"] = id;
             System.ntraceNotice("Aspen:Konoha2JS", m);
         }
@@ -439,7 +442,8 @@ function konoha_main() {
         res.content = j.stringify();
         if (TRACE_USER) {
             Map m = {};
-            m["id"] = user;
+            m["id"] = req.session["id"];
+            m["target"] = user;
             m["javacompiling"] = id;
             System.ntraceNotice("Aspen:Konoha2JS", m);
         }
