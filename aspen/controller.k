@@ -369,7 +369,7 @@ function konoha_main() {
         Regex r = new Regex(" - \\((\\w+\\.k)\\:(\\d+)\\) \\((\\w+)\\) (.+)");
         foreach (String line in result) {
             String[] reg = line.match(r);
-            if (|reg| >= 0) {
+            if (|reg| > 0) {
                 Json j2 = new Json();
                 j2["line"] = reg[2];
                 j2["message"] = reg[4];
