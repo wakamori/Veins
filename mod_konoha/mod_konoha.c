@@ -60,7 +60,9 @@
 #define GET_PROP(name) \
     (kString*)knh_getPropertyNULL(ctx, STEXT(name))
 #define CLEAR_PROP(name) \
-    knh_setProperty(ctx, new_String(ctx, name), NULL)
+    knh_setProperty(ctx, new_String(ctx, name), KNH_NULL)
+#define IS_KNULL(val) \
+    ((val) == NULL || (kObject *)(val) == KNH_NULL)
 
 typedef struct _konoha_config {
     int debug;
@@ -199,7 +201,7 @@ static int get_config(request_rec *r, CTX ctx, wsgi_config_t *conf, int debug)
 {
     kString *status = GET_PROP("wsgi.status");
     kString *content_type = GET_PROP("wsgi.content_type");
-    if (status == NULL || content_type == NULL) {
+    if (IS_KNULL(status) || IS_KNULL(content_type)) {
         AP_LOG_CRIT("status=%p, content_type=%p", status, content_type);
         return -1;
     }
@@ -233,7 +235,7 @@ static int set_headers(request_rec *r, CTX ctx, int debug, int rcode)
     }
     CLEAR_PROP("wsgi.cookie");
     kString *location = GET_PROP("wsgi.location");
-    if (location != NULL) {
+    if (!IS_KNULL(location)) {
         apr_table_set(r->headers_out, "Location", S_totext(location));
         AP_LOG_DEBUG("Location: %s", S_totext(location));
     }
