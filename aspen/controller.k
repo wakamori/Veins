@@ -7,34 +7,38 @@ include "/Users/chen_ji/Devel/git/Veins/aspen/settings.k";
 
 using konoha.veins.*;
 
-TRACE_USER = true;
+if (not defined TRACE_USER) {
+    TRACE_USER = true;
+}
 
-class Git
-{
-    String bin;
-    String path;
-    String cmd;
+if (not defined Git) {
+    class Git
+    {
+        String bin;
+        String path;
+        String cmd;
 
-    Git(String path) {
-        _bin = exec("which git").trim();
-        _path = path;
-        _cmd = "cd " + path + " && " + bin;
-    }
+        Git(String path) {
+            _bin = exec("which git").trim();
+            _path = path;
+            _cmd = "cd " + path + " && " + bin;
+        }
 
-    void init() {
-        exec(cmd + " init");
-    }
+        void init() {
+            exec(cmd + " init");
+        }
 
-    void add(String file) {
-        exec(cmd + " add " + file);
-    }
+        void add(String file) {
+            exec(cmd + " add " + file);
+        }
 
-    void commit(String msg) {
-        exec(cmd + " commit -m '" + msg + "'");
-    }
+        void commit(String msg) {
+            exec(cmd + " commit -m '" + msg + "'");
+        }
 
-    void commitAll(String msg) {
-        exec(cmd + " commit -a -m '" + msg + "'");
+        void commitAll(String msg) {
+            exec(cmd + " commit -a -m '" + msg + "'");
+        }
     }
 }
 
