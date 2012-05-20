@@ -59,6 +59,8 @@
     ap_log_rerror(APLOG_MARK, APLOG_CRIT, 0, r, fmt, ## __VA_ARGS__)
 #define GET_PROP(name) \
     (kString*)knh_getPropertyNULL(ctx, STEXT(name))
+#define CLEAR_PROP(name) \
+    knh_setProperty(ctx, new_String(ctx, name), NULL)
 
 typedef struct _konoha_config {
     int debug;
@@ -201,10 +203,11 @@ static int get_config(request_rec *r, CTX ctx, wsgi_config_t *conf, int debug)
         AP_LOG_CRIT("status=%p, content_type=%p", status, content_type);
         return -1;
     }
-    conf->status = S_totext(status);
-    conf->content_type = S_totext(content_type);
+    conf->status = apr_pstrdup(r->pool, S_totext(status));
+    conf->content_type = apr_pstrdup(r->pool, S_totext(content_type));
     AP_LOG_DEBUG("status=%s", S_totext(status));
     AP_LOG_DEBUG("content_type=%s", S_totext(content_type));
+    CLEAR_PROP("wsgi.status"); CLEAR_PROP("wsgi.content_type");
     return 0;
 }
 
@@ -228,11 +231,13 @@ static int set_headers(request_rec *r, CTX ctx, int debug, int rcode)
             }
         }
     }
+    CLEAR_PROP("wsgi.cookie");
     kString *location = GET_PROP("wsgi.location");
     if (location != NULL) {
         apr_table_set(r->headers_out, "Location", S_totext(location));
         AP_LOG_DEBUG("Location: %s", S_totext(location));
     }
+    CLEAR_PROP("wsgi.location");
     return 0;
 }
 
@@ -303,14 +308,14 @@ static int konoha_handler(request_rec *r)
         rcode = OK;
         break;
     }
-    r->content_type = apr_pstrdup(r->pool, wconf.content_type);
+    r->content_type = wconf.content_type;
     ret = set_headers(r, konoha, debug, rcode);
     ap_rputs(content, r);
     if (ret != 0) goto TAIL;
-    if (debug) {
-        konoha_close(konoha);
-        konoha_initialized = 0;
-    }
+    //if (debug) {
+    //    konoha_close(konoha);
+    //    konoha_initialized = 0;
+    //}
     return rcode;
 
 TAIL:
