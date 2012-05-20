@@ -71,7 +71,7 @@ typedef struct _wsgi_config {
     const char *content_type;
 } wsgi_config_t;
 
-//static int konoha_initialized = 0;
+static int konoha_initialized = 0;
 static konoha_t konoha;
 
 module AP_MODULE_DECLARE_DATA konoha_module;
@@ -274,11 +274,11 @@ static int konoha_handler(request_rec *r)
         handler,
         "-a"
     };
-    //if (!konoha_initialized) {
-    //    konoha_initialized = 1;
+    if (!konoha_initialized) {
+        konoha_initialized = 1;
         konoha_ginit(argc, argv);
         konoha = konoha_open();
-    //}
+    }
     ret = konoha_main(konoha, argc, argv);
     if (ret != 0) goto TAIL;
     const char *content = NULL;
@@ -307,10 +307,10 @@ static int konoha_handler(request_rec *r)
     ret = set_headers(r, konoha, debug, rcode);
     ap_rputs(content, r);
     if (ret != 0) goto TAIL;
-    //if (debug) {
+    if (debug) {
         konoha_close(konoha);
-    //    konoha_initialized = 0;
-    //}
+        konoha_initialized = 0;
+    }
     return rcode;
 
 TAIL:
