@@ -285,9 +285,9 @@ static int konoha_handler(request_rec *r)
         konoha_initialized = 1;
         konoha_ginit(argc, argv);
         konoha = konoha_open();
+        ret = konoha_main(konoha, argc, argv);
+        if (ret != 0) goto TAIL;
     }
-    ret = konoha_main(konoha, argc, argv);
-    if (ret != 0) goto TAIL;
     const char *content = NULL;
     ret = start_application(r, konoha, debug, &content);
     if (ret != 0) goto TAIL;
