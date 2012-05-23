@@ -178,7 +178,9 @@ static int start_application(request_rec *r, CTX ctx, int debug, const char **co
     mn = knh_getmn(ctx, STEXT("startResponse"), MN_NONAME);
     cid = knh_getcid(ctx, STEXT("konoha.wsgi.Wsgi"));
     //AP_LOG_CRIT("mn=%d,cid=%d", mn, cid);
+    AP_LOG_DEBUG("call method");
     kMethod *callback = knh_NameSpace_getMethodNULL(ctx, NULL, cid, mn);
+    AP_LOG_DEBUG("call method end");
     if (callback == NULL) {
         AP_LOG_CRIT("callback is null");
         return -1;
