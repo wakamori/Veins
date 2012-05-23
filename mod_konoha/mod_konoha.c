@@ -194,6 +194,7 @@ static int start_application(request_rec *r, CTX ctx, int debug, const char **co
     KNH_SCALL(ctx, lsfp, 0, mtd, 2);
     END_LOCAL(ctx, lsfp);
     *content = S_totext(lsfp[0].s);
+    AP_LOG_DEBUG("content: %s", *content);
     KONOHA_END(ctx);
     return 0;
 }
