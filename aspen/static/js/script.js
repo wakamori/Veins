@@ -297,7 +297,7 @@ $(function() {
             });
             setTimeout(function() {
                 $("#runbtn").removeAttr("disabled");
-            }, 3000);
+            }, 1000);
         })
         $("#runbtn-nosave").click(function() {
             $(this).attr("disabled", "disabled");
