@@ -1,5 +1,5 @@
 <?cs include:"header.cs" ?>
-<form action="/aspen/<?cs var:User.Name ?>/<?cs var:User.Id ?>/html" method="get" target="resultframe" id="codeform" class="hideform"></form>
+<form action="<?cs var:BASE_URL ?>/<?cs var:User.Name ?>/<?cs var:User.Id ?>/html" method="get" target="resultframe" id="codeform" class="hideform"></form>
 <div class="container-fluid">
   <div class="row-fluid">
     <div class="span6">

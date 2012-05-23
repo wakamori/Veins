@@ -266,7 +266,7 @@ $(function() {
             if (isTextChanged()) {
                 $.ajax({
                     type: "POST",
-                    url: "/aspen/action/save",
+                    url: "/backup/action/save",
                     dataType: "json",
                     data: {
                         user: $("#user-name").text(),
@@ -358,7 +358,7 @@ $(function() {
                 success: function() {
                     $.ajax({
                         type: "GET",
-                        url: "/aspen/" + $("#user-name").text() + "/" + $("#user-id").text() + "/compile",
+                        url: "/backup/" + $("#user-name").text() + "/" + $("#user-id").text() + "/compile",
                         dataType: "json",
                         cache: false,
                         success: function(msg) {
@@ -418,7 +418,7 @@ $(function() {
         //        success: function() {
         //            $.ajax({
         //                type: "GET",
-        //                url: "/aspen/" + $("#user-name").text() + "/" + $("#user-id").text() + "/javac",
+        //                url: "/backup/" + $("#user-name").text() + "/" + $("#user-id").text() + "/javac",
         //                dataType: "json",
         //                cache: false,
         //                success: function(msg) {
@@ -459,7 +459,7 @@ $(function() {
             callback: function () {
                 $.ajax({
                     type: "POST",
-                    url: "/aspen/action/" + action,
+                    url: "/backup/action/" + action,
                     dataType: "json",
                     data: {
                         id: id
@@ -485,7 +485,7 @@ $(function() {
         }
         $.ajax({
             type: "GET",
-            url: "/aspen/check/username",
+            url: "/backup/check/username",
             dataType: "json",
             data: {
                 username: this.value
@@ -515,7 +515,7 @@ $(function() {
         }
         $.ajax({
             type: "GET",
-            url: "/aspen/check/email",
+            url: "/backup/check/email",
             dataType: "json",
             data: {
                 email: this.value
@@ -540,7 +540,7 @@ $(function() {
         return url.substring(url.lastIndexOf("/") + 1);
     }
     $("#editable-codename").editInPlace({
-        url: "/aspen/action/update",
+        url: "/backup/action/update",
         params: "script_id=" + getScriptID(document.URL),
         value_required: true,
         success: function(res) {

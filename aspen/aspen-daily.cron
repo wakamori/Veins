@@ -1,6 +1,6 @@
 #!/usr/local/bin/konoha
 
-include "/path/to/controller.k";
+include "/var/www/html/aspen/controller.k";
 
 void update_mysql()
 {

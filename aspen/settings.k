@@ -3,7 +3,7 @@
  */
 
 /* Show debug messages when DEBUG is "true". */
-$DEBUG = "true";
+$DEBUG = "false";
 
 /* Set a random seed number for encryption. */
 $SEED = 945934988;
@@ -11,48 +11,32 @@ $SEED = 945934988;
 /* Database. */
 $DATABASES = {
     "default": {
-        "engine": "sqlite3",
-        "name": "/Users/chen_ji/Devel/git/Veins/aspen/mydb",
-        "user": "",
-        "password": "",
-        "host": "",
-        "port": ""
-    },
-    "users": {
-        "engine": "sqlite3",
-        "name": "/Users/chen_ji/Devel/git/Veins/aspen/userdb",
-        "user": "",
-        "password": "",
-        "host": "",
-        "port": ""
-    },
-    "scripts": {
-        "engine": "sqlite3",
-        "name": "/Users/chen_ji/Devel/git/Veins/aspen/scriptdb",
-        "user": "",
-        "password": "",
-        "host": "",
-        "port": ""
+        "engine": "mysql",
+        "name": "backup",
+        "user": "backup",
+        "password": "konoha",
+        "host": "192.168.0.70",
+        "port": "3306"
     }
 };
 
 /* Absolute path to media data directory. */
-$MEDIA_DIR = "/Users/chen_ji/Devel/git/Veins/aspen/user/";
+$MEDIA_DIR = "/backup/user/";
 
 /* Absolute path to model data directory. */
-$MODEL_DIR = "/Users/chen_ji/Devel/git/Veins/aspen/model/";
+$MODEL_DIR = "/var/www/html/backup/model/";
 
 /* Absolute path to view data directory. */
-$VIEW_DIR = "/Users/chen_ji/Devel/git/Veins/aspen/view/";
+$VIEW_DIR = "/var/www/html/backup/view/";
 
 /* Absolute path to tmp directory. */
-$TMP_DIR = "/tmp/";
+$TMP_DIR = "/backup/tmp/";
 
 /* Absolute URL to base URL. */
-$BASE_URL = "http://localhost/aspen";
+$BASE_URL = "http://konoha.ubicg.ynu.ac.jp/backup";
 
 /* Absolute URL to static files. */
-$STATIC_URL = "http://localhost/~chen_ji/aspen";
+$STATIC_URL = "http://konoha.ubicg.ynu.ac.jp/backup/static";
 
 /* Middleware classes. */
 $MIDDLEWARES = [

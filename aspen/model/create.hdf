@@ -1,6 +1,6 @@
 Form {
     Title = Create a New Code
-    Action = /aspen/action/create
+    Action = /backup/action/create
     Inputs {
         0 {
             Label = Name

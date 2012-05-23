@@ -1,7 +1,7 @@
 Form {
     Title = Sign up for Aspen
     Caption = Create your personal account.
-    Action = /aspen/action/signup
+    Action = /backup/action/signup
     Inputs {
         0 {
             Label = Username

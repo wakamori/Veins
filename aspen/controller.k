@@ -3,7 +3,7 @@
  */
 
 /* It must be called before veins package is loaded. */
-include "/Users/chen_ji/Devel/git/Veins/aspen/settings.k";
+include "/var/www/html/backup/settings.k";
 
 using konoha.veins.*;
 
@@ -197,7 +197,7 @@ HttpResponse login(HttpRequest req, String[] args)
             System.ntraceNotice("Aspen:SignIn", m);
         }
     }
-    return redirect("/aspen/");
+    return redirect("/backup/");
 }
 
 HttpResponse logout(HttpRequest req, String[] args)
@@ -211,7 +211,7 @@ HttpResponse logout(HttpRequest req, String[] args)
         System.ntraceNotice("Aspen:SignOut", m);
     }
     req.session.remove("id");
-    return redirect("/aspen/");
+    return redirect("/backup/");
 }
 
 HttpResponse viewer(HttpRequest req, String[] args)
@@ -265,7 +265,7 @@ HttpResponse viewer(HttpRequest req, String[] args)
     else {
         if (|args| == 3) {
             args.pop()
-            return redirect("/aspen/" + args.join("/"));
+            return redirect("/backup/" + args.join("/"));
         }
     }
     ctx.parseFile("viewer.cs");
@@ -459,7 +459,7 @@ function konoha_main() {
     }
     else {
         args.pop();
-        return redirect("/aspen/" + args.join("/"));
+        return redirect("/backup/" + args.join("/"));
     }
     return res;
 }
@@ -471,7 +471,7 @@ HttpResponse user(HttpRequest req, String[] args)
         if (req.session["id"] == user) {
             req.session.remove("id");
         }
-        return redirect("/aspen/");
+        return redirect("/backup/");
     }
     if (|args| == 2) {
         return viewer(req, args);
@@ -512,7 +512,7 @@ HttpResponse user(HttpRequest req, String[] args)
 HttpResponse top(HttpRequest req, String[] args)
 {
     if (req.session["id"] != null) {
-        return redirect("/aspen/" + req.session["id"]);
+        return redirect("/backup/" + req.session["id"]);
     }
     Template tpl = getDefaultTemplate(req);
     TemplateContext ctx = new TemplateContext();
@@ -625,7 +625,7 @@ HttpResponse signup(HttpRequest req, String[] args)
         m["email"] = email;
         System.ntraceNotice("Aspen:SignUp", m);
     }
-    return redirect("/aspen/");
+    return redirect("/backup/");
 }
 
 HttpResponse check(HttpRequest req, String[] args)
@@ -756,7 +756,7 @@ HttpResponse create(HttpRequest req, String[] args)
 <!-- konoha2js code goes here -->
 <script src="%src%"></script>
 <!-- include this if you use js.jquery package -->
-<script src="/aspen/static/js/libs/jquery-1.7.1.min.js"></script>
+<script src="/backup/static/js/libs/jquery-1.7.1.min.js"></script>
 <script>
 function runmain() {
   try {
@@ -826,7 +826,7 @@ function runmain() {
             m["creating"] = codename;
             System.ntraceFailed("Aspen:Create", m);
         }
-        return redirect("/aspen/");
+        return redirect("/backup/");
     }
     Model scripts = defineScripts();
     OutputStream ous_readme = FileStorage.newReadme(sessionid, id);
@@ -836,7 +836,7 @@ function runmain() {
     String git_path = (to String)ous_readme.path;
     git_path = git_path.substring(0, git_path.lastIndexOf("/"));
     Git g = new Git(git_path);
-    html_tpl = html_tpl.replace("%src%", "/aspen/" + sessionid + "/" + id + "/js");
+    html_tpl = html_tpl.replace("%src%", "/backup/" + sessionid + "/" + id + "/js");
     ous_js.print(js_tpl);
     ous_html.print(html_tpl);
     ous_readme.close();
@@ -865,7 +865,7 @@ function runmain() {
         m["creating"] = codename;
         System.ntraceNotice("Aspen:Create", m);
     }
-    return redirect("/aspen/" + sessionid + "/" + id);
+    return redirect("/backup/" + sessionid + "/" + id);
 }
 
 HttpResponse delete(HttpRequest req, String[] args)
@@ -970,7 +970,7 @@ HttpResponse search(HttpRequest req, String[] args)
 HttpResponse inquire(HttpRequest req, String[] args)
 {
     if (req.session["id"] == null) {
-        return redirect("/aspen/");
+        return redirect("/backup/");
     }
     Template tpl = getDefaultTemplate(req);
     if (req.method != "POST") {
@@ -985,7 +985,7 @@ HttpResponse inquire(HttpRequest req, String[] args)
         "contents": req.params_post["contents"].convert(to:url),
         "date": (to String)new Date()
     });
-    return redirect("/aspen/contact/" + inquiries.id);
+    return redirect("/backup/contact/" + inquiries.id);
 }
 
 HttpResponse contact(HttpRequest req, String[] args)
@@ -1084,18 +1084,18 @@ HttpResponse update(HttpRequest req, String[] args)
 //}
 
 Url.patterns = [
-    (new Regex("^aspen/$"), top),
-    (new Regex("^aspen/about/$"), about),
-    (new Regex("^aspen/contact/.*$"), contact),
-    (new Regex("^aspen/check/.+$"), check),
-    (new Regex("^aspen/action/create$"), create),
-    (new Regex("^aspen/action/delete$"), delete),
-    (new Regex("^aspen/action/login$"), login),
-    (new Regex("^aspen/action/logout$"), logout),
-    (new Regex("^aspen/action/save$"), save),
-    (new Regex("^aspen/action/search$"), search),
-    (new Regex("^aspen/action/signup$"), signup),
-    (new Regex("^aspen/action/update$"), update),
-    //(new Regex("^aspen/action/setting$"), preference),
-    (new Regex("^aspen/.+$"), user)
+    (new Regex("^backup/$"), top),
+    (new Regex("^backup/about/$"), about),
+    (new Regex("^backup/contact/.*$"), contact),
+    (new Regex("^backup/check/.+$"), check),
+    (new Regex("^backup/action/create$"), create),
+    (new Regex("^backup/action/delete$"), delete),
+    (new Regex("^backup/action/login$"), login),
+    (new Regex("^backup/action/logout$"), logout),
+    (new Regex("^backup/action/save$"), save),
+    (new Regex("^backup/action/search$"), search),
+    (new Regex("^backup/action/signup$"), signup),
+    (new Regex("^backup/action/update$"), update),
+    //(new Regex("^backup/action/setting$"), preference),
+    (new Regex("^backup/.+$"), user)
 ];
