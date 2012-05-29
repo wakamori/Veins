@@ -756,7 +756,7 @@ HttpResponse create(HttpRequest req, String[] args)
 <!-- konoha2js code goes here -->
 <script src="%src%"></script>
 <!-- include this if you use js.jquery package -->
-<script src="/aspen/static/js/libs/jquery-1.7.1.min.js"></script>
+<script src="%static%/js/libs/jquery-1.7.1.min.js"></script>
 <script>
 function runmain() {
   try {
@@ -837,6 +837,7 @@ function runmain() {
     git_path = git_path.substring(0, git_path.lastIndexOf("/"));
     Git g = new Git(git_path);
     html_tpl = html_tpl.replace("%src%", "/aspen/" + sessionid + "/" + id + "/js");
+    html_tpl = html_tpl.replace("%static%", $STATIC_URL);
     ous_js.print(js_tpl);
     ous_html.print(html_tpl);
     ous_readme.close();

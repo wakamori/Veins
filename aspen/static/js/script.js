@@ -175,14 +175,14 @@ $(function() {
         var editor1 = CodeMirror(function(elt) {
             $("#editor1").replaceWith(elt);
         }, {
-            value: $("#editor1").text(),
+            value: $("#editor1").val(),
             mode: "text/plain",
             readOnly: $("#editor1").hasClass("readonly")
         });
         var editor2 = CodeMirror(function(elt) {
             $("#editor2").replaceWith(elt);
         }, {
-            value: $("#editor2").text(),
+            value: $("#editor2").val(),
             lineNumbers: true,
             mode: "text/x-konoha",
             readOnly: $("#editor2").hasClass("readonly"),
@@ -200,7 +200,7 @@ $(function() {
         var editor3 = CodeMirror(function(elt) {
             $("#editor3").replaceWith(elt);
         }, {
-            value: $("#editor3").text(),
+            value: $("#editor3").val(),
             lineNumbers: true,
             readOnly: $("#editor3").hasClass("readonly"),
             mode: "text/x-konoha"
@@ -208,7 +208,7 @@ $(function() {
         var editor4 = CodeMirror(function(elt) {
             $("#editor4").replaceWith(elt);
         }, {
-            value: $("#editor4").text(),
+            value: $("#editor4").val(),
             lineNumbers: true,
             readOnly: $("#editor4").hasClass("readonly"),
             mode: "text/html"
