@@ -259,6 +259,11 @@ $(function() {
             }
             return changed;
         }
+        function replaceMbyteString(str) {
+            str = str.replace(new RegExp(String.fromCharCode(8220), "g"), '"');
+            str = str.replace(new RegExp(String.fromCharCode(165), "g"), "\\");
+            return str;
+        }
         function save(options) {
             options = $.extend({
                 success: function(arg) {}
@@ -272,7 +277,7 @@ $(function() {
                         user: $("#user-name").text(),
                         id: $("#user-id").text(),
                         readme: editor1.getValue(),
-                        js: editor2.getValue(),
+                        js: replaceMbyteString(editor2.getValue()),
                         ks: editor3.getValue(),
                         html: editor4.getValue(),
                         history: flushHistory()
