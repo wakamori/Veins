@@ -302,14 +302,14 @@ $(function() {
             });
             setTimeout(function() {
                 $("#runbtn").removeAttr("disabled");
-            }, 3000);
+            }, 1000);
         })
         $("#runbtn-nosave").click(function() {
             $(this).attr("disabled", "disabled");
             $("#codeform").submit();
             setTimeout(function() {
                 $("#runbtn-nosave").removeAttr("disabled");
-            }, 3000);
+            }, 1000);
         });
         $("#tab1").click(function() {
             setTimeout(function() {
@@ -416,7 +416,7 @@ $(function() {
             });
             setTimeout(function() {
                 $("#checkbtn").removeAttr("disabled");
-            }, 3000);
+            }, 1000);
         });
         //$("#jcheckbtn").click(function() {
         //    save({
