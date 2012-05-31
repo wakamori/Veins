@@ -8,7 +8,7 @@
 <div class="row-fluid">
   <div class="span6">
     <h2>User</h2>
-    <table class="table table-bordered table-stripped sortable-table">
+    <table class="table table-bordered table-stripped sortable-table sort1">
       <thead>
         <tr><th>User Name</th></tr>
       </thead>
@@ -19,7 +19,7 @@
   </div>
   <div class="span6">
     <h2>Code</h2>
-    <table class="table table-bordered table-stripped sortable-table">
+    <table class="table table-bordered table-stripped sortable-table sort1">
       <thead>
         <tr><th>Code Name</th></tr>
       </thead>
@@ -33,7 +33,7 @@
 <div class="row-fluid">
   <div class="span12">
     <h2>Contents</h2>
-    <table class="table table-bordered table-stripped sortable-table">
+    <table class="table table-bordered table-stripped sortable-table sort1">
       <thead>
         <tr><th>Title</th><th>Source Code</th></tr>
       </thead>

@@ -9,7 +9,7 @@
   <?cs /if ?>
   </h1>
 </div>
-<table class="table sortable-table">
+<table class="table sortable-table sort<?cs if:Myself ?>2<?cs else ?>1<?cs /if ?>">
   <thead>
     <tr><th>Name</th><?cs if:Myself ?><th>Actions</th><?cs /if ?><th>Date</th></tr>
   </thead>

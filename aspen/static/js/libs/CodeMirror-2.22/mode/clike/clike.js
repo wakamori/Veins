@@ -235,7 +235,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
   CodeMirror.defineMIME("text/x-konoha", {
     name: "clike",
     keywords: words("assert assure boolean break byte case catch class continue default " +
-                    "do else extends finally float for foreach if " +
+                    "do double else extends finally float for foreach if " +
                     "instanceof int new print " +
                     "return switch this throw " +
                     "try using void while"),
