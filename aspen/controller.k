@@ -14,30 +14,28 @@ if (not defined TRACE_USER) {
 if (not defined Git) {
     class Git
     {
-        String bin;
         String path;
         String cmd;
 
         Git(String path) {
-            _bin = exec("which git").trim();
             _path = path;
-            _cmd = "cd " + path + " && " + bin;
+            _cmd = "/Users/chen_ji/Devel/git/Veins/aspen/subproc-git.sh -d \"" + path + "\"";
         }
 
         void init() {
-            exec(cmd + " init");
+            exec(cmd + " -c init");
         }
 
         void add(String file) {
-            exec(cmd + " add " + file);
+            exec(cmd + " -c add -a \"" + file + "\"");
         }
 
         void commit(String msg) {
-            exec(cmd + " commit -m '" + msg + "'");
+            exec(cmd + " -c commit -a \"-m '" + msg + "'\"");
         }
 
         void commitAll(String msg) {
-            exec(cmd + " commit -a -m '" + msg + "'");
+            exec(cmd + " -c commit -a \"-a -m '" + msg + "'\"");
         }
     }
 }
