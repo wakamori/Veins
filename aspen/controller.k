@@ -317,7 +317,8 @@ HttpResponse konoha2js(HttpRequest req, String[] args)
         body.close();
         //res["Access-Control-Allow-Origin"] = "http://konohascript.org";
         res["Content-Type"] = "application/javascript";
-        res.content = exec(k2jspath + " -j -r -i " + scriptpath);
+        int max_loop_count = 1000000000;
+        res.content = exec(k2jspath + " -j -r -l " + max_loop_count + " -i " + scriptpath);
         if (res.content == "") {
             // a SEGV may occurred on konoha2js
             reportBug(user, id);
