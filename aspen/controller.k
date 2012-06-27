@@ -163,7 +163,7 @@ Template getDefaultTemplate(HttpRequest req)
 
 boolean isReservedWord(String word)
 {
-    return word in? ["action", "about", "check", "contact", "BUGS"];
+    return word in? ["action", "about", "check", "contact", "BUGS", "help"];
 }
 
 /* ------------------------------------------------------------------------ */
@@ -1083,11 +1083,20 @@ HttpResponse update(HttpRequest req, String[] args)
 //    return new HttpResponse(tpl.render(ctx));
 //}
 
+HttpResponse help(HttpRequest req, String[] args)
+{
+    Template tpl = getDefaultTemplate(req);
+    TemplateContext ctx = new TemplateContext();
+    ctx.parseFile("help.cs");
+    return new HttpResponse(tpl.render(ctx));
+}
+
 Url.patterns = [
     (new Regex("^aspen/$"), top),
     (new Regex("^aspen/about/$"), about),
     (new Regex("^aspen/contact/.*$"), contact),
     (new Regex("^aspen/check/.+$"), check),
+    (new Regex("^aspen/help/$"), help),
     (new Regex("^aspen/action/create$"), create),
     (new Regex("^aspen/action/delete$"), delete),
     (new Regex("^aspen/action/login$"), login),
