@@ -456,6 +456,15 @@ function konoha_main() {
         res.content = body.read().decode();
         body.close();
     }
+    else if (requestedType == "memview") {
+        body.close();
+        Template tpl = getDefaultTemplate(req);
+        tpl["User"] = user;
+        tpl["Script"] = id;
+        TemplateContext ctx = new TemplateContext();
+        ctx.parseFile("canvas.cs");
+        return new HttpResponse(tpl.render(ctx));
+    }
     else {
         args.pop();
         return redirect("/aspen/" + args.join("/"));

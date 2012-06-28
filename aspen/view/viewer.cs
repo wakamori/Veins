@@ -43,6 +43,7 @@
       <p>
         <button class="btn btn-primary" id=<?cs if:Myself ?>"runbtn"<?cs else ?>"runbtn-nosave"<?cs /if ?>><i class="icon-play icon-white"></i> Run</button>
         <a class="btn" href="<?cs var:BASE_URL ?>/<?cs var:User.Name ?>/<?cs var:User.Id ?>/html" target="_blank"><i class="icon-resize-full"></i> Fullscreen</a>
+        <a class="btn btn-info" href="<?cs var:BASE_URL ?>/<?cs var:User.Name ?>/<?cs var:User.Id ?>/memview" target="_blank"><i class="icon-picture icon-white"></i> View Memory</a>
       </p>
     </div>
   </div>
