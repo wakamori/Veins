@@ -3,6 +3,7 @@
 <head>
 <title>Memory View (Experimental)</title>
 <script src="<?cs var:BASE_URL ?>/<?cs var:User ?>/<?cs var:Script ?>/js"></script>
+<script src="<?cs var:STATIC_URL ?>/js/memview.js"></script>
 <script src="<?cs var:STATIC_URL ?>/js/libs/jquery-1.7.1.min.js"></script>
 <script>
 function runmain() {
