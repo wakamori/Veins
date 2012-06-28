@@ -93,7 +93,7 @@ return a;
 <p>※ ただし、配列を return で返す場合は [] を省略する必要があります。</p>
 <h3>それでも動作しない方: この見直しをしても、動作しない場合：</h3>
 <p>何かが間違っています。。。きっと。一緒に探しましょう。この場合には、</p>
-<pre>aspen-konoha'AT'google.com (AT は @に変換）</pre>
+<pre>aspen-konoha'AT'googlegroups.com (AT は @に変換）</pre>
 <p>まで、動作しないプログラムのURLと、Aspen ID を書いてメールをしてください。</p>
 </section>
 <?cs include:"footer.cs" ?>
