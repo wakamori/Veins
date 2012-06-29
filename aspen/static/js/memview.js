@@ -34,7 +34,7 @@ konoha.memview = new function() {
         if (c == null) return;
         var cnt = document.getElementById("count");
         cnt.innerHTML = this.idx;
-        if (this.idx == allobj.length - 1) {
+        if (this.idx >= allobj.length - 1) {
             clearInterval(this.id);
         }
         var obj = allobj[this.idx++];
