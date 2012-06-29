@@ -49,10 +49,10 @@ konoha.memview = new function() {
                 var b = Math.pow(Math.floor((num / 10000) % 16), 2);
                 ctx.fillStyle = this.getColor(r, g, b);
                 //console.log(this.getColor(r, g, b));
-                ctx.fillRect(i * (vieww / maxw), viewh + (j - obj[i].length) * (viewh / maxh), ((vieww / 2) / maxw), ((viewh / 2) / maxh));
+                ctx.fillRect(i * (vieww / maxw), viewh - ((j + 1) * (viewh / maxh)), ((vieww / 2) / maxw), ((viewh / 2) / maxh));
                 ctx.fillStyle = this.getCompColor(r, g, b);
                 //console.log(this.getCompColor(r, g, b));
-                ctx.fillText("" + obj[i][j], i * (vieww / maxw), viewh + (j - obj[i].length + 0.5) * (viewh / maxh));
+                ctx.fillText("" + obj[i][j], i * (vieww / maxw), viewh - ((j + 0.5) * (viewh / maxh)));
             }
         }
         //console.log(obj);
