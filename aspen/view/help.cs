@@ -3,6 +3,7 @@
 <p>このページには、Aspen上で書いたプログラムがうまく動作せず、悩んでいる人を支援するために、よくある質問とそれに対する回答が書かれています。</p>
 <ul>
 <li><a href="#run">"Run" ボタンを押してもプログラムが実行されない方</a></li>
+<li><a href="#lesson10">6/28 第10回演習について</a></li>
 </ul>
 <section id="run">
 <div class="page-header">
@@ -95,5 +96,61 @@ return a;
 <p>何かが間違っています。。。きっと。一緒に探しましょう。この場合には、</p>
 <pre>aspen-konoha'AT'googlegroups.com (AT は @に変換）</pre>
 <p>まで、動作しないプログラムのURLと、Aspen ID を書いてメールをしてください。</p>
+</section>
+<section id="lesson10">
+<div class="page-header">
+<h2>6/28 第10回演習について</h2>
+</div>
+<p>第10回の char 型ですが、ASPEN で対応すると伝えましたが、現状int としてしか認識されない仕様となっている事が分かりました。</p>
+<p>その事から、第10回の演習課題については、授業で行ったように char 型を戻り値とする場合は、String 型の変数に代入するか、
+もしくはSystem.out.println() の中でメソッド呼び出しを用いる、という形で利用するようにしてください。</p>
+<p>第10回の演習のヒントを下記に掲載します。</p>
+<h3>課題10-1</h3>
+<p><span class="label label-info">Hint</span> コンパイルしてください。</p>
+<pre>
+public class Lesson10_1 {
+  public static void main (String[] args) {
+    String s = "abcdefg";
+    int i;
+    for (i = 0; i &lt; s.length(); i++) {
+      System.out.println(s.charAt(i));
+    }
+  }
+}
+</pre>
+<h3>課題10-2</h3>
+<p><span class="label label-info">Hint</span> String.charAt(int index);の戻り値をchar型の変数に代入せず、Stringに直接appendしましょう。</p>
+<pre>
+// 例えば
+String result;
+/* ... */
+result += s.charAt(i);
+/* ... */
+</pre>
+<h3>課題10-3</h3>
+<p><span class="label label-info">Hint</span> スペースを除去するためには、空白文字' 'を見つけるために、
+<pre>
+String.indexOf(String str);
+</pre>
+空白文字を除いた文字列を得るために、
+<pre>
+String.substring(int start, int end);
+</pre>
+を使いましょう。</p>
+<p>回文の判定には、文字列を大文字または小文字に統一して、
+<pre>
+String.equals(String str);
+</pre>
+を使いましょう。</p>
+<h3>課題10-4</h3>
+<p><span class="label label-info">Hint</span> ランダムな文字列生成には、生成する文字に含める文字をすべて定義した一つの文字列と、
+<pre>
+Math.random();
+String.length();
+String.charAt(int index);
+</pre>
+を使いましょう。
+<h3>おわりに</h3>
+<p>以上はあくまでヒントです。これ以外にも実現方法はありますので、自分なりに考えた解法で、演習にチャレンジしてみてください。</p>
 </section>
 <?cs include:"footer.cs" ?>
