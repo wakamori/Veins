@@ -22,6 +22,7 @@
         <li><a href="<?cs var:BASE_URL ?>/<?cs var:User.Name ?>"><i class="icon-home"></i> Home</a></li>
         <?cs if:Myself ?>
         <li><a href="#" id="invoke-editable"><i class="icon-pencil"></i> Change Name</a></li>
+        <li><a href="<?cs var:BASE_URL ?>/<?cs var:User.Name ?>/<?cs var:User.Id ?>/download"><i class="icon-download-alt"></i> Download</a></li>
         <li><a href="<?cs var:BASE_URL ?>/help/" target="_blank"><i class="icon-question-sign"></i> Need Help?</a></li>
         <?cs /if ?>
       </ul>

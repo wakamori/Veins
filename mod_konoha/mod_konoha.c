@@ -240,6 +240,18 @@ static int set_headers(request_rec *r, CTX ctx, int debug, int rcode)
         AP_LOG_DEBUG("Location: %s", S_totext(location));
     }
     CLEAR_PROP("wsgi.location");
+    kString *length = GET_PROP("wsgi.content_length");
+    if (!IS_KNULL(length)) {
+        apr_table_set(r->headers_out, "Content-Length", S_totext(length));
+        AP_LOG_DEBUG("Content-Length: %s", S_totext(location));
+    }
+    CLEAR_PROP("wsgi.content_length");
+    kString *disposition = GET_PROP("wsgi.content_disposition");
+    if (!IS_KNULL(disposition)) {
+        apr_table_set(r->headers_out, "Content-Disposition", S_totext(disposition));
+        AP_LOG_DEBUG("Content-Disposition: %s", S_totext(location));
+    }
+    CLEAR_PROP("wsgi.content_disposition");
     return 0;
 }
 

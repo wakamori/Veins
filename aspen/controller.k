@@ -290,6 +290,51 @@ void reportBug(String user, String id) {
     ins.close();
 }
 
+String compile(InputStream body, String k2jspath, String scriptpath) {
+    body.close();
+    String[] result = exec(k2jspath + " -c -i " + scriptpath + " 2>&1").split("\n");
+    result.pop()
+    Json j = new Json();
+    Json[] errs = [];
+    Json[] infos = [];
+    Json[] warns = [];
+    Regex r = new Regex(" - \\((\\w+\\.k)\\:(\\d+)\\) \\((\\w+)\\) (.+)");
+    foreach (String line in result) {
+        String[] reg = line.match(r);
+        if (|reg| > 0) {
+            Json j2 = new Json();
+            j2["line"] = reg[2];
+            j2["message"] = reg[4];
+            if (not reg[1] == "compiler.k") {
+                switch (reg[3]) {
+                case "error":
+                    errs.add(j2);
+                    break;
+                case "warning":
+                    warns.add(j2);
+                    break;
+                case "info":
+                    infos.add(j2);
+                    break;
+                }
+            }
+        }
+    }
+    if (|errs| > 0) {
+        j["error"] = true;
+        j["errormsg"] = errs;
+    }
+    if (|infos| > 0) {
+        j["info"] = true;
+        j["infomsg"] = infos;
+    }
+    if (|warns| > 0) {
+        j["warning"] = true;
+        j["warningmsg"] = warns;
+    }
+    return j.stringify();
+}
+
 HttpResponse konoha2js(HttpRequest req, String[] args)
 {
     if (req.method == "POST") {
@@ -360,50 +405,9 @@ function konoha_main() {
         }
     }
     else if (requestedType == "compile") {
-        body.close();
         //res["Access-Control-Allow-Origin"] = "http://konohascript.org";
         res["Content-Type"] = "application/json; charset=UTF-8";
-        String[] result = exec(k2jspath + " -c -i " + scriptpath + " 2>&1").split("\n");
-        result.pop()
-        Json j = new Json();
-        Json[] errs = [];
-        Json[] infos = [];
-        Json[] warns = [];
-        Regex r = new Regex(" - \\((\\w+\\.k)\\:(\\d+)\\) \\((\\w+)\\) (.+)");
-        foreach (String line in result) {
-            String[] reg = line.match(r);
-            if (|reg| > 0) {
-                Json j2 = new Json();
-                j2["line"] = reg[2];
-                j2["message"] = reg[4];
-                if (not reg[1] == "compiler.k") {
-                    switch (reg[3]) {
-                    case "error":
-                        errs.add(j2);
-                        break;
-                    case "warning":
-                        warns.add(j2);
-                        break;
-                    case "info":
-                        infos.add(j2);
-                        break;
-                    }
-                }
-            }
-        }
-        if (|errs| > 0) {
-            j["error"] = true;
-            j["errormsg"] = errs;
-        }
-        if (|infos| > 0) {
-            j["info"] = true;
-            j["infomsg"] = infos;
-        }
-        if (|warns| > 0) {
-            j["warning"] = true;
-            j["warningmsg"] = warns;
-        }
-        res.content = j.stringify();
+        res.content = compile(body, k2jspath, scriptpath);
         if (TRACE_USER) {
             Map m = {};
             m["id"] = req.session["id"];
@@ -463,7 +467,19 @@ function konoha_main() {
         tpl["Script"] = id;
         TemplateContext ctx = new TemplateContext();
         ctx.parseFile("canvas.cs");
-        return new HttpResponse(tpl.render(ctx));
+        res.content = tpl.render(ctx);
+    }
+    else if (requestedType == "download") {
+        String name = m[0]["name"];
+        if (name != null && name != "") {
+            res["Content-Type"] = "text/plain; charset=UTF-8";
+            if (not name.endsWith(".java")) {
+                name = name + ".java";
+            }
+            res["Content-Disposition"] = "attachment; filename=\"" + name + "\"";
+            res.content = body.read().decode();
+            res["Content-Length"] = (to String)res.content.size;
+        }
     }
     else {
         args.pop();
@@ -555,13 +571,13 @@ HttpResponse signup(HttpRequest req, String[] args)
         Map error = {
             "Title": "Username is invalid.",
             "Contents": "You cannot use '" + username + "' as a username."
-        }
+        };
         tpl["Form.Inputs.0.Input.Value"] = username;
         tpl["Form.Inputs.1.Input.Value"] = email;
         tpl["Error"] = error;
         ctx.parseFile("form.cs");
         if (TRACE_USER) {
-            Map m = {}
+            Map m = {};
             m["username"] = username;
             m["email"] = email;
             System.ntraceFailed("Aspen:SignUp", m);
@@ -572,13 +588,13 @@ HttpResponse signup(HttpRequest req, String[] args)
         Map error = {
             "Title": "Username is invalid.",
             "Contents": "Username can only contain letters, numbers and '_'."
-        }
+        };
         tpl["Form.Inputs.0.Input.Value"] = username;
         tpl["Form.Inputs.1.Input.Value"] = email;
         tpl["Error"] = error;
         ctx.parseFile("form.cs");
         if (TRACE_USER) {
-            Map m = {}
+            Map m = {};
             m["username"] = username;
             m["email"] = email;
             System.ntraceFailed("Aspen:SignUp", m);
@@ -589,13 +605,13 @@ HttpResponse signup(HttpRequest req, String[] args)
         Map error = {
             "Title": "email is invalid.",
             "Contents": "Cannot create user '" + username + "'. Please retry."
-        }
+        };
         tpl["Form.Inputs.0.Input.Value"] = username;
         tpl["Form.Inputs.1.Input.Value"] = email;
         tpl["Error"] = error;
         ctx.parseFile("form.cs");
         if (TRACE_USER) {
-            Map m = {}
+            Map m = {};
             m["username"] = username;
             m["email"] = email;
             System.ntraceFailed("Aspen:SignUp", m);
@@ -607,13 +623,13 @@ HttpResponse signup(HttpRequest req, String[] args)
         Map error = {
             "Title": "Username is invalid.",
             "Contents": "Cannot create user '" + username + "'. Please retry."
-        }
+        };
         tpl["Form.Inputs.0.Input.Value"] = username;
         tpl["Form.Inputs.1.Input.Value"] = email;
         tpl["Error"] = error;
         ctx.parseFile("form.cs");
         if (TRACE_USER) {
-            Map m = {}
+            Map m = {};
             m["username"] = username;
             m["email"] = email;
             System.ntraceFailed("Aspen:SignUp", m);
@@ -628,7 +644,7 @@ HttpResponse signup(HttpRequest req, String[] args)
     FileStorage.mkdir(username, 0755);
     req.session["id"] = user.name;
     if (TRACE_USER) {
-        Map m = {}
+        Map m = {};
         m["newid"] = user.name;
         m["email"] = email;
         System.ntraceNotice("Aspen:SignUp", m);
@@ -700,7 +716,7 @@ HttpResponse save(HttpRequest req, String[] args)
         j["message"] = "Parameter 'user' is invalid.";
         res.content = j.stringify();
         if (TRACE_USER) {
-            Map m = {}
+            Map m = {};
             m["id"] = req.session["id"];
             m["target"] = user;
             m["saving"] = id;
@@ -745,7 +761,7 @@ HttpResponse save(HttpRequest req, String[] args)
     j["message"] = "Script saved successfully.";
     res.content = j.stringify();
     if (TRACE_USER) {
-        Map m = {}
+        Map m = {};
         m["id"] = req.session["id"];
         m["saving"] = id;
         System.ntraceNotice("Aspen:Save", m);
