@@ -5,6 +5,9 @@
   <?cs if:Myself ?>
   <small>
     <a href="<?cs var:BASE_URL ?>/action/create" class="btn"><i class="icon-edit"></i> Create</a>
+    <?cs if:Admin ?>
+    <a href="<?cs var:BASE_URL ?>/admin/" class="btn btn-inverse"><i class="icon-user icon-white"></i> Admin</a>
+    <?cs /if ?>
   </small>
   <?cs /if ?>
   </h1>

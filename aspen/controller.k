@@ -163,7 +163,12 @@ Template getDefaultTemplate(HttpRequest req)
 
 boolean isReservedWord(String word)
 {
-    return word in? ["action", "about", "check", "contact", "BUGS", "help"];
+    return word in? ["action", "admin", "about", "check", "contact", "BUGS", "help"];
+}
+
+boolean isAdminUser(String user)
+{
+    return user in? ["0001_Midori_Sugaya", "chenji", "kimio"];
 }
 
 /* ------------------------------------------------------------------------ */
@@ -468,6 +473,13 @@ function konoha_main() {
         TemplateContext ctx = new TemplateContext();
         ctx.parseFile("canvas.cs");
         res.content = tpl.render(ctx);
+        if (TRACE_USER) {
+            Map m = {};
+            m["id"] = req.session["id"];
+            m["target"] = user;
+            m["memviewing"] = id;
+            System.ntraceNotice("Aspen:Konoha2JS", m);
+        }
     }
     else if (requestedType == "download") {
         String name = m[0]["name"];
@@ -479,6 +491,13 @@ function konoha_main() {
             res["Content-Disposition"] = "attachment; filename=\"" + name + "\"";
             res.content = body.read().decode();
             res["Content-Length"] = (to String)res.content.size;
+            if (TRACE_USER) {
+                Map m = {};
+                m["id"] = req.session["id"];
+                m["target"] = user;
+                m["downloading"] = id;
+                System.ntraceNotice("Aspen:Konoha2JS", m);
+            }
         }
     }
     else {
@@ -488,7 +507,7 @@ function konoha_main() {
     return res;
 }
 
-HttpResponse user(HttpRequest req, String[] args)
+HttpResponse usertop(HttpRequest req, String[] args)
 {
     String user = args[0];
     if (not User.hasUser(user)) {
@@ -521,6 +540,9 @@ HttpResponse user(HttpRequest req, String[] args)
         });
     }
     tpl["User"] = user;
+    if (isAdminUser(user)) {
+        tpl["Admin"] = 1;
+    }
     tpl["Code"] = codelist;
     TemplateContext ctx = new TemplateContext();
     ctx.parseFile("user.cs");
@@ -1116,9 +1138,34 @@ HttpResponse help(HttpRequest req, String[] args)
     return new HttpResponse(tpl.render(ctx));
 }
 
+HttpResponse admintop(HttpRequest req, String[] args)
+{
+    if (req.session["id"] == null or not isAdminUser(req.session["id"])) {
+        return redirect("/aspen/");
+    }
+    Template tpl = getDefaultTemplate(req);
+    TemplateContext ctx = new TemplateContext();
+    ctx.parseFile("admin.cs");
+    return new HttpResponse(tpl.render(ctx));
+}
+
+HttpResponse copylist(HttpRequest req, String[] args)
+{
+    if (req.session["id"] == null or not isAdminUser(req.session["id"])) {
+        return redirect("/aspen/");
+    }
+    Template tpl = getDefaultTemplate(req);
+    TemplateContext ctx = new TemplateContext();
+    ctx.parseFile("empty.cs");
+    tpl["Contents"] = "Coming soon";
+    return new HttpResponse(tpl.render(ctx));
+}
+
 Url.patterns = [
     (new Regex("^aspen/$"), top),
     (new Regex("^aspen/about/$"), about),
+    (new Regex("^aspen/admin/copylist/$"), copylist),
+    (new Regex("^aspen/admin/$"), admintop),
     (new Regex("^aspen/contact/.*$"), contact),
     (new Regex("^aspen/check/.+$"), check),
     (new Regex("^aspen/help/$"), help),
@@ -1131,5 +1178,5 @@ Url.patterns = [
     (new Regex("^aspen/action/signup$"), signup),
     (new Regex("^aspen/action/update$"), update),
     //(new Regex("^aspen/action/setting$"), preference),
-    (new Regex("^aspen/.+$"), user)
+    (new Regex("^aspen/.+$"), usertop)
 ];
