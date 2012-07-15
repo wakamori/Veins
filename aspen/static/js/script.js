@@ -227,6 +227,10 @@ $(function() {
         setTimeout(function() {
             editor2.refresh();
             editor2.refresh();
+            sessionStorage.setItem("readme", editor1.getValue());
+            sessionStorage.setItem("js", editor2.getValue());
+            sessionStorage.setItem("ks", editor3.getValue());
+            sessionStorage.setItem("html", editor4.getValue());
         }, 1);
         function flushHistory() {
             var ret = [];
@@ -418,6 +422,11 @@ $(function() {
                 $("#checkbtn").removeAttr("disabled");
             }, 1000);
         });
+        $(window).bind('beforeunload', function(e) {
+            if (isTextChanged()) {
+                return "Script has not been saved yet. Leave this page anyway?";
+            }
+        });
         //$("#jcheckbtn").click(function() {
         //    save({
         //        success: function() {
@@ -588,6 +597,28 @@ $(function() {
         "oLanguage": {
             "sLengthMenu": "_MENU_ records per page"
         }
+    });
+    $("#uploadbtn").click(function() {
+        $("#upload").click();
+    });
+    $("#upload").bind('change', function(e) {
+        var file = e.target.files[0];
+        if (!file) {
+            alert('Failed to load file.');
+        }
+        else if (!file.type == '' && !file.type.match('text.*')) {
+            alert(file.name + ' is not a valid text file.');
+        }
+        else {
+            var reader = new FileReader();
+            reader.onload = (function(f) {
+                return function(e) {
+                    editor2.setValue(e.target.result);
+                };
+            })(file);
+            reader.readAsText(file);
+        }
+        return false;
     });
 });
 
