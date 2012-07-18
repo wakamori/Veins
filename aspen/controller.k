@@ -192,7 +192,7 @@ HttpResponse login(HttpRequest req, String[] args)
         req.session.remove("remember");
     }
     User user = User.authenticate(username, password);
-    if (user != null) {
+    if (user != null && user.name in? exec("ls " + $MEDIA_DIR).split("\n")) {
         req.session["id"] = user.name;
         if (TRACE_USER) {
             Map m = {};
@@ -1154,10 +1154,94 @@ HttpResponse copylist(HttpRequest req, String[] args)
     if (req.session["id"] == null or not isAdminUser(req.session["id"])) {
         return redirect("/aspen/");
     }
-    Template tpl = getDefaultTemplate(req);
+    Array codelist = [];
+    Model scripts = defineScripts();
+    foreach (Map m in scripts.get("user, id, name, date")) {
+        String id = m["id"];
+        String name = m["name"];
+        codelist.add({
+            "User": m["user"],
+            "Id": id,
+            "Name": name.convert(to:durl),
+            "Date": m["date"]
+        });
+    }
     TemplateContext ctx = new TemplateContext();
-    ctx.parseFile("empty.cs");
-    tpl["Contents"] = "Coming soon";
+    ctx.parseFile("copylist.cs");
+    Template tpl = getDefaultTemplate(req);
+    tpl["Code"] = codelist;
+    return new HttpResponse(tpl.render(ctx));
+}
+
+HttpResponse console(HttpRequest req, String[] args)
+{
+    TemplateContext ctx = new TemplateContext("""
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>JQuery Console Demo</title>
+    <script src="<?cs var:STATIC_URL ?>/js/libs/jquery-1.7.1.min.js"></script>
+    <script src="<?cs var:STATIC_URL ?>/js/libs/jquery.console.js"></script>
+    <script type="text/javascript">
+      var console1;
+      $(document).ready(function(){
+         /* First console */
+         console1 = $('.console1');
+         var controller1 = console1.console({
+           //promptLabel: 'Demo> ',
+           commandValidate:function(line){
+             if (line == "") return false;
+             else return true;
+           },
+           commandHandle:function(line){
+               return [{msg:"=> [12,42]",
+                        className:"jquery-console-message-value"},
+                       {msg:":: [a]",
+                        className:"jquery-console-message-type"}]
+           },
+           autofocus:true,
+           animateScroll:true,
+           promptHistory:true,
+           charInsertTrigger:function(keycode,line){
+              // Let you type until you press a-z
+              // Never allow zero.
+              console.log(keycode);
+              console.log(line);
+              //return !line.match(/[a-z]+/) && keycode != '0'.charCodeAt(0);
+              return true;
+           }
+         });
+       });
+    </script>
+    <style type="text/css" media="screen">
+      div.console1 { word-wrap: break-word; }
+      /* First console */
+      div.console1 { font-size: 14px }
+      div.console1 div.jquery-console-inner
+       { width:900px; height:200px; background:#333; padding:0.5em;
+         overflow:auto }
+      div.console1 div.jquery-console-prompt-box
+       { color:#fff; font-family:monospace; }
+      div.console1 div.jquery-console-focus span.jquery-console-cursor
+       { background:#fefefe; color:#333; font-weight:bold }
+      div.console1 div.jquery-console-message-error
+       { color:#ef0505; font-family:sans-serif; font-weight:bold;
+         padding:0.1em; }
+      div.console1 div.jquery-console-message-value
+       { color:#1ad027; font-family:monospace;
+         padding:0.1em; }
+      div.console1 div.jquery-console-message-type
+       { color:#52666f; font-family:monospace;
+         padding:0.1em; }
+      div.console1 span.jquery-console-prompt-label { font-weight:bold }
+    </style>
+  </head>
+  <body>
+    <div class="console1"></div>
+  </body>
+</html>
+""");
+    Template tpl = getDefaultTemplate(req);
     return new HttpResponse(tpl.render(ctx));
 }
 
@@ -1165,6 +1249,7 @@ Url.patterns = [
     (new Regex("^aspen/$"), top),
     (new Regex("^aspen/about/$"), about),
     (new Regex("^aspen/admin/copylist/$"), copylist),
+    (new Regex("^aspen/admin/console/$"), console),
     (new Regex("^aspen/admin/$"), admintop),
     (new Regex("^aspen/contact/.*$"), contact),
     (new Regex("^aspen/check/.+$"), check),
