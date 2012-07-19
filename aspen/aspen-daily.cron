@@ -46,7 +46,17 @@ void update_mysql()
     }
 }
 
+void tar_git()
+{
+    String today = System.exec("date --date '1 day ago' \"+%Y%m%d\"").trim();
+    String yesterday = System.exec("date --date '2 day ago' \"+%Y%m%d\"").trim();
+    System.exec("tar czf /tmp/" + today + ".tar.gz /export/user");
+    System.exec("mv /tmp/" + today + ".tar.gz /export/");
+    System.exec("rm /export/" + yesterday + ".tar.gz");
+}
+
 void main(String[] args)
 {
     update_mysql();
+    tar_git();
 }
