@@ -11,28 +11,12 @@ $SEED = 945934988;
 /* Database. */
 $DATABASES = {
     "default": {
-        "engine": "sqlite3",
-        "name": "/Users/chen_ji/Devel/git/Veins/aspen/mydb",
-        "user": "",
-        "password": "",
-        "host": "",
-        "port": ""
-    },
-    "users": {
-        "engine": "sqlite3",
-        "name": "/Users/chen_ji/Devel/git/Veins/aspen/userdb",
-        "user": "",
-        "password": "",
-        "host": "",
-        "port": ""
-    },
-    "scripts": {
-        "engine": "sqlite3",
-        "name": "/Users/chen_ji/Devel/git/Veins/aspen/scriptdb",
-        "user": "",
-        "password": "",
-        "host": "",
-        "port": ""
+        "engine": "mysql",
+        "name": "name",
+        "user": "user",
+        "password": "password",
+        "host": "localhost",
+        "port": "3306"
     }
 };
 

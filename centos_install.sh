@@ -1,9 +1,37 @@
-#!/bin/sh -x
+#!/bin/bash
 
 #
 # aspen install script
 #
 
+function check_install {
+	pkg=$1
+	rpm -q ${pkg}
+	ret=$?
+	if [ ${ret} -eq 1 ]; then
+		echo "--- check ${pkg}	[NG]"
+		exit 0;
+	fi
+}
+
+function yes_no {
+	MSG=$1
+	while true
+	do
+		echo -n "${MSG} y/N: "
+		read ans
+		case ${ans} in
+			[Yy]|[Yy][Ee][Ss])
+				return 1;;
+			[Nn]|[Nn][Oo])
+				return 0;;
+			*)
+				return 0;;
+		esac
+	done
+}
+
+check_install gcc
 sudo yum -y install gcc
 sudo yum -y install gcc-c++
 sudo yum -y install sqlite-devel
