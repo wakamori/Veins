@@ -14,28 +14,35 @@ if (not defined TRACE_USER) {
 if (not defined Git) {
     class Git
     {
+        String bin;
         String path;
         String cmd;
 
         Git(String path) {
+            _bin = exec("which git").trim();
             _path = path;
-            _cmd = "/Users/chen_ji/Devel/git/Veins/aspen/subproc-git.sh -d \"" + path + "\"";
+            //_cmd = "/Users/chen_ji/Devel/git/Veins/aspen/subproc-git.sh -d \"" + path + "\"";
+            _cmd = "cd " + path + " && " + bin;
         }
 
         void init() {
-            exec(cmd + " -c init");
+            //exec(cmd + " -c init");
+            exec(cmd + " init");
         }
 
         void add(String file) {
-            exec(cmd + " -c add -a \"" + file + "\"");
+            //exec(cmd + " -c add -a \"" + file + "\"");
+            exec(cmd + " add -a \"" + file + "\"");
         }
 
         void commit(String msg) {
-            exec(cmd + " -c commit -a \"-m '" + msg + "'\"");
+            //exec(cmd + " -c commit -a \"-m '" + msg + "'\"");
+            exec(cmd + " commit -a \"-m '" + msg + "'\"");
         }
 
         void commitAll(String msg) {
-            exec(cmd + " -c commit -a \"-a -m '" + msg + "'\"");
+            //exec(cmd + " -c commit -a \"-a -m '" + msg + "'\"");
+            exec(cmd + " commit -a \"-a -m '" + msg + "'\"");
         }
     }
 }
